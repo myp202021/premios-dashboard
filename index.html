@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Premios Increíbles</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.header{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.header h1{font-size:24px;font-weight:900;letter-spacing:-0.5px}
+.header .logo{height:44px;border-radius:50%}
+.period{display:inline-block;padding:4px 12px;border-radius:6px;background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.3);font-size:11px;font-weight:700;color:#E53935;margin-top:4px}
+#status{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+.kpi{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}
+.kpi-value{font-size:22px;font-weight:900;margin-bottom:4px;color:#FFD700}
+.kpi-label{font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.section{padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.section-title{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:4px;height:18px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px}
+.card h3{font-size:14px;font-weight:800;margin-bottom:12px;color:#FFD700}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:12px;margin-bottom:12px}
+thead th{background:#1C1C24;color:rgba(255,255,255,0.6);padding:10px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase}
+thead th.r{text-align:right}
+tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.8)}
+tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody td.b{font-weight:700;color:#fff}
+tbody tr:hover td{background:rgba(229,57,53,0.05)}
+.sorteo-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700}
+.badge-active{background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.3)}
+.badge-closed{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1)}
+.source-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.source-bar-fill{height:24px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;min-width:32px}
+.source-bar-label{font-size:11px;color:rgba(255,255,255,0.5);min-width:80px}
+.trend-up{color:#10B981}.trend-down{color:#EF4444}.trend-neutral{color:#F59E0B}
+.footer{padding:20px 0;text-align:center;font-size:10px;color:rgba(255,255,255,0.2)}
+#loading{text-align:center;padding:80px 0;font-size:14px;color:rgba(255,255,255,0.4)}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div>
+    <h1>Premios Incre&iacute;bles</h1>
+    <p style="font-size:12px;color:rgba(255,255,255,0.4);">Dashboard de Ventas & Performance</p>
+    <div class="period" id="period">Cargando...</div>
+    <div id="status">Conectando con WooCommerce y Reportei...</div>
+  </div>
+  <img src="https://www.premiosincreibles.cl/wp-content/uploads/2026/01/participar_imagen.png" alt="Premios Increíbles" class="logo">
+</div>
+
+<div id="loading">Cargando datos en vivo desde WooCommerce + Reportei...</div>
+<div id="dashboard" style="display:none;">
+
+  <!-- KPIs Sorteo activo -->
+  <div class="section">
+    <div class="section-title">Sorteo 5 — Julio 2026 <span class="sorteo-badge badge-active">ACTIVO</span></div>
+    <div class="kpi-grid" id="kpis-s5"></div>
+  </div>
+
+  <!-- Sorteo 4 cerrado -->
+  <div class="section">
+    <div class="section-title">Sorteo 4 — Mayo 2026 <span class="sorteo-badge badge-closed">CERRADO</span></div>
+    <div class="kpi-grid" id="kpis-s4"></div>
+  </div>
+
+  <!-- Facebook Ads -->
+  <div class="section">
+    <div class="section-title">Facebook Ads — Performance consolidado</div>
+    <div class="kpi-grid" id="kpis-fb"></div>
+  </div>
+
+  <!-- Detalle sorteo 5 -->
+  <div class="section">
+    <div class="section-title">Sorteo 5 — Detalle de ventas</div>
+    <div class="g2">
+      <div class="card">
+        <h3>Ventas por variante</h3>
+        <div id="variants"></div>
+      </div>
+      <div class="card">
+        <h3>Fuente de tráfico</h3>
+        <div id="sources"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ventas por día -->
+  <div class="section">
+    <div class="section-title">Sorteo 5 — Ventas por d&iacute;a (últimos datos)</div>
+    <div id="daily-table"></div>
+  </div>
+
+  <!-- Comparativa sorteos -->
+  <div class="section">
+    <div class="section-title">Comparativa entre sorteos</div>
+    <div id="compare-table"></div>
+  </div>
+
+  <!-- ROAS -->
+  <div class="section">
+    <div class="section-title">Retorno sobre inversi&oacute;n publicitaria</div>
+    <div class="g3" id="roas-cards"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Dashboard generado por Muller & P&eacute;rez &middot; Datos en vivo desde WooCommerce + Reportei</p>
+</div>
+
+</div>
+
+<script>
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) throw new Error('API ' + res.status);
+    const d = await res.json();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('period').textContent = 'LIVE — datos al ' + new Date().toLocaleDateString('es-CL');
+    document.getElementById('status').textContent = 'Actualizado: ' + new Date().toLocaleString('es-CL');
+
+    const fmt = n => Number(n).toLocaleString('es-CL');
+    const fmtM = n => '$' + fmt(n);
+
+    // Estimate total revenue sorteo 5
+    const s5AvgTicket = d.sorteo5.sample.revenue / d.sorteo5.sample.sample_size;
+    const s5EstRev = Math.round(s5AvgTicket * d.sorteo5.total_orders);
+
+    // KPIs Sorteo 5
+    document.getElementById('kpis-s5').innerHTML = [
+      { v: fmt(d.sorteo5.total_orders), l: 'Órdenes completadas' },
+      { v: fmtM(s5EstRev), l: 'Revenue estimado' },
+      { v: fmtM(Math.round(s5AvgTicket)), l: 'Ticket promedio' },
+      { v: fmt(d.sorteo5.total_sales), l: 'Stickers vendidos (WC)' }
+    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
+
+    // KPIs Sorteo 4
+    const s4AvgTicket = 8280; // from sample
+    const s4EstRev = Math.round(s4AvgTicket * d.sorteo4.total_orders);
+    document.getElementById('kpis-s4').innerHTML = [
+      { v: fmt(d.sorteo4.total_orders), l: 'Órdenes completadas' },
+      { v: fmtM(s4EstRev), l: 'Revenue estimado' },
+      { v: fmtM(s4AvgTicket), l: 'Ticket promedio' },
+      { v: fmt(d.sorteo4.total_sales), l: 'Stickers vendidos (WC)' }
+    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
+
+    // KPIs Facebook Ads
+    const fb = d.facebook_ads;
+    document.getElementById('kpis-fb').innerHTML = [
+      { v: fmtM(Math.round(fb.spend)), l: 'Inversión total' },
+      { v: fmt(fb.reach), l: 'Alcance' },
+      { v: fmt(fb.impressions), l: 'Impresiones' },
+      { v: fmtM(Math.round(fb.cpc)), l: 'CPC' },
+    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
+
+    // Variants
+    const variants = d.sorteo5.sample.by_variant;
+    const maxV = Math.max(...Object.values(variants));
+    document.getElementById('variants').innerHTML = Object.entries(variants)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => {
+        const pct = Math.round((qty / d.sorteo5.sample.sample_size) * 100);
+        const w = Math.max(20, (qty / maxV) * 100);
+        return `<div class="source-bar">
+          <div class="source-bar-label">${name.replace('Sticker 5°sorteo - ', '')} stickers</div>
+          <div class="source-bar-fill" style="width:${w}%;background:linear-gradient(90deg,#E53935,#FFD700);">${qty}x</div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.4);">${pct}%</span>
+        </div>`;
+      }).join('');
+
+    // Sources
+    const sources = d.sorteo5.sample.by_source;
+    const totalSrc = Object.values(sources).reduce((s, v) => s + v, 0);
+    const srcColors = { '(direct)': '#FFD700', 'ig': '#E1306C', 'fb': '#4267B2', 'google': '#34A853', 'l.instagram.com': '#E1306C', 'm.facebook.com': '#4267B2' };
+    document.getElementById('sources').innerHTML = Object.entries(sources)
+      .sort((a, b) => b[1] - a[1])
+      .map(([src, qty]) => {
+        const pct = Math.round((qty / totalSrc) * 100);
+        const color = srcColors[src] || '#818CF8';
+        const label = src === '(direct)' ? 'Directo' : src === 'ig' ? 'Instagram' : src === 'fb' ? 'Facebook' : src === 'google' ? 'Google' : src;
+        return `<div class="source-bar">
+          <div class="source-bar-label">${label}</div>
+          <div class="source-bar-fill" style="width:${pct}%;background:${color};">${qty}</div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.4);">${pct}%</span>
+        </div>`;
+      }).join('');
+
+    // Daily table
+    const days = Object.entries(d.sorteo5.sample.by_day).sort((a, b) => a[0].localeCompare(b[0]));
+    document.getElementById('daily-table').innerHTML = `<table><thead><tr><th>Fecha</th><th class="r">Órdenes</th></tr></thead><tbody>${
+      days.map(([day, qty]) => `<tr><td class="b">${day}</td><td class="r">${fmt(qty)}</td></tr>`).join('')
+    }</tbody></table>`;
+
+    // Compare sorteos
+    document.getElementById('compare-table').innerHTML = `<table><thead><tr>
+      <th>Métrica</th><th class="r">Sorteo 4 (Mayo)</th><th class="r">Sorteo 5 (Julio) — activo</th>
+    </tr></thead><tbody>
+      <tr><td class="b">Órdenes</td><td class="r">${fmt(d.sorteo4.total_orders)}</td><td class="r">${fmt(d.sorteo5.total_orders)}</td></tr>
+      <tr><td class="b">Stickers vendidos</td><td class="r">${fmt(d.sorteo4.total_sales)}</td><td class="r">${fmt(d.sorteo5.total_sales)}</td></tr>
+      <tr><td class="b">Revenue estimado</td><td class="r">${fmtM(s4EstRev)}</td><td class="r">${fmtM(s5EstRev)}</td></tr>
+      <tr><td class="b">Ticket promedio</td><td class="r">${fmtM(s4AvgTicket)}</td><td class="r">${fmtM(Math.round(s5AvgTicket))}</td></tr>
+    </tbody></table>`;
+
+    // ROAS cards
+    const totalRev = s5EstRev + s4EstRev;
+    const roas = fb.spend > 0 ? (totalRev / fb.spend).toFixed(1) : '—';
+    const costPerOrder = fb.spend > 0 ? Math.round(fb.spend / (d.sorteo4.total_orders + d.sorteo5.total_orders)) : 0;
+    document.getElementById('roas-cards').innerHTML = `
+      <div class="card" style="text-align:center;">
+        <h3>Revenue total (ambos sorteos)</h3>
+        <div style="font-size:32px;font-weight:900;color:#10B981;">${fmtM(totalRev)}</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <h3>Inversión Facebook Ads</h3>
+        <div style="font-size:32px;font-weight:900;color:#E53935;">${fmtM(Math.round(fb.spend))}</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <h3>ROAS (Revenue / Inversión)</h3>
+        <div style="font-size:32px;font-weight:900;color:#FFD700;">${roas}x</div>
+        <p style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">Costo por orden: ${fmtM(costPerOrder)}</p>
+      </div>`;
+
+  } catch (e) {
+    document.getElementById('status').textContent = 'Error: ' + e.message;
+  }
+}
+
+loadDashboard();
+setInterval(loadDashboard, 5 * 60 * 1000);
+</script>
+</body>
+</html>
