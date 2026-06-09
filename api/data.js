@@ -54,12 +54,29 @@ export default async function handler(req, res) {
       try { const d = await r.json(); return d?.data?.q1?.values || null; } catch { return null; }
     }
 
+    // Parallel - no rate limit delay needed for concurrent requests
+    async function getMetricFast(ref, metrics, type) {
+      const body = {
+        start: '2026-05-01', end: new Date().toISOString().substring(0, 10),
+        integration_id: FB_INT_ID,
+        metrics: [{ id: 'q1', reference_key: ref, component: 'number_v1', metrics: metrics || [], type: type || [] }]
+      };
+      try {
+        const r = await fetch('https://app.reportei.com/api/v2/metrics/get-data', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + REPORTEI_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json(); return d?.data?.q1?.values || null;
+      } catch { return null; }
+    }
+
     const [fbSpend, fbReach, fbImpr, fbCpc, fbCtr] = await Promise.all([
-      getMetric('facebook_ads:spend', ['spend'], ['spend']),
-      getMetric('facebook_ads:reach', ['reach'], []),
-      getMetric('facebook_ads:impressions', ['impressions'], ['impressions']),
-      getMetric('facebook_ads:cpc', ['cpc'], []),
-      getMetric('facebook_ads:ctr', ['ctr'], [])
+      getMetricFast('facebook_ads:spend', ['spend'], ['spend']),
+      getMetricFast('facebook_ads:reach', ['reach'], []),
+      getMetricFast('facebook_ads:impressions', ['impressions'], ['impressions']),
+      getMetricFast('facebook_ads:cpc', ['cpc'], []),
+      getMetricFast('facebook_ads:ctr', ['ctr'], [])
     ]);
 
     const result = {
