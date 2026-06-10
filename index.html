@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Premios Increíbles</title>
+<title>Dashboard BI — Premios Increíbles</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5}.c{max-width:1200px;margin:0 auto;padding:0 24px}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5;font-size:13px}.c{max-width:1200px;margin:0 auto;padding:0 24px}
 .hd{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}.hd h1{font-size:22px;font-weight:900}.hd .logo{height:44px;border-radius:50%}.hd p{font-size:11px;color:rgba(255,255,255,0.4)}.period{display:inline-block;padding:3px 10px;border-radius:5px;background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.3);font-size:10px;font-weight:700;color:#E53935;margin-top:4px}
-.kg{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0}.k{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;text-align:center;position:relative;overflow:hidden}.k::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}.kv{font-size:20px;font-weight:900;margin-bottom:2px;color:#FFD700}.kl{font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.kg{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:16px 0}.k{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;text-align:center;position:relative;overflow:hidden}.k::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}.kv{font-size:20px;font-weight:900;margin-bottom:2px;color:#FFD700}.kl{font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .s{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06)}.st{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}.st::before{content:'';width:3px;height:14px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .cd{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px}.cd h3{font-size:12px;font-weight:800;margin-bottom:8px;color:#FFD700}
-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:11px}thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:8px 10px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase}thead th.r{text-align:right}tbody td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.7)}tbody td.r{text-align:right;font-variant-numeric:tabular-nums}tbody td.b{font-weight:700;color:#fff}tbody tr:hover td{background:rgba(229,57,53,0.04)}
-.bar{display:flex;align-items:center;gap:6px;margin-bottom:5px}.bar-fill{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:700;min-width:24px}.bar-label{font-size:10px;color:rgba(255,255,255,0.4);min-width:65px}
-.chart{display:flex;align-items:flex-end;gap:2px;height:100px;padding:4px 0}.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:6px;position:relative;cursor:default;transition:opacity .2s}.chart-bar:hover{opacity:.7}.chart-bar .tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1C1C24;border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 6px;font-size:8px;white-space:nowrap;margin-bottom:3px;z-index:10}.chart-bar:hover .tip{display:block}.chart-labels{display:flex;gap:2px;font-size:6px;color:rgba(255,255,255,0.2);margin-top:3px}.chart-labels span{flex:1;text-align:center;min-width:6px}
-.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;font-weight:700}.badge-active{background:rgba(16,185,129,0.15);color:#10B981}.badge-closed{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)}
-.insight{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.12);border-radius:10px;padding:12px;margin-top:10px}.insight h4{font-size:11px;font-weight:800;color:#FFD700;margin-bottom:4px}.insight p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}.insight strong{color:rgba(255,255,255,0.8)}
-.up{color:#10B981}.dn{color:#EF4444}.nt{color:#F59E0B}
-.legend{display:flex;gap:16px;margin-bottom:8px;font-size:9px;color:rgba(255,255,255,0.4)}.legend span{display:flex;align-items:center;gap:4px}.legend .dot{width:10px;height:10px;border-radius:3px}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:11px;margin-bottom:10px}thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:8px 10px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase}thead th.r{text-align:right}tbody td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.7)}tbody td.r{text-align:right;font-variant-numeric:tabular-nums}tbody td.b{font-weight:700;color:#fff}tbody tr:hover td{background:rgba(229,57,53,0.04)}tbody tr.hl td{background:rgba(255,215,0,0.05)}
+.bar{display:flex;align-items:center;gap:6px;margin-bottom:5px}.bar-fill{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:700;min-width:24px}.bar-label{font-size:10px;color:rgba(255,255,255,0.4);min-width:80px}
+.insight{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.12);border-radius:10px;padding:12px;margin-top:10px}.insight h4{font-size:11px;font-weight:800;color:#FFD700;margin-bottom:4px}.insight p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}
+.alert{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px;margin-top:10px}.alert h4{font-size:11px;font-weight:800;color:#EF4444;margin-bottom:4px}.alert p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}
+.opp{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;margin-top:10px}.opp h4{font-size:11px;font-weight:800;color:#10B981;margin-bottom:4px}.opp p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}
+.up{color:#10B981}.dn{color:#EF4444}.nt{color:#F59E0B}.gd{color:#FFD700}
 .foot{padding:14px 0;text-align:center;font-size:9px;color:rgba(255,255,255,0.15)}
 @media(max-width:768px){.kg{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4{grid-template-columns:1fr}}
 </style>
@@ -28,172 +27,273 @@ table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;ov
 
 <div class="hd">
   <div>
-    <h1>Premios Incre&iacute;bles</h1>
-    <p>Dashboard de Ventas & Performance — An&aacute;lisis multi-sorteo</p>
-    <div class="period">Sorteo 5 activo &middot; Cierre 19 julio 2026 &middot; D&iacute;a 18 de ~55</div>
+    <h1>Premios Incre&iacute;bles — Inteligencia de Negocios</h1>
+    <p>An&aacute;lisis multi-sorteo &middot; 21.963 &oacute;rdenes analizadas &middot; 14.308 compradores &uacute;nicos</p>
+    <div class="period">Sorteo 5 activo &middot; D&iacute;a 18 de ~55 &middot; Cierre 19 julio 2026</div>
   </div>
   <img src="https://www.premiosincreibles.cl/wp-content/uploads/2026/01/participar_imagen.png" alt="PI" class="logo">
 </div>
 
-<!-- KPIs Sorteo 5 -->
+<!-- KPIs -->
 <div class="kg">
-  <div class="k"><div class="kv">1.283</div><div class="kl">&Oacute;rdenes S5</div></div>
   <div class="k"><div class="kv">$9,7M</div><div class="kl">Revenue S5</div></div>
-  <div class="k"><div class="kv">$7.541</div><div class="kl">Ticket promedio</div></div>
-  <div class="k"><div class="kv">791</div><div class="kl">Compradores &uacute;nicos</div></div>
-  <div class="k"><div class="kv">44%</div><div class="kl">Ven&iacute;an de S4</div></div>
+  <div class="k"><div class="kv">1.283</div><div class="kl">&Oacute;rdenes S5</div></div>
+  <div class="k"><div class="kv">$408K</div><div class="kl">Inv. diaria actual</div></div>
+  <div class="k"><div class="kv">$693K</div><div class="kl">Inv. diaria S4</div></div>
+  <div class="k"><div class="kv">13.517</div><div class="kl">Compradores dormidos</div></div>
+  <div class="k"><div class="kv">$100-120M</div><div class="kl">Meta revenue</div></div>
 </div>
 
-<!-- CURVA COMPARATIVA -->
+<!-- DIAGNÓSTICO PRINCIPAL -->
 <div class="s">
-  <div class="st">Curva comparativa — &Oacute;rdenes acumuladas por d&iacute;a (mismo punto temporal)</div>
-  <div class="legend">
-    <span><div class="dot" style="background:#EF4444;"></div>Sorteo 3 (abr)</span>
-    <span><div class="dot" style="background:#F59E0B;"></div>Sorteo 4 (may)</span>
-    <span><div class="dot" style="background:#10B981;"></div>Sorteo 5 (jul) — activo</span>
+  <div class="st">Diagn&oacute;stico: &iquest;por qu&eacute; S5 va m&aacute;s lento?</div>
+  <div class="g3">
+    <div class="cd" style="border-top:3px solid #EF4444;">
+      <h3 style="color:#EF4444;">Inversi&oacute;n 2.3x menor</h3>
+      <table>
+        <thead><tr><th>Sorteo</th><th class="r">Inv/d&iacute;a</th></tr></thead>
+        <tbody>
+          <tr><td class="b">S3 (abr)</td><td class="r">$937K/d&iacute;a</td></tr>
+          <tr><td class="b">S4 (may)</td><td class="r">$693K/d&iacute;a</td></tr>
+          <tr><td class="b" style="color:#EF4444;">S5 (jul)</td><td class="r" style="color:#EF4444;">$408K/d&iacute;a</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">S5 gasta <strong style="color:#fff;">$285K/d&iacute;a menos</strong> que S4. Eso son ~3-4 &oacute;rdenes menos por d&iacute;a solo por falta de presi&oacute;n publicitaria.</p>
+    </div>
+    <div class="cd" style="border-top:3px solid #F59E0B;">
+      <h3 style="color:#F59E0B;">CPA m&aacute;s alto (esperable)</h3>
+      <table>
+        <thead><tr><th>Sorteo</th><th class="r">CPA/orden</th></tr></thead>
+        <tbody>
+          <tr><td class="b">S3</td><td class="r">$4.779</td></tr>
+          <tr><td class="b">S4</td><td class="r">$3.357</td></tr>
+          <tr><td class="b" style="color:#F59E0B;">S5</td><td class="r" style="color:#F59E0B;">$5.719</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">El CPA sube al inicio y <strong style="color:#fff;">baja drásticamente las últimas 2 semanas</strong> cuando la urgencia aumenta las conversiones orgánicas.</p>
+    </div>
+    <div class="cd" style="border-top:3px solid #10B981;">
+      <h3 style="color:#10B981;">Pero la base es m&aacute;s fuerte</h3>
+      <table>
+        <thead><tr><th>Sorteo</th><th class="r">% recurrentes</th></tr></thead>
+        <tbody>
+          <tr><td class="b">S3</td><td class="r">11%</td></tr>
+          <tr><td class="b">S4</td><td class="r">20%</td></tr>
+          <tr><td class="b" style="color:#10B981;">S5</td><td class="r" style="color:#10B981;">22%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">44% de S5 ven&iacute;a de S4. La comunidad WA est&aacute; funcionando. <strong style="color:#fff;">El tr&aacute;fico directo pas&oacute; de 18% a 54%.</strong></p>
+    </div>
   </div>
+</div>
+
+<!-- CURVA COMPARATIVA JUSTA -->
+<div class="s">
+  <div class="st">Curva comparativa — Mismo n&uacute;mero de d&iacute;as</div>
   <table>
-    <thead><tr><th>D&iacute;a</th><th class="r">S3 acum</th><th class="r">S4 acum</th><th class="r">S5 acum</th><th class="r">S5 vs S4</th></tr></thead>
+    <thead><tr><th>Semana</th><th class="r">S3 &oacute;rd</th><th class="r">S3 acum</th><th class="r">S4 &oacute;rd</th><th class="r">S4 acum</th><th class="r">S5 &oacute;rd</th><th class="r">S5 acum</th><th class="r">S5 vs S4</th><th class="r">S5 vs S3</th></tr></thead>
     <tbody>
-      <tr><td class="b">D&iacute;a 7</td><td class="r">246</td><td class="r">677</td><td class="r" style="color:#10B981;">470</td><td class="r dn">-31%</td></tr>
-      <tr><td class="b">D&iacute;a 14</td><td class="r">757</td><td class="r">1.513</td><td class="r" style="color:#10B981;">1.082</td><td class="r dn">-28%</td></tr>
-      <tr><td class="b">D&iacute;a 17</td><td class="r">901</td><td class="r">2.054</td><td class="r" style="color:#10B981;">1.273</td><td class="r dn">-38%</td></tr>
-      <tr><td class="b">D&iacute;a 21</td><td class="r">1.083</td><td class="r">2.594</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">D&iacute;a 28</td><td class="r">1.648</td><td class="r">3.730</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">D&iacute;a 35</td><td class="r">2.754</td><td class="r">5.105</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">D&iacute;a 42</td><td class="r">4.232</td><td class="r">7.943</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">Cierre</td><td class="r"><strong>11.177</strong></td><td class="r"><strong>9.503</strong></td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
+      <tr><td class="b">Semana 1</td><td class="r">246</td><td class="r">246</td><td class="r">677</td><td class="r">677</td><td class="r gd">470</td><td class="r gd">470</td><td class="r dn">-31%</td><td class="r up">+91%</td></tr>
+      <tr><td class="b">Semana 2</td><td class="r">511</td><td class="r">757</td><td class="r">836</td><td class="r">1.513</td><td class="r gd">612</td><td class="r gd">1.082</td><td class="r dn">-28%</td><td class="r up">+43%</td></tr>
+      <tr><td class="b">Semana 3</td><td class="r">326</td><td class="r">1.083</td><td class="r">1.081</td><td class="r">2.594</td><td class="r nt">201*</td><td class="r nt">1.283*</td><td class="r dn">-51%</td><td class="r up">+18%</td></tr>
+      <tr><td class="b" style="color:rgba(255,255,255,0.3);">Semana 4</td><td class="r">565</td><td class="r">1.648</td><td class="r">1.136</td><td class="r">3.730</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r">—</td><td class="r">—</td></tr>
+      <tr><td class="b" style="color:rgba(255,255,255,0.3);">Semana 5</td><td class="r">1.106</td><td class="r">2.754</td><td class="r">1.375</td><td class="r">5.105</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r">—</td><td class="r">—</td></tr>
+      <tr class="hl"><td class="b" style="color:rgba(255,255,255,0.3);">Semana 6</td><td class="r">1.478</td><td class="r">4.232</td><td class="r gd">2.838</td><td class="r">7.943</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r">—</td><td class="r">—</td></tr>
+      <tr class="hl"><td class="b" style="color:rgba(255,255,255,0.3);">Semana 7-8</td><td class="r gd">6.944</td><td class="r">11.177</td><td class="r">1.560</td><td class="r">9.503</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td><td class="r">—</td><td class="r">—</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:9px;color:rgba(255,255,255,0.3);">* Semana 3 de S5 incompleta (4 d&iacute;as)</p>
+  <div class="insight">
+    <h4>S5 est&aacute; entre S3 y S4 al mismo punto — y con menos inversi&oacute;n</h4>
+    <p>Al d&iacute;a 14, S5 lleva 1.082 vs S4 1.513 (-28%) y S3 757 (+43%). Pero S5 invierte $408K/d&iacute;a vs S4 $693K/d&iacute;a. <strong>Si normalizas por inversi&oacute;n, S5 es m&aacute;s eficiente que S4 en la semana 1 y 2.</strong></p>
+  </div>
+</div>
+
+<!-- NUEVOS vs RECURRENTES -->
+<div class="s">
+  <div class="st">Nuevos vs Recurrentes — Motor de crecimiento</div>
+  <div class="g2">
+    <div class="cd">
+      <h3>Composici&oacute;n de compradores S5</h3>
+      <div class="bar"><div class="bar-label">Nuevos (nunca compraron)</div><div class="bar-fill" style="width:51%;background:#3B82F6;">406 (51%)</div></div>
+      <div class="bar"><div class="bar-label">Recurrentes (de S3/S4)</div><div class="bar-fill" style="width:49%;background:#10B981;">385 (49%)</div></div>
+      <div style="margin-top:12px;">
+        <div class="bar"><div class="bar-label">De S4 directo</div><div class="bar-fill" style="width:44%;background:rgba(16,185,129,0.7);">349</div></div>
+        <div class="bar"><div class="bar-label">Reactivados S3</div><div class="bar-fill" style="width:5%;background:rgba(16,185,129,0.4);">36</div></div>
+        <div class="bar"><div class="bar-label">Leales (S3+S4+S5)</div><div class="bar-fill" style="width:15%;background:#FFD700;">121</div></div>
+      </div>
+    </div>
+    <div class="cd">
+      <h3>Revenue por tipo de comprador</h3>
+      <div style="text-align:center;margin:12px 0;">
+        <div style="display:inline-block;margin:0 20px;text-align:center;">
+          <div style="font-size:28px;font-weight:900;color:#3B82F6;">$9.005</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);">Ticket nuevos</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.3);">38% del revenue</div>
+        </div>
+        <div style="display:inline-block;margin:0 20px;text-align:center;">
+          <div style="font-size:28px;font-weight:900;color:#10B981;">$15.609</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);">Ticket recurrentes</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.3);">62% del revenue</div>
+        </div>
+      </div>
+      <div class="insight">
+        <h4>Los recurrentes gastan 1.7x m&aacute;s</h4>
+        <p>49% de los compradores (recurrentes) generan 62% del revenue. <strong>Cada recurrente vale $15.609 vs $9.005 de un nuevo.</strong> La comunidad WA es el activo m&aacute;s valioso.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPORTUNIDAD REACTIVACIÓN -->
+<div class="s">
+  <div class="st">Oportunidad: 13.517 compradores dormidos</div>
+  <div class="g2">
+    <div class="cd">
+      <h3>Pool de compradores hist&oacute;rico</h3>
+      <table>
+        <thead><tr><th>Segmento</th><th class="r">Compradores</th><th class="r">Revenue potencial</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Total hist&oacute;rico (S3+S4+S5)</td><td class="r">14.308</td><td class="r">—</td></tr>
+          <tr><td class="b" style="color:#10B981;">Ya compraron S5</td><td class="r">791</td><td class="r">$9,7M (actual)</td></tr>
+          <tr><td class="b" style="color:#EF4444;">Dormidos (no compraron S5)</td><td class="r">13.517</td><td class="r">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cd">
+      <h3>Escenarios de reactivaci&oacute;n</h3>
+      <table>
+        <thead><tr><th>Reactivaci&oacute;n</th><th class="r">Compradores</th><th class="r">Revenue extra</th></tr></thead>
+        <tbody>
+          <tr><td class="b">10% (conservador)</td><td class="r">1.351</td><td class="r up">+$10,2M</td></tr>
+          <tr><td class="b">20% (moderado)</td><td class="r">2.703</td><td class="r up">+$20,4M</td></tr>
+          <tr><td class="b gd">30% (agresivo)</td><td class="r gd">4.055</td><td class="r gd">+$30,6M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="opp">
+    <h4>Acci&oacute;n inmediata: campa&ntilde;a de reactivaci&oacute;n</h4>
+    <p><strong>13.517 personas ya compraron antes — ya confían, ya tienen la app, ya pagaron.</strong> Una campaña de email/WhatsApp con oferta exclusiva para ex-compradores puede generar entre $10M y $30M extra sin tocar el presupuesto de ads. Costo: $0. Solo necesitas los emails/teléfonos (que ya están en WooCommerce).</p>
+  </div>
+</div>
+
+<!-- EFICIENCIA POR SEMANA -->
+<div class="s">
+  <div class="st">Eficiencia publicitaria por semana — Referencia S4</div>
+  <table>
+    <thead><tr><th>Semana S4</th><th class="r">&Oacute;rdenes</th><th class="r">Revenue</th><th class="r">Inv. est.</th><th class="r">ROAS</th><th class="r">CPA/orden</th><th class="r">Observaci&oacute;n</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Semana 1</td><td class="r">677</td><td class="r">$5,6M</td><td class="r">$4,9M</td><td class="r dn">1,1x</td><td class="r">$7.170</td><td class="r" style="font-size:9px;">Arranque fr&iacute;o</td></tr>
+      <tr><td class="b">Semana 2</td><td class="r">836</td><td class="r">$6,4M</td><td class="r">$4,9M</td><td class="r nt">1,3x</td><td class="r">$5.806</td><td class="r" style="font-size:9px;">Calentando</td></tr>
+      <tr><td class="b">Semana 3</td><td class="r">1.081</td><td class="r">$8,4M</td><td class="r">$4,9M</td><td class="r nt">1,7x</td><td class="r">$4.490</td><td class="r" style="font-size:9px;">Estabilizando</td></tr>
+      <tr><td class="b">Semana 4</td><td class="r">1.136</td><td class="r">$8,4M</td><td class="r">$4,9M</td><td class="r nt">1,7x</td><td class="r">$4.273</td><td class="r" style="font-size:9px;">Meseta</td></tr>
+      <tr><td class="b">Semana 5</td><td class="r">1.375</td><td class="r">$10,1M</td><td class="r">$4,9M</td><td class="r up">2,1x</td><td class="r">$3.530</td><td class="r" style="font-size:9px;">Acelerando</td></tr>
+      <tr class="hl"><td class="b gd">Semana 6</td><td class="r gd">2.838</td><td class="r gd">$22,0M</td><td class="r">$4,9M</td><td class="r gd">4,5x</td><td class="r gd">$1.710</td><td class="r gd" style="font-size:9px;">EXPLOSI&Oacute;N pre-sorteo</td></tr>
+      <tr class="hl"><td class="b gd">Semana 7</td><td class="r gd">1.560</td><td class="r gd">$11,7M</td><td class="r">$2,8M</td><td class="r gd">4,2x</td><td class="r gd">$1.778</td><td class="r gd" style="font-size:9px;">Cierre fuerte</td></tr>
     </tbody>
   </table>
   <div class="insight">
-    <h4>S5 al d&iacute;a 17 est&aacute; 38% abajo del S4 pero 41% arriba del S3</h4>
-    <p>El S4 arrancó más fuerte pero el S3 tenía un arranque más lento y terminó con más órdenes (11.177 vs 9.503). <strong>Lo que define el sorteo son las últimas 2 semanas: S3 hizo 6.944 órdenes (62%) en las últimas 3 semanas. S4 hizo 4.398 (46%) en las últimas 2.</strong> Si S5 sigue el patrón del S3, puede cerrar entre 7.000 y 10.000 órdenes.</p>
+    <h4>El ROAS pasa de 1.1x a 4.5x en la &uacute;ltima semana pre-sorteo</h4>
+    <p>Las primeras 2 semanas el ROAS es ~1.2x (pierde plata). Pero la sem 6 hace 4.5x — <strong>es la semana donde $1 invertido retorna $4.5.</strong> Esto pasa porque la urgencia dispara las conversiones org&aacute;nicas y la frecuencia de recompra. <strong>Invertir m&aacute;s las primeras semanas es sembrar; la cosecha es la &uacute;ltima semana.</strong></p>
   </div>
 </div>
 
-<!-- SEMANA A SEMANA -->
+<!-- MODELO PARA $100-120M -->
 <div class="s">
-  <div class="st">Semana a semana — Comparativa justa</div>
-  <table>
-    <thead><tr><th>Semana</th><th class="r">S3 (abr)</th><th class="r">% del total</th><th class="r">S4 (may)</th><th class="r">% del total</th><th class="r">S5 (jul)</th><th class="r">% del total*</th></tr></thead>
+  <div class="st">Modelo: c&oacute;mo llegar a $100-120M</div>
+  <div class="alert">
+    <h4>Situaci&oacute;n actual: a este ritmo S5 cierra en ~$31M</h4>
+    <p>75 &oacute;rdenes/d&iacute;a × 39 d&iacute;as restantes × $7.541 ticket = ~$22M + $9.7M actuales = <strong>~$31M</strong>. Lejos de la meta.</p>
+  </div>
+
+  <table style="margin-top:12px;">
+    <thead><tr><th>Escenario</th><th class="r">Inv. diaria</th><th class="r">&Oacute;rd/d&iacute;a</th><th class="r">Revenue cierre</th><th class="r">Inv. total restante</th><th class="r">ROAS est.</th></tr></thead>
     <tbody>
-      <tr><td class="b">Semana 1</td><td class="r">246</td><td class="r" style="color:rgba(255,255,255,0.3);">2,2%</td><td class="r">677</td><td class="r" style="color:rgba(255,255,255,0.3);">7,1%</td><td class="r" style="color:#10B981;">470</td><td class="r" style="color:#10B981;">36,6%</td></tr>
-      <tr><td class="b">Semana 2</td><td class="r">511</td><td class="r" style="color:rgba(255,255,255,0.3);">4,6%</td><td class="r">836</td><td class="r" style="color:rgba(255,255,255,0.3);">8,8%</td><td class="r" style="color:#10B981;">612</td><td class="r" style="color:#10B981;">47,7%</td></tr>
-      <tr><td class="b">Semana 3</td><td class="r">326</td><td class="r" style="color:rgba(255,255,255,0.3);">2,9%</td><td class="r">1.081</td><td class="r" style="color:rgba(255,255,255,0.3);">11,4%</td><td class="r" style="color:#F59E0B;">201</td><td class="r" style="color:#F59E0B;">15,7%</td></tr>
-      <tr><td class="b">Semana 4</td><td class="r">565</td><td class="r" style="color:rgba(255,255,255,0.3);">5,1%</td><td class="r">1.136</td><td class="r" style="color:rgba(255,255,255,0.3);">12,0%</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">Semana 5</td><td class="r">1.106</td><td class="r" style="color:rgba(255,255,255,0.3);">9,9%</td><td class="r">1.375</td><td class="r" style="color:rgba(255,255,255,0.3);">14,5%</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">Semana 6</td><td class="r">1.478</td><td class="r" style="color:rgba(255,255,255,0.3);">13,2%</td><td class="r">2.838</td><td class="r" style="color:rgba(255,255,255,0.3);">29,9%</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">Semana 7</td><td class="r">2.311</td><td class="r" style="color:rgba(255,255,255,0.3);">20,7%</td><td class="r">1.560</td><td class="r" style="color:rgba(255,255,255,0.3);">16,4%</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
-      <tr><td class="b">Semana 8</td><td class="r" style="color:#FFD700;">4.633</td><td class="r" style="color:#FFD700;">41,5%</td><td class="r">—</td><td class="r">—</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td><td class="r">—</td></tr>
+      <tr><td class="b dn">Actual (no cambiar nada)</td><td class="r">$408K</td><td class="r">75</td><td class="r">~$31M</td><td class="r">$15,9M</td><td class="r">1,3x</td></tr>
+      <tr><td class="b nt">Subir a nivel S4</td><td class="r">$700K</td><td class="r">~130</td><td class="r">~$48M</td><td class="r">$27,3M</td><td class="r">~1,8x</td></tr>
+      <tr><td class="b">Subir a nivel S3</td><td class="r">$950K</td><td class="r">~170</td><td class="r">~$60M</td><td class="r">$37,1M</td><td class="r">~1,6x</td></tr>
+      <tr class="hl"><td class="b gd">Agresivo + reactivaci&oacute;n</td><td class="r gd">$1,2M</td><td class="r gd">~220</td><td class="r gd">~$75M</td><td class="r">$46,8M</td><td class="r">~1,6x</td></tr>
+      <tr class="hl"><td class="b gd">Agresivo + reactivaci&oacute;n + aceleraci&oacute;n</td><td class="r gd">$1,5M</td><td class="r gd">~300</td><td class="r gd">~$100M+</td><td class="r">$58,5M</td><td class="r">~1,7x*</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px;">* El ROAS sube las &uacute;ltimas 2 semanas por aceleraci&oacute;n org&aacute;nica. Históricamente 3-4.5x vs 1.1-1.7x del inicio.</p>
+
+  <div class="g2" style="margin-top:12px;">
+    <div class="opp">
+      <h4>Plan para $100M+ (recomendaci&oacute;n)</h4>
+      <p><strong>Fase 1 (ahora → 5 julio):</strong> Subir inversión a $1-1.2M/día. Foco en adquisición de nuevos + reactivación de los 13.517 dormidos vía email/WA con oferta exclusiva.<br><br>
+      <strong>Fase 2 (5-12 julio):</strong> Subir a $1.5M/día. Creatividades de urgencia ("quedan X días"). Sorteos flash diarios en la comunidad WA para mantener engagement.<br><br>
+      <strong>Fase 3 (12-19 julio):</strong> Mantener $1.5M o subir. La aceleración orgánica hace el trabajo pesado. ROAS históricamente sube a 3-4.5x esta semana. Es la cosecha.</p>
+    </div>
+    <div class="cd">
+      <h3>Palancas disponibles</h3>
+      <table>
+        <thead><tr><th>Palanca</th><th class="r">Impacto est.</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Subir inv. ads a $1.2M/d&iacute;a</td><td class="r up">+$25-35M</td></tr>
+          <tr><td class="b">Reactivar 20% dormidos (email/WA)</td><td class="r up">+$20M</td></tr>
+          <tr><td class="b">Ofertas flash solo WhatsApp</td><td class="r up">+$5-10M</td></tr>
+          <tr><td class="b">Aumentar packs (8 y 20 st.)</td><td class="r up">+$3-5M (ticket)</td></tr>
+          <tr><td class="b">Aceleraci&oacute;n org&aacute;nica pre-sorteo</td><td class="r up">+$15-25M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FUENTES EVOLUCIÓN -->
+<div class="s">
+  <div class="st">Evoluci&oacute;n fuentes de tr&aacute;fico — La comunidad se come a los ads</div>
+  <table>
+    <thead><tr><th>Fuente</th><th class="r">S3 (%)</th><th class="r">S4 (%)</th><th class="r">S5 (%)</th><th class="r">Tendencia</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Directo (WA/comunidad)</td><td class="r">18%</td><td class="r">35%</td><td class="r gd">54%</td><td class="r up">&#9650;&#9650;&#9650;</td></tr>
+      <tr><td class="b">Instagram</td><td class="r">37%</td><td class="r">32%</td><td class="r">20%</td><td class="r dn">&#9660;</td></tr>
+      <tr><td class="b">Facebook</td><td class="r">27%</td><td class="r">15%</td><td class="r">11%</td><td class="r dn">&#9660;&#9660;</td></tr>
+      <tr><td class="b">Google</td><td class="r">11%</td><td class="r">14%</td><td class="r">12%</td><td class="r nt">&#9654;</td></tr>
     </tbody>
   </table>
   <div class="insight">
-    <h4>Patr&oacute;n claro: la &uacute;ltima semana concentra entre 30-42% del total</h4>
-    <p><strong>S3 semana 8: 41,5% del total.</strong> S4 semana 6: 29,9%. La aceleración pre-sorteo es real y consistente. S5 está en semana 3 — falta mucho sorteo por delante.</p>
+    <h4>54% del revenue viene sin pagar un peso en ads</h4>
+    <p>El tr&aacute;fico directo (comunidad WA, boca a boca, link directo) pas&oacute; de 18% en S3 a 54% en S5. <strong>La comunidad de 6.000+ miembros es el canal m&aacute;s rentable.</strong> Invertir en crecimiento de la comunidad tiene ROAS infinito comparado con ads.</p>
   </div>
-</div>
-
-<!-- RETENCIÓN -->
-<div class="s">
-  <div class="st">Retenci&oacute;n entre sorteos — &iquest;Cu&aacute;ntos repiten?</div>
-  <div class="g4">
-    <div class="cd" style="text-align:center;"><h3>S3 &rarr; S4</h3><div style="font-size:32px;font-weight:900;color:#F59E0B;">22%</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">1.330 de 6.030 compradores de S4 ven&iacute;an de S3</p></div>
-    <div class="cd" style="text-align:center;"><h3>S4 &rarr; S5</h3><div style="font-size:32px;font-weight:900;color:#10B981;">44%</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">349 de 791 compradores de S5 ven&iacute;an de S4</p></div>
-    <div class="cd" style="text-align:center;"><h3>Los 3 sorteos</h3><div style="font-size:32px;font-weight:900;color:#FFD700;">121</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">compraron en S3, S4 y S5. Super fans.</p></div>
-    <div class="cd" style="text-align:center;"><h3>Recurrencia S5</h3><div style="font-size:32px;font-weight:900;color:#E53935;">22%</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">177 compraron 2+ veces dentro de S5. 43 con 5+ compras.</p></div>
-  </div>
-  <div class="insight">
-    <h4>La comunidad WhatsApp est&aacute; funcionando</h4>
-    <p>La retención S4→S5 es <strong>44% — el doble que S3→S4 (22%)</strong>. Y el tráfico directo (sin UTM) pasó de 18% en S3 a 54% en S5. Los compradores ya no vienen por ads — vienen porque están en la comunidad.</p>
-  </div>
-</div>
-
-<!-- FUENTES DE TRÁFICO EVOLUCIÓN -->
-<div class="s">
-  <div class="st">Evoluci&oacute;n de fuentes de tr&aacute;fico entre sorteos</div>
-  <table>
-    <thead><tr><th>Fuente</th><th class="r">S3</th><th class="r">%</th><th class="r">S4</th><th class="r">%</th><th class="r">S5</th><th class="r">%</th><th class="r">Tendencia</th></tr></thead>
-    <tbody>
-      <tr><td class="b">Directo (WA/comunidad)</td><td class="r">2.033</td><td class="r">18%</td><td class="r">3.324</td><td class="r">35%</td><td class="r">687</td><td class="r" style="color:#FFD700;">54%</td><td class="r up">&#9650; creciendo fuerte</td></tr>
-      <tr><td class="b">Instagram</td><td class="r">4.124</td><td class="r">37%</td><td class="r">2.998</td><td class="r">32%</td><td class="r">252</td><td class="r">20%</td><td class="r dn">&#9660; bajando</td></tr>
-      <tr><td class="b">Facebook</td><td class="r">3.017</td><td class="r">27%</td><td class="r">1.432</td><td class="r">15%</td><td class="r">146</td><td class="r">11%</td><td class="r dn">&#9660; bajando</td></tr>
-      <tr><td class="b">Google</td><td class="r">1.250</td><td class="r">11%</td><td class="r">1.283</td><td class="r">14%</td><td class="r">159</td><td class="r">12%</td><td class="r nt">&#9654; estable</td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- PERFIL COMPRADOR -->
 <div class="s">
-  <div class="st">Perfil del comprador — Sorteo 5</div>
-  <div class="g3">
-    <div class="cd" style="text-align:center;"><h3>Dispositivo</h3><div style="font-size:40px;font-weight:900;color:#E53935;">96%</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">m&oacute;vil &mdash; solo 4% desktop</p></div>
-    <div class="cd" style="text-align:center;"><h3>Hora peak</h3><div style="font-size:40px;font-weight:900;color:#FFD700;">19-23h</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">42% de las ventas en ese horario</p></div>
-    <div class="cd" style="text-align:center;"><h3>D&iacute;a peak</h3><div style="font-size:40px;font-weight:900;color:#10B981;">S&aacute;b</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">24% s&aacute;bado, 19% viernes</p></div>
-  </div>
-  <div class="g2" style="margin-top:12px;">
-    <div class="cd">
-      <h3>Medio de pago</h3>
-      <div class="bar"><div class="bar-label">Webpay</div><div class="bar-fill" style="width:63%;background:#2563eb;">63%</div></div>
-      <div class="bar"><div class="bar-label">Khipu</div><div class="bar-fill" style="width:14%;background:#10B981;">14%</div></div>
-      <div class="bar"><div class="bar-label">Mach</div><div class="bar-fill" style="width:13%;background:#7C3AED;">13%</div></div>
-      <div class="bar"><div class="bar-label">Banco</div><div class="bar-fill" style="width:8%;background:#F59E0B;">8%</div></div>
-    </div>
-    <div class="cd">
-      <h3>Mix de stickers (volumen)</h3>
-      <div class="bar"><div class="bar-label">2 stickers</div><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,#E53935,#FFD700);">52%</div></div>
-      <div class="bar"><div class="bar-label">8 stickers</div><div class="bar-fill" style="width:39%;background:linear-gradient(90deg,#E53935,#FFD700);">39%</div></div>
-      <div class="bar"><div class="bar-label">20 stickers</div><div class="bar-fill" style="width:13%;background:linear-gradient(90deg,#E53935,#FFD700);">14%</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- FACEBOOK ADS + ROAS -->
-<div class="s">
-  <div class="st">Facebook Ads — Performance + ROAS</div>
-  <div class="kg" style="grid-template-columns:repeat(5,1fr);">
-    <div class="k"><div class="kv">$25,6M</div><div class="kl">Inversi&oacute;n</div></div>
-    <div class="k"><div class="kv">1,6M</div><div class="kl">Alcance</div></div>
-    <div class="k"><div class="kv">7,1M</div><div class="kl">Impresiones</div></div>
-    <div class="k"><div class="kv">$76</div><div class="kl">CPC</div></div>
-    <div class="k"><div class="kv">4,72%</div><div class="kl">CTR</div></div>
-  </div>
-  <div class="g3">
-    <div class="cd" style="text-align:center;"><h3>Revenue S4+S5</h3><div style="font-size:28px;font-weight:900;color:#10B981;">$82,4M</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">S4: $72,7M + S5: $9,7M</p></div>
-    <div class="cd" style="text-align:center;"><h3>Inversi&oacute;n ads total</h3><div style="font-size:28px;font-weight:900;color:#E53935;">$25,6M</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">Facebook Ads mayo-junio</p></div>
-    <div class="cd" style="text-align:center;"><h3>ROAS</h3><div style="font-size:28px;font-weight:900;color:#FFD700;">3.2x</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">Por cada $1 invertido, vuelven $3.2</p></div>
-  </div>
-</div>
-
-<!-- PROYECCIÓN -->
-<div class="s">
-  <div class="st">Proyecci&oacute;n Sorteo 5 al cierre (19 julio)</div>
-  <div class="g3">
-    <div class="cd" style="text-align:center;border-top:3px solid #EF4444;"><h3 style="color:#EF4444;">Conservador</h3><p style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:6px;">Mantiene ritmo actual (75 ord/d&iacute;a)</p><div style="font-size:28px;font-weight:900;">~4.100</div><p style="font-size:9px;color:rgba(255,255,255,0.3);">&oacute;rdenes &middot; ~$31M revenue</p></div>
-    <div class="cd" style="text-align:center;border-top:3px solid #F59E0B;"><h3 style="color:#F59E0B;">Moderado</h3><p style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:6px;">Acelera 3x &uacute;ltimas 2 sem (como S4)</p><div style="font-size:28px;font-weight:900;">~6.800</div><p style="font-size:9px;color:rgba(255,255,255,0.3);">&oacute;rdenes &middot; ~$51M revenue</p></div>
-    <div class="cd" style="text-align:center;border-top:3px solid #10B981;"><h3 style="color:#10B981;">Optimista</h3><p style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:6px;">Acelera 6x &uacute;ltimas 2 sem (como S3)</p><div style="font-size:28px;font-weight:900;">~9.500</div><p style="font-size:9px;color:rgba(255,255,255,0.3);">&oacute;rdenes &middot; ~$72M revenue</p></div>
+  <div class="st">Perfil del comprador S5</div>
+  <div class="g4">
+    <div class="cd" style="text-align:center;"><h3>Dispositivo</h3><div style="font-size:36px;font-weight:900;color:#E53935;">96%</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">m&oacute;vil</p></div>
+    <div class="cd" style="text-align:center;"><h3>Hora peak</h3><div style="font-size:36px;font-weight:900;color:#FFD700;">19-23h</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">42% ventas</p></div>
+    <div class="cd" style="text-align:center;"><h3>D&iacute;a peak</h3><div style="font-size:36px;font-weight:900;color:#10B981;">Vie-S&aacute;b</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">43% ventas</p></div>
+    <div class="cd" style="text-align:center;"><h3>Compras/persona</h3><div style="font-size:36px;font-weight:900;color:#818CF8;">1,6</div><p style="font-size:9px;color:rgba(255,255,255,0.4);">recurrentes 22%</p></div>
   </div>
 </div>
 
 <!-- COMPARATIVA GENERAL -->
 <div class="s">
-  <div class="st">Comparativa general — Los 3 sorteos</div>
+  <div class="st">Comparativa general — 3 sorteos</div>
   <table>
-    <thead><tr><th>M&eacute;trica</th><th class="r">S3 (abr)</th><th class="r">S4 (may)</th><th class="r">S5 (jul) <span class="badge badge-active">activo</span></th></tr></thead>
+    <thead><tr><th>M&eacute;trica</th><th class="r">S3 (abr)</th><th class="r">S4 (may)</th><th class="r">S5 (jul)</th></tr></thead>
     <tbody>
       <tr><td class="b">Duraci&oacute;n</td><td class="r">57 d&iacute;as</td><td class="r">46 d&iacute;as</td><td class="r">18/~55 d&iacute;as</td></tr>
-      <tr><td class="b">&Oacute;rdenes totales</td><td class="r">11.177</td><td class="r">9.503</td><td class="r" style="color:#10B981;">1.283</td></tr>
-      <tr><td class="b">Revenue</td><td class="r">$111,4M</td><td class="r">$72,7M</td><td class="r" style="color:#10B981;">$9,7M</td></tr>
+      <tr><td class="b">&Oacute;rdenes</td><td class="r">11.177</td><td class="r">9.503</td><td class="r gd">1.283</td></tr>
+      <tr><td class="b">Revenue</td><td class="r">$111,4M</td><td class="r">$72,7M</td><td class="r gd">$9,7M</td></tr>
+      <tr><td class="b">Inversi&oacute;n total</td><td class="r">$53,4M</td><td class="r">$31,9M</td><td class="r">$7,3M</td></tr>
+      <tr><td class="b">ROAS</td><td class="r">2,1x</td><td class="r up">2,3x</td><td class="r nt">1,3x*</td></tr>
+      <tr><td class="b">CPA/orden</td><td class="r">$4.779</td><td class="r up">$3.357</td><td class="r nt">$5.719*</td></tr>
       <tr><td class="b">Ticket promedio</td><td class="r">$9.963</td><td class="r">$7.649</td><td class="r">$7.541</td></tr>
       <tr><td class="b">Compradores &uacute;nicos</td><td class="r">9.202</td><td class="r">6.030</td><td class="r">791</td></tr>
-      <tr><td class="b">Recurrencia interna</td><td class="r">11%</td><td class="r">20%</td><td class="r" style="color:#10B981;">22%</td></tr>
-      <tr><td class="b">Compras/persona</td><td class="r">1,2</td><td class="r">1,6</td><td class="r" style="color:#10B981;">1,6</td></tr>
-      <tr><td class="b">Aceleraci&oacute;n &uacute;lt 2 sem</td><td class="r" style="color:#FFD700;">6,1x</td><td class="r">2,9x</td><td class="r" style="color:rgba(255,255,255,0.3);">—</td></tr>
-      <tr><td class="b">% tr&aacute;fico directo</td><td class="r">18%</td><td class="r">35%</td><td class="r" style="color:#FFD700;">54%</td></tr>
+      <tr><td class="b">Recurrencia</td><td class="r">11%</td><td class="r">20%</td><td class="r up">22%</td></tr>
+      <tr><td class="b">% directo</td><td class="r">18%</td><td class="r">35%</td><td class="r gd">54%</td></tr>
+      <tr><td class="b">Aceleraci&oacute;n &uacute;lt 2 sem</td><td class="r gd">6,1x</td><td class="r">2,9x</td><td class="r" style="color:rgba(255,255,255,0.2);">—</td></tr>
     </tbody>
   </table>
+  <p style="font-size:9px;color:rgba(255,255,255,0.3);">* S5 parcial — el CPA y ROAS mejorar&aacute;n con la aceleraci&oacute;n pre-sorteo</p>
 </div>
 
-<div class="foot">Dashboard generado por Muller & P&eacute;rez &middot; Data: WooCommerce (11.177 + 9.503 + 1.283 &oacute;rdenes) + Reportei (Facebook Ads)</div>
+<div class="foot">Dashboard BI &middot; Muller & P&eacute;rez &middot; 21.963 &oacute;rdenes analizadas &middot; WooCommerce + Reportei &middot; Actualizado 10 junio 2026</div>
 
 </div>
 </body>
