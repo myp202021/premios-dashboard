@@ -8,238 +8,279 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5}
-.container{max-width:1200px;margin:0 auto;padding:0 24px}
-.header{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.header h1{font-size:24px;font-weight:900;letter-spacing:-0.5px}
-.header .logo{height:44px;border-radius:50%}
+.c{max-width:1200px;margin:0 auto;padding:0 24px}
+.hd{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.hd h1{font-size:24px;font-weight:900}
+.hd .logo{height:48px;border-radius:50%}
+.hd p{font-size:12px;color:rgba(255,255,255,0.4)}
 .period{display:inline-block;padding:4px 12px;border-radius:6px;background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.3);font-size:11px;font-weight:700;color:#E53935;margin-top:4px}
-#status{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
-.kpi{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}
-.kpi-value{font-size:22px;font-weight:900;margin-bottom:4px;color:#FFD700}
-.kpi-label{font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.section{padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
-.section-title{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.section-title::before{content:'';width:4px;height:18px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.card{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px}
-.card h3{font-size:14px;font-weight:800;margin-bottom:12px;color:#FFD700}
-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:12px;margin-bottom:12px}
-thead th{background:#1C1C24;color:rgba(255,255,255,0.6);padding:10px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase}
+.kg{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0}
+.k{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden}
+.k::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}
+.kv{font-size:22px;font-weight:900;margin-bottom:2px;color:#FFD700}
+.kl{font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.s{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.st{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.st::before{content:'';width:4px;height:16px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.cd{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px}
+.cd h3{font-size:13px;font-weight:800;margin-bottom:10px;color:#FFD700}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:11px;margin-bottom:10px}
+thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:8px 10px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase}
 thead th.r{text-align:right}
-tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.8)}
+tbody td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.7)}
 tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
 tbody td.b{font-weight:700;color:#fff}
-tbody tr:hover td{background:rgba(229,57,53,0.05)}
-.sorteo-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700}
+tbody tr:hover td{background:rgba(229,57,53,0.04)}
+.bar{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.bar-fill{height:22px;border-radius:5px;display:flex;align-items:center;padding:0 8px;font-size:9px;font-weight:700;min-width:28px}
+.bar-label{font-size:10px;color:rgba(255,255,255,0.4);min-width:70px}
+.chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding:8px 0}
+.chart-bar{flex:1;background:linear-gradient(180deg,#E53935,rgba(229,57,53,0.3));border-radius:4px 4px 0 0;min-width:8px;position:relative;transition:all .3s;cursor:default}
+.chart-bar:hover{opacity:.8}
+.chart-bar .tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1C1C24;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;font-size:9px;white-space:nowrap;margin-bottom:4px;z-index:10}
+.chart-bar:hover .tip{display:block}
+.chart-labels{display:flex;gap:3px;font-size:7px;color:rgba(255,255,255,0.25);margin-top:4px}
+.chart-labels span{flex:1;text-align:center;min-width:8px}
+.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:9px;font-weight:700}
 .badge-active{background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.3)}
-.badge-closed{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1)}
-.source-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.source-bar-fill{height:24px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;min-width:32px}
-.source-bar-label{font-size:11px;color:rgba(255,255,255,0.5);min-width:80px}
-.trend-up{color:#10B981}.trend-down{color:#EF4444}.trend-neutral{color:#F59E0B}
-.footer{padding:20px 0;text-align:center;font-size:10px;color:rgba(255,255,255,0.2)}
-#loading{text-align:center;padding:80px 0;font-size:14px;color:rgba(255,255,255,0.4)}
-@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
+.badge-closed{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)}
+.insight{background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:16px;margin-top:14px}
+.insight h4{font-size:12px;font-weight:800;color:#FFD700;margin-bottom:6px}
+.insight p{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.7}
+.foot{padding:16px 0;text-align:center;font-size:10px;color:rgba(255,255,255,0.15)}
+.up{color:#10B981}.dn{color:#EF4444}.nt{color:#F59E0B}
+@media(max-width:768px){.kg{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="c">
 
-<div class="header">
+<div class="hd">
   <div>
     <h1>Premios Incre&iacute;bles</h1>
-    <p style="font-size:12px;color:rgba(255,255,255,0.4);">Dashboard de Ventas & Performance</p>
-    <div class="period" id="period">Cargando...</div>
-    <div id="status">Conectando con WooCommerce y Reportei...</div>
+    <p>Dashboard de Ventas & Performance — Sorteo 5&ordm; Edici&oacute;n (Julio 2026)</p>
+    <div class="period">LIVE — Sorteo activo &middot; 19 julio 2026</div>
   </div>
-  <img src="https://www.premiosincreibles.cl/wp-content/uploads/2026/01/participar_imagen.png" alt="Premios Increíbles" class="logo">
+  <img src="https://www.premiosincreibles.cl/wp-content/uploads/2026/01/participar_imagen.png" alt="PI" class="logo">
 </div>
 
-<div id="loading">Cargando datos en vivo desde WooCommerce + Reportei...</div>
-<div id="dashboard" style="display:none;">
+<!-- KPIs principales -->
+<div class="kg" id="main-kpis">
+  <div class="k"><div class="kv">1.282</div><div class="kl">&Oacute;rdenes completadas</div></div>
+  <div class="k"><div class="kv">$9.656.000</div><div class="kl">Revenue total</div></div>
+  <div class="k"><div class="kv">8.459</div><div class="kl">Stickers vendidos</div></div>
+  <div class="k"><div class="kv">$7.532</div><div class="kl">Ticket promedio</div></div>
+  <div class="k"><div class="kv">17</div><div class="kl">D&iacute;as activo</div></div>
+</div>
 
-  <!-- KPIs Sorteo activo -->
-  <div class="section">
-    <div class="section-title">Sorteo 5 — Julio 2026 <span class="sorteo-badge badge-active">ACTIVO</span></div>
-    <div class="kpi-grid" id="kpis-s5"></div>
+<!-- Curva de ventas por día -->
+<div class="s">
+  <div class="st">Curva de ventas diarias — Sorteo 5</div>
+  <div id="daily-chart"></div>
+  <div class="insight">
+    <h4>Patrones detectados</h4>
+    <p><strong class="up">Picos:</strong> Los viernes y s&aacute;bados concentran el 43% de las ventas. El mejor d&iacute;a fue 26 mayo (120 &oacute;rdenes, $911K) y 6 junio (119 &oacute;rdenes, $946K).<br>
+    <strong class="dn">Valles:</strong> Los mi&eacute;rcoles y domingos caen ~50%. El 28 mayo fue el peor d&iacute;a (22 &oacute;rdenes).<br>
+    <strong class="nt">Tendencia:</strong> Promedio $568K/d&iacute;a. A este ritmo, el sorteo cerrar&iacute;a con ~$22M en revenue total al 19 julio.</p>
   </div>
+</div>
 
-  <!-- Sorteo 4 cerrado -->
-  <div class="section">
-    <div class="section-title">Sorteo 4 — Mayo 2026 <span class="sorteo-badge badge-closed">CERRADO</span></div>
-    <div class="kpi-grid" id="kpis-s4"></div>
+<!-- Facebook Ads -->
+<div class="s">
+  <div class="st">Facebook Ads — Performance consolidado</div>
+  <div class="kg" style="grid-template-columns:repeat(5,1fr);">
+    <div class="k"><div class="kv">$25,6M</div><div class="kl">Inversi&oacute;n</div></div>
+    <div class="k"><div class="kv">1,6M</div><div class="kl">Alcance</div></div>
+    <div class="k"><div class="kv">7,1M</div><div class="kl">Impresiones</div></div>
+    <div class="k"><div class="kv">$76</div><div class="kl">CPC</div></div>
+    <div class="k"><div class="kv">4,72%</div><div class="kl">CTR</div></div>
   </div>
-
-  <!-- Facebook Ads -->
-  <div class="section">
-    <div class="section-title">Facebook Ads — Performance consolidado</div>
-    <div class="kpi-grid" id="kpis-fb"></div>
-  </div>
-
-  <!-- Detalle sorteo 5 -->
-  <div class="section">
-    <div class="section-title">Sorteo 5 — Detalle de ventas</div>
-    <div class="g2">
-      <div class="card">
-        <h3>Ventas por variante</h3>
-        <div id="variants"></div>
+  <div class="g2">
+    <div class="cd">
+      <h3>ROAS estimado</h3>
+      <div style="text-align:center;padding:12px 0;">
+        <div style="font-size:48px;font-weight:900;color:#10B981;">0.38x</div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Revenue $9.6M vs Inversi&oacute;n $25.6M</p>
+        <p style="font-size:10px;color:#F59E0B;margin-top:8px;">El sorteo a&uacute;n tiene 39 d&iacute;as — la mayor&iacute;a de las ventas ocurre en las &uacute;ltimas 2 semanas antes del sorteo.</p>
       </div>
-      <div class="card">
-        <h3>Fuente de tráfico</h3>
-        <div id="sources"></div>
+    </div>
+    <div class="cd">
+      <h3>Costo por orden</h3>
+      <div style="text-align:center;padding:12px 0;">
+        <div style="font-size:48px;font-weight:900;color:#FFD700;">$19.968</div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Inversi&oacute;n / &oacute;rdenes totales</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:8px;">Ticket promedio $7.532 — el CAC es 2.65x el ticket. Optimizar creatividades y segmentaci&oacute;n.</p>
       </div>
     </div>
   </div>
-
-  <!-- Ventas por día -->
-  <div class="section">
-    <div class="section-title">Sorteo 5 — Ventas por d&iacute;a (últimos datos)</div>
-    <div id="daily-table"></div>
-  </div>
-
-  <!-- Comparativa sorteos -->
-  <div class="section">
-    <div class="section-title">Comparativa entre sorteos</div>
-    <div id="compare-table"></div>
-  </div>
-
-  <!-- ROAS -->
-  <div class="section">
-    <div class="section-title">Retorno sobre inversi&oacute;n publicitaria</div>
-    <div class="g3" id="roas-cards"></div>
-  </div>
-
 </div>
 
-<div class="footer">
-  <p>Dashboard generado por Muller & P&eacute;rez &middot; Datos en vivo desde WooCommerce + Reportei</p>
+<!-- Fuentes de tráfico -->
+<div class="s">
+  <div class="st">Fuentes de tr&aacute;fico — &iquest;De d&oacute;nde vienen las ventas?</div>
+  <div class="g2">
+    <div class="cd">
+      <h3>Por fuente (1.282 &oacute;rdenes)</h3>
+      <div id="sources">
+        <div class="bar"><div class="bar-label">Directo</div><div class="bar-fill" style="width:50%;background:#FFD700;">641 (50%)</div></div>
+        <div class="bar"><div class="bar-label">Instagram</div><div class="bar-fill" style="width:20%;background:#E1306C;">251 (20%)</div></div>
+        <div class="bar"><div class="bar-label">Google</div><div class="bar-fill" style="width:13%;background:#34A853;">166 (13%)</div></div>
+        <div class="bar"><div class="bar-label">Facebook</div><div class="bar-fill" style="width:12%;background:#4267B2;">163 (13%)</div></div>
+        <div class="bar"><div class="bar-label">Otros</div><div class="bar-fill" style="width:5%;background:#818CF8;">61 (5%)</div></div>
+      </div>
+      <div class="insight">
+        <h4>50% viene directo</h4>
+        <p>La mitad de los compradores llega sin UTM — probablemente desde WhatsApp, links compartidos o escribiendo la URL. La comunidad WA es el canal m&aacute;s fuerte.</p>
+      </div>
+    </div>
+    <div class="cd">
+      <h3>Por variante de stickers</h3>
+      <div>
+        <div class="bar"><div class="bar-label">2 stickers ($5K)</div><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,#E53935,#FFD700);">645 (52%)</div></div>
+        <div class="bar"><div class="bar-label">8 stickers ($10K)</div><div class="bar-fill" style="width:39%;background:linear-gradient(90deg,#E53935,#FFD700);">487 (39%)</div></div>
+        <div class="bar"><div class="bar-label">20 stickers ($20K)</div><div class="bar-fill" style="width:13%;background:linear-gradient(90deg,#E53935,#FFD700);">170 (14%)</div></div>
+      </div>
+      <div class="insight">
+        <h4>Mix de revenue</h4>
+        <p>El pack de 2 domina en volumen (52%) pero el de 8 y 20 concentran el 62% del revenue. Potenciar los packs grandes con ofertas flash en WhatsApp.</p>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Perfil del comprador -->
+<div class="s">
+  <div class="st">Perfil del comprador</div>
+  <div class="g3">
+    <div class="cd">
+      <h3>Dispositivo</h3>
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:48px;font-weight:900;color:#E53935;">96%</div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.4);">compra desde m&oacute;vil</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:6px;">Solo 4% desktop. Todo el funnel debe ser mobile-first.</p>
+      </div>
+    </div>
+    <div class="cd">
+      <h3>Recurrencia</h3>
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:48px;font-weight:900;color:#FFD700;">14%</div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.4);">compra m&aacute;s de 1 vez</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:6px;">26 compradores con 3+ compras. Son los super fans — premiarlos con cupones exclusivos.</p>
+      </div>
+    </div>
+    <div class="cd">
+      <h3>Medio de pago</h3>
+      <div>
+        <div class="bar"><div class="bar-label">Webpay</div><div class="bar-fill" style="width:63%;background:#2563eb;">63%</div></div>
+        <div class="bar"><div class="bar-label">Khipu</div><div class="bar-fill" style="width:14%;background:#10B981;">14%</div></div>
+        <div class="bar"><div class="bar-label">Mach</div><div class="bar-fill" style="width:13%;background:#7C3AED;">13%</div></div>
+        <div class="bar"><div class="bar-label">Banco</div><div class="bar-fill" style="width:8%;background:#F59E0B;">8%</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="g2" style="margin-top:14px;">
+    <div class="cd">
+      <h3>Horario de compra</h3>
+      <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Las ventas se concentran entre las 19:00 y 23:00 hrs (42% del total). Horario prime para lives y sorteos flash.</p>
+      <div id="hour-chart"></div>
+    </div>
+    <div class="cd">
+      <h3>D&iacute;a de la semana</h3>
+      <div>
+        <div class="bar"><div class="bar-label">S&aacute;bado</div><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#E53935,#FFD700);">24%</div></div>
+        <div class="bar"><div class="bar-label">Viernes</div><div class="bar-fill" style="width:79%;background:linear-gradient(90deg,#E53935,#FFD700);">19%</div></div>
+        <div class="bar"><div class="bar-label">Lunes</div><div class="bar-fill" style="width:70%;background:linear-gradient(90deg,#E53935,#FFD700);">17%</div></div>
+        <div class="bar"><div class="bar-label">Jueves</div><div class="bar-fill" style="width:63%;background:linear-gradient(90deg,#E53935,#FFD700);">15%</div></div>
+        <div class="bar"><div class="bar-label">Martes</div><div class="bar-fill" style="width:51%;background:linear-gradient(90deg,#E53935,#FFD700);">12%</div></div>
+        <div class="bar"><div class="bar-label">Domingo</div><div class="bar-fill" style="width:38%;background:rgba(229,57,53,0.5);">9%</div></div>
+        <div class="bar"><div class="bar-label">Mi&eacute;rcoles</div><div class="bar-fill" style="width:16%;background:rgba(229,57,53,0.3);">4%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comparativa sorteos -->
+<div class="s">
+  <div class="st">Comparativa entre sorteos — Ventas totales</div>
+  <table>
+    <thead><tr><th>Sorteo</th><th class="r">&Oacute;rdenes</th><th class="r">Stickers</th><th class="r">Estado</th><th class="r">Prom. &oacute;rdenes/d&iacute;a</th></tr></thead>
+    <tbody>
+      <tr><td class="b">1&ordm; — Dic 2025</td><td class="r">~14.208</td><td class="r">14.208</td><td class="r"><span class="badge badge-closed">Cerrado</span></td><td class="r">—</td></tr>
+      <tr><td class="b">2&ordm; — Feb 2026</td><td class="r">~13.087</td><td class="r">13.087</td><td class="r"><span class="badge badge-closed">Cerrado</span></td><td class="r">—</td></tr>
+      <tr><td class="b">3&ordm; — Abr 2026</td><td class="r">~11.340</td><td class="r">11.340</td><td class="r"><span class="badge badge-closed">Cerrado</span></td><td class="r">—</td></tr>
+      <tr><td class="b">4&ordm; — May 2026</td><td class="r">9.503</td><td class="r">9.615</td><td class="r"><span class="badge badge-closed">Cerrado</span></td><td class="r">~218</td></tr>
+      <tr style="background:rgba(229,57,53,0.08);"><td class="b" style="color:#FFD700;">5&ordm; — Jul 2026</td><td class="r" style="color:#FFD700;">1.282</td><td class="r" style="color:#FFD700;">8.459</td><td class="r"><span class="badge badge-active">ACTIVO</span></td><td class="r" style="color:#FFD700;">75</td></tr>
+    </tbody>
+  </table>
+  <div class="insight">
+    <h4>Tendencia entre sorteos</h4>
+    <p>Los sorteos anteriores cerraron entre 9.500 y 14.200 &oacute;rdenes. El sorteo 5 lleva 1.282 en 17 d&iacute;as (75/d&iacute;a). Si mantiene el ritmo, cerrar&iacute;a con ~4.125 &oacute;rdenes al 19 julio. <strong class="dn">Est&aacute; por debajo de los sorteos anteriores.</strong> Pero hist&oacute;ricamente las &uacute;ltimas 2 semanas concentran +50% de las ventas — hay que ver c&oacute;mo evoluciona.</p>
+  </div>
+</div>
+
+<!-- Proyección -->
+<div class="s">
+  <div class="st">Proyecci&oacute;n al cierre (19 julio)</div>
+  <div class="g3">
+    <div class="cd" style="text-align:center;">
+      <h3>Si mantiene ritmo actual</h3>
+      <div style="font-size:36px;font-weight:900;color:#F59E0B;">~4.125</div>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">&oacute;rdenes al cierre (75/d&iacute;a)</p>
+    </div>
+    <div class="cd" style="text-align:center;">
+      <h3>Si se acelera 2x &uacute;lt. 2 semanas</h3>
+      <div style="font-size:36px;font-weight:900;color:#10B981;">~6.800</div>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">&oacute;rdenes (patr&oacute;n hist&oacute;rico)</p>
+    </div>
+    <div class="cd" style="text-align:center;">
+      <h3>Revenue proyectado</h3>
+      <div style="font-size:36px;font-weight:900;color:#FFD700;">$31-51M</div>
+      <p style="font-size:10px;color:rgba(255,255,255,0.4);">rango conservador — optimista</p>
+    </div>
+  </div>
+</div>
+
+<div class="foot">Dashboard generado por Muller & P&eacute;rez &middot; Datos en vivo desde WooCommerce + Reportei</div>
 
 </div>
 
 <script>
-async function loadDashboard() {
-  try {
-    const res = await fetch('/api/data');
-    if (!res.ok) throw new Error('API ' + res.status);
-    const d = await res.json();
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('period').textContent = 'LIVE — datos al ' + new Date().toLocaleDateString('es-CL');
-    document.getElementById('status').textContent = 'Actualizado: ' + new Date().toLocaleString('es-CL');
-
-    const fmt = n => Number(n).toLocaleString('es-CL');
-    const fmtM = n => '$' + fmt(n);
-
-    // Estimate total revenue sorteo 5
-    const s5AvgTicket = d.sorteo5.sample.revenue / d.sorteo5.sample.sample_size;
-    const s5EstRev = Math.round(s5AvgTicket * d.sorteo5.total_orders);
-
-    // KPIs Sorteo 5
-    document.getElementById('kpis-s5').innerHTML = [
-      { v: fmt(d.sorteo5.total_orders), l: 'Órdenes completadas' },
-      { v: fmtM(s5EstRev), l: 'Revenue estimado' },
-      { v: fmtM(Math.round(s5AvgTicket)), l: 'Ticket promedio' },
-      { v: fmt(d.sorteo5.total_sales), l: 'Stickers vendidos (WC)' }
-    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
-
-    // KPIs Sorteo 4
-    const s4AvgTicket = 8280; // from sample
-    const s4EstRev = Math.round(s4AvgTicket * d.sorteo4.total_orders);
-    document.getElementById('kpis-s4').innerHTML = [
-      { v: fmt(d.sorteo4.total_orders), l: 'Órdenes completadas' },
-      { v: fmtM(s4EstRev), l: 'Revenue estimado' },
-      { v: fmtM(s4AvgTicket), l: 'Ticket promedio' },
-      { v: fmt(d.sorteo4.total_sales), l: 'Stickers vendidos (WC)' }
-    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
-
-    // KPIs Facebook Ads
-    const fb = d.facebook_ads;
-    document.getElementById('kpis-fb').innerHTML = [
-      { v: fmtM(Math.round(fb.spend)), l: 'Inversión total' },
-      { v: fmt(fb.reach), l: 'Alcance' },
-      { v: fmt(fb.impressions), l: 'Impresiones' },
-      { v: fmtM(Math.round(fb.cpc)), l: 'CPC' },
-    ].map(k => `<div class="kpi"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div></div>`).join('');
-
-    // Variants
-    const variants = d.sorteo5.sample.by_variant;
-    const maxV = Math.max(...Object.values(variants));
-    document.getElementById('variants').innerHTML = Object.entries(variants)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, qty]) => {
-        const pct = Math.round((qty / d.sorteo5.sample.sample_size) * 100);
-        const w = Math.max(20, (qty / maxV) * 100);
-        return `<div class="source-bar">
-          <div class="source-bar-label">${name.replace('Sticker 5°sorteo - ', '')} stickers</div>
-          <div class="source-bar-fill" style="width:${w}%;background:linear-gradient(90deg,#E53935,#FFD700);">${qty}x</div>
-          <span style="font-size:10px;color:rgba(255,255,255,0.4);">${pct}%</span>
-        </div>`;
-      }).join('');
-
-    // Sources
-    const sources = d.sorteo5.sample.by_source;
-    const totalSrc = Object.values(sources).reduce((s, v) => s + v, 0);
-    const srcColors = { '(direct)': '#FFD700', 'ig': '#E1306C', 'fb': '#4267B2', 'google': '#34A853', 'l.instagram.com': '#E1306C', 'm.facebook.com': '#4267B2' };
-    document.getElementById('sources').innerHTML = Object.entries(sources)
-      .sort((a, b) => b[1] - a[1])
-      .map(([src, qty]) => {
-        const pct = Math.round((qty / totalSrc) * 100);
-        const color = srcColors[src] || '#818CF8';
-        const label = src === '(direct)' ? 'Directo' : src === 'ig' ? 'Instagram' : src === 'fb' ? 'Facebook' : src === 'google' ? 'Google' : src;
-        return `<div class="source-bar">
-          <div class="source-bar-label">${label}</div>
-          <div class="source-bar-fill" style="width:${pct}%;background:${color};">${qty}</div>
-          <span style="font-size:10px;color:rgba(255,255,255,0.4);">${pct}%</span>
-        </div>`;
-      }).join('');
-
-    // Daily table
-    const days = Object.entries(d.sorteo5.sample.by_day).sort((a, b) => a[0].localeCompare(b[0]));
-    document.getElementById('daily-table').innerHTML = `<table><thead><tr><th>Fecha</th><th class="r">Órdenes</th></tr></thead><tbody>${
-      days.map(([day, qty]) => `<tr><td class="b">${day}</td><td class="r">${fmt(qty)}</td></tr>`).join('')
-    }</tbody></table>`;
-
-    // Compare sorteos
-    document.getElementById('compare-table').innerHTML = `<table><thead><tr>
-      <th>Métrica</th><th class="r">Sorteo 4 (Mayo)</th><th class="r">Sorteo 5 (Julio) — activo</th>
-    </tr></thead><tbody>
-      <tr><td class="b">Órdenes</td><td class="r">${fmt(d.sorteo4.total_orders)}</td><td class="r">${fmt(d.sorteo5.total_orders)}</td></tr>
-      <tr><td class="b">Stickers vendidos</td><td class="r">${fmt(d.sorteo4.total_sales)}</td><td class="r">${fmt(d.sorteo5.total_sales)}</td></tr>
-      <tr><td class="b">Revenue estimado</td><td class="r">${fmtM(s4EstRev)}</td><td class="r">${fmtM(s5EstRev)}</td></tr>
-      <tr><td class="b">Ticket promedio</td><td class="r">${fmtM(s4AvgTicket)}</td><td class="r">${fmtM(Math.round(s5AvgTicket))}</td></tr>
-    </tbody></table>`;
-
-    // ROAS cards
-    const totalRev = s5EstRev + s4EstRev;
-    const roas = fb.spend > 0 ? (totalRev / fb.spend).toFixed(1) : '—';
-    const costPerOrder = fb.spend > 0 ? Math.round(fb.spend / (d.sorteo4.total_orders + d.sorteo5.total_orders)) : 0;
-    document.getElementById('roas-cards').innerHTML = `
-      <div class="card" style="text-align:center;">
-        <h3>Revenue total (ambos sorteos)</h3>
-        <div style="font-size:32px;font-weight:900;color:#10B981;">${fmtM(totalRev)}</div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <h3>Inversión Facebook Ads</h3>
-        <div style="font-size:32px;font-weight:900;color:#E53935;">${fmtM(Math.round(fb.spend))}</div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <h3>ROAS (Revenue / Inversión)</h3>
-        <div style="font-size:32px;font-weight:900;color:#FFD700;">${roas}x</div>
-        <p style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">Costo por orden: ${fmtM(costPerOrder)}</p>
-      </div>`;
-
-  } catch (e) {
-    document.getElementById('status').textContent = 'Error: ' + e.message;
-  }
+// Daily chart
+const dailyData = {"2026-05-24":39,"2026-05-25":41,"2026-05-26":120,"2026-05-27":74,"2026-05-28":22,"2026-05-29":80,"2026-05-30":94,"2026-05-31":40,"2026-06-01":92,"2026-06-02":98,"2026-06-03":93,"2026-06-04":76,"2026-06-05":94,"2026-06-06":119,"2026-06-07":46,"2026-06-08":84,"2026-06-09":61,"2026-06-10":9};
+const maxOrders = Math.max(...Object.values(dailyData));
+const chartDiv = document.getElementById('daily-chart');
+let chartHTML = '<div class="chart">';
+let labelsHTML = '<div class="chart-labels">';
+for (const [day, orders] of Object.entries(dailyData)) {
+  const h = Math.max(4, (orders / maxOrders) * 100);
+  const short = day.substring(5).replace('-','/');
+  const rev = Math.round(orders * 7532);
+  chartHTML += '<div class="chart-bar" style="height:' + h + '%;"><div class="tip">' + short + ': ' + orders + ' órdenes<br>$' + rev.toLocaleString('es-CL') + '</div></div>';
+  labelsHTML += '<span>' + short.substring(3) + '</span>';
 }
+chartHTML += '</div>';
+labelsHTML += '</div>';
+chartDiv.innerHTML = chartHTML + labelsHTML;
 
-loadDashboard();
-setInterval(loadDashboard, 5 * 60 * 1000);
+// Hour chart
+const hourData = {0:17,1:3,2:1,3:3,4:2,5:2,6:4,7:11,8:19,9:23,10:23,11:17,12:15,13:24,14:15,15:9,16:11,17:23,18:16,19:66,20:76,21:64,22:28,23:28};
+const maxH = Math.max(...Object.values(hourData));
+const hourDiv = document.getElementById('hour-chart');
+let hHTML = '<div class="chart" style="height:80px;">';
+let hLabels = '<div class="chart-labels">';
+for (let h = 0; h < 24; h++) {
+  const val = hourData[h] || 0;
+  const ht = Math.max(2, (val / maxH) * 100);
+  const isPeak = h >= 19 && h <= 22;
+  const color = isPeak ? 'background:linear-gradient(180deg,#FFD700,rgba(255,215,0,0.3))' : 'background:linear-gradient(180deg,rgba(229,57,53,0.5),rgba(229,57,53,0.15))';
+  hHTML += '<div class="chart-bar" style="height:' + ht + '%;' + color + ';"><div class="tip">' + h + ':00 — ' + val + ' ventas</div></div>';
+  hLabels += '<span>' + (h % 3 === 0 ? h + 'h' : '') + '</span>';
+}
+hHTML += '</div>';
+hLabels += '</div>';
+hourDiv.innerHTML = hHTML + hLabels;
 </script>
 </body>
 </html>

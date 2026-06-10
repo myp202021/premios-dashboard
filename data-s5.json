@@ -1,0 +1,79 @@
+{
+  "sorteo5": {
+    "total_orders": 1282,
+    "total_revenue": 9656000,
+    "total_stickers": 8459,
+    "avg_ticket": 7532,
+    "by_day": {
+      "2026-05-24": {"orders":39,"rev":287000,"stickers":314},
+      "2026-05-25": {"orders":41,"rev":354000,"stickers":412},
+      "2026-05-26": {"orders":120,"rev":911000,"stickers":978},
+      "2026-05-27": {"orders":74,"rev":489000,"stickers":418},
+      "2026-05-28": {"orders":22,"rev":175000,"stickers":166},
+      "2026-05-29": {"orders":80,"rev":600000,"stickers":498},
+      "2026-05-30": {"orders":94,"rev":670500,"stickers":538},
+      "2026-05-31": {"orders":40,"rev":264750,"stickers":229},
+      "2026-06-01": {"orders":92,"rev":689000,"stickers":514},
+      "2026-06-02": {"orders":98,"rev":720500,"stickers":629},
+      "2026-06-03": {"orders":93,"rev":649000,"stickers":702},
+      "2026-06-04": {"orders":76,"rev":659750,"stickers":516},
+      "2026-06-05": {"orders":94,"rev":671500,"stickers":535},
+      "2026-06-06": {"orders":119,"rev":946500,"stickers":801},
+      "2026-06-07": {"orders":46,"rev":383000,"stickers":278},
+      "2026-06-08": {"orders":84,"rev":629000,"stickers":496},
+      "2026-06-09": {"orders":61,"rev":486500,"stickers":387},
+      "2026-06-10": {"orders":9,"rev":70000,"stickers":48}
+    },
+    "by_variant": {
+      "Sticker 5°sorteo - 2": 404,
+      "Sticker 5°sorteo - 8": 308,
+      "Sticker 5°sorteo - 20": 92,
+      "Sticker sorteo Julio 2026 - 2": 241,
+      "Sticker sorteo Julio 2026 - 8": 179,
+      "Sticker sorteo Julio 2026 - 20": 78
+    },
+    "by_source": {
+      "(direct)": 641,
+      "ig": 181,
+      "google": 159,
+      "fb": 133,
+      "l.instagram.com": 70,
+      "m.facebook.com": 13,
+      "l.facebook.com": 12,
+      "com.google.android.gm": 8,
+      "com.google.android.googlequicksearchbox": 7,
+      "facebook.com": 2,
+      "an": 1,
+      "lm.facebook.com": 3,
+      "webpay3g.transbank.cl": 2,
+      "l.threads.com": 1,
+      "pmt-01.etpayment.com": 1,
+      "app.payku.cl": 1,
+      "l.wl.co": 1
+    },
+    "profile": {
+      "unique_buyers": 382,
+      "repeat_buyers": 53,
+      "repeat_pct": 14,
+      "super_repeat_3plus": 26,
+      "by_payment": {
+        "Webpay (Débito/Crédito)": 317,
+        "Transferencia (Khipu)": 71,
+        "Mach": 63,
+        "Pago directo banco": 38,
+        "Otro": 11
+      },
+      "by_device": {"Mobile": 468, "Desktop": 19},
+      "peak_hours": "19:00 — 21:00 (42% de las ventas)",
+      "peak_day": "Sábado (24%), Viernes (19%)",
+      "mobile_pct": 96
+    }
+  },
+  "facebook_ads": {
+    "spend": 25598290,
+    "reach": 1628284,
+    "impressions": 7147785,
+    "cpc": 75.93,
+    "ctr": 4.72
+  }
+}
