@@ -1,0 +1,34 @@
+name: Actualizar Dashboard Premios Increíbles
+
+on:
+  schedule:
+    - cron: '0 */1 * * *'  # Cada hora
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Descargar y procesar data
+        env:
+          REPORTEI_TOKEN: ${{ secrets.REPORTEI_TOKEN }}
+        run: node scripts/update-data.js
+
+      - name: Commit y push data.json
+        run: |
+          git config user.name "M&P Bot"
+          git config user.email "contacto@mulleryperez.cl"
+          if git diff --quiet data.json 2>/dev/null; then
+            echo "No changes in data.json"
+          else
+            git add data.json
+            git commit -m "📊 Data update $(date -u +%Y-%m-%dT%H:%M)"
+            git push
+          fi

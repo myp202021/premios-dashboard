@@ -293,8 +293,15 @@ table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;ov
   <p style="font-size:9px;color:rgba(255,255,255,0.3);">* S5 parcial — el CPA y ROAS mejorar&aacute;n con la aceleraci&oacute;n pre-sorteo</p>
 </div>
 
-<div class="foot">Dashboard BI &middot; Muller & P&eacute;rez &middot; 21.963 &oacute;rdenes analizadas &middot; WooCommerce + Reportei &middot; Actualizado 10 junio 2026</div>
+<div class="foot" id="foot">Dashboard BI &middot; Muller & P&eacute;rez &middot; WooCommerce + Reportei &middot; Cargando...</div>
 
 </div>
+<script>
+fetch('data.json').then(r=>r.json()).then(d=>{
+  const f=document.getElementById('foot');
+  const m=d.meta, u=new Date(d.updated);
+  f.textContent='Dashboard BI · Muller & Pérez · '+m.total_orders_analyzed.toLocaleString('es-CL')+' órdenes · '+m.total_buyers.toLocaleString('es-CL')+' compradores · Actualizado '+u.toLocaleString('es-CL');
+}).catch(()=>{});
+</script>
 </body>
 </html>
