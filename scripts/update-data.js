@@ -190,12 +190,22 @@ function analyzeSorteo(orders, name) {
   console.log('=== Premios Increíbles Data Update ===');
   console.log('Started:', new Date().toISOString());
 
-  // Download all orders
+  // Download orders — S3/S4 from cache, S5 fresh every time
   console.log('\nDownloading orders...');
   const allOrders = {};
   for (const s of SORTEOS) {
-    console.log(`\n${s.name}:`);
-    allOrders[s.id] = await getAllOrders(s.id);
+    const cacheFile = `cache-${s.id}.json`;
+    if (!s.active && fs.existsSync(cacheFile)) {
+      console.log(`\n${s.name}: loaded from cache (${cacheFile})`);
+      allOrders[s.id] = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+    } else {
+      console.log(`\n${s.name}: fetching from WooCommerce...`);
+      allOrders[s.id] = await getAllOrders(s.id);
+      if (!s.active) {
+        fs.writeFileSync(cacheFile, JSON.stringify(allOrders[s.id]));
+        console.log(`  Cached to ${cacheFile}`);
+      }
+    }
   }
 
   // Analyze each sorteo
