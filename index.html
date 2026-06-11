@@ -330,15 +330,15 @@ fetch('data.json?v='+Date.now()).then(r=>r.json()).then(d=>{
   function fmt(n) { return n.toLocaleString('es-CL'); }
   function fmtM(n) { return '$' + (n/1000000).toFixed(1) + 'M'; }
 
-  // KPIs grid (las 6 cards arriba)
+  // KPIs grid — orden del HTML: [0]=Revenue, [1]=Ordenes, [2]=Inv diaria, [3]=Inv S4, [4]=Compradores, [5]=Ticket
   var kpis = document.querySelectorAll('.k .kv');
   if (kpis.length >= 6) {
-    kpis[0].textContent = fmt(s5.total_orders);  // Ordenes S5
-    kpis[1].textContent = fmtM(s5.total_revenue); // Revenue S5
-    kpis[2].textContent = fmt(s5.unique_buyers);  // Compradores
-    kpis[3].textContent = '$'+fmt(s5.avg_ticket);  // Ticket prom
-    kpis[4].textContent = s5.repeat_pct+'%';       // % Recurrentes
-    if (s5.fb) kpis[5].textContent = s5.fb.roas+'x';  // ROAS
+    kpis[0].textContent = fmtM(s5.total_revenue);  // Revenue S5
+    kpis[1].textContent = fmt(s5.total_orders);     // Ordenes S5
+    if (s5.fb) kpis[2].textContent = '$'+fmt(Math.round(s5.fb.inv_per_day))+'K'; // Inv diaria
+    // kpis[3] = Inv diaria S4 (no cambiar)
+    kpis[4].textContent = fmt(s5.unique_buyers);    // Compradores
+    kpis[5].textContent = '$'+fmt(s5.avg_ticket);   // Ticket prom
   }
 
   // Actualizar timestamp visible
