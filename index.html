@@ -317,11 +317,38 @@ table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;ov
 
 </div>
 <script>
-fetch('data.json').then(r=>r.json()).then(d=>{
+fetch('data.json?v='+Date.now()).then(r=>r.json()).then(d=>{
+  const s5=d.sorteos.s5, s4=d.sorteos.s4, s3=d.sorteos.s3, ret=d.retention, m=d.meta;
+  const u=new Date(d.updated);
   const f=document.getElementById('foot');
-  const m=d.meta, u=new Date(d.updated);
-  f.textContent='Dashboard BI · Muller & Pérez · '+m.total_orders_analyzed.toLocaleString('es-CL')+' órdenes · '+m.total_buyers.toLocaleString('es-CL')+' compradores · Actualizado '+u.toLocaleString('es-CL');
-}).catch(()=>{});
+  f.textContent='Dashboard BI · Muller & Pérez · '+m.total_orders_analyzed.toLocaleString('es-CL')+' órdenes · '+m.total_buyers.toLocaleString('es-CL')+' compradores · Actualizado '+u.toLocaleString('es-CL')+' · Auto-refresh cada hora';
+
+  // Actualizar KPIs principales de S5 dinámicamente
+  function up(sel, val) {
+    document.querySelectorAll(sel).forEach(function(el) { el.textContent = val; });
+  }
+  function fmt(n) { return n.toLocaleString('es-CL'); }
+  function fmtM(n) { return '$' + (n/1000000).toFixed(1) + 'M'; }
+
+  // KPIs grid (las 6 cards arriba)
+  var kpis = document.querySelectorAll('.k .kv');
+  if (kpis.length >= 6) {
+    kpis[0].textContent = fmt(s5.total_orders);  // Ordenes S5
+    kpis[1].textContent = fmtM(s5.total_revenue); // Revenue S5
+    kpis[2].textContent = fmt(s5.unique_buyers);  // Compradores
+    kpis[3].textContent = '$'+fmt(s5.avg_ticket);  // Ticket prom
+    kpis[4].textContent = s5.repeat_pct+'%';       // % Recurrentes
+    if (s5.fb) kpis[5].textContent = s5.fb.roas+'x';  // ROAS
+  }
+
+  // Actualizar timestamp visible
+  var headerP = document.querySelector('.hd p');
+  if (headerP) headerP.innerHTML = 'Datos actualizados: ' + u.toLocaleString('es-CL') + ' <span class="period">EN VIVO</span>';
+
+}).catch(function(e){ console.error('Error loading data.json:', e); });
+
+// Auto-refresh cada 10 minutos
+setInterval(function() { location.reload(); }, 10 * 60 * 1000);
 </script>
 </body>
 </html>
