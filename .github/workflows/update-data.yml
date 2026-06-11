@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -29,10 +31,11 @@ jobs:
         run: |
           git config user.name "M&P Bot"
           git config user.email "contacto@mulleryperez.cl"
+          git pull --rebase origin main || true
           git add data.json cache-*.json 2>/dev/null || true
           if git diff --cached --quiet 2>/dev/null; then
             echo "No changes"
           else
             git commit -m "📊 Data update $(date -u +%Y-%m-%dT%H:%M)"
-            git push
+            git push || git pull --rebase origin main && git push
           fi
