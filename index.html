@@ -233,6 +233,59 @@ function render(d){
   })
   html+='</div></div></div>'
 
+  // Cohortes de recompra
+  if (d.cohortes) {
+    var ch = d.cohortes
+    html+='<div class="s"><div class="st">Cohortes de recompra — ¿Quién vuelve a comprar?</div>'
+    html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">Llave: email. Cohorte definida por la primera compra del cliente. Recompra = compra posterior con código de concurso (flash o WhatsApp).</p>'
+
+    html+='<table><thead><tr><th>Cohorte</th><th class="r">Compradores</th><th class="r">Recompra gral.</th><th class="r">Con flash</th><th class="r">Con WA</th><th class="r">Días a 2da compra</th><th class="r">Ticket 1ra</th><th class="r">Ticket recompra</th></tr></thead><tbody>'
+
+    var cohortOrder = ['A', 'B', 'AB', 'C']
+    var cohortColors = { A: '#F59E0B', B: '#10B981', AB: '#8B5CF6', C: 'rgba(255,255,255,0.5)' }
+    cohortOrder.forEach(function(key) {
+      var c = ch[key]
+      if (!c) return
+      var color = cohortColors[key] || '#fff'
+      html+='<tr>'
+      html+='<td class="b" style="color:'+color+'">'+key+') '+c.name+'</td>'
+      html+='<td class="r">'+fmt(c.total_buyers)+'</td>'
+      html+='<td class="r" style="color:'+color+';font-weight:700">'+c.return_rate_any+'% ('+c.returners_any+')</td>'
+      html+='<td class="r">'+c.return_rate_flash+'% ('+c.returners_flash+')</td>'
+      html+='<td class="r">'+c.return_rate_wa+'% ('+c.returners_wa+')</td>'
+      html+='<td class="r">'+(c.avg_days_to_return || '—')+' días</td>'
+      html+='<td class="r">$'+fmt(c.avg_first_ticket)+'</td>'
+      html+='<td class="r">'+(c.avg_return_ticket ? '$'+fmt(c.avg_return_ticket) : '—')+'</td>'
+      html+='</tr>'
+    })
+    html+='</tbody></table>'
+
+    // Insights
+    var cA = ch.A, cC = ch.C, cAB = ch.AB
+    if (cA && cC) {
+      if (cA.return_rate_any < cC.return_rate_any / 2) {
+        html+='<div class="alert"><h4>Alerta: el comprador de $2.500 casi no vuelve ('+cA.return_rate_any+'% vs '+cC.return_rate_any+'% línea base)</h4>'
+        html+='<p>De '+cA.total_buyers+' compradores que entraron por precio bajo, solo '+cA.returners_any+' volvieron a comprar. '
+        html+='La línea base (≥$5.000 sin cupón) tiene '+cC.return_rate_any+'% de recompra. '
+        html+='<strong>Dato para la decisión: el $2.500 atrae volumen pero no genera motor de recompra.</strong> '
+        html+='Si el objetivo es recompra, el canal WhatsApp (cupones de concurso) funciona mejor como palanca.</p></div>'
+      } else {
+        html+='<div class="opp"><h4>El comprador de $2.500 sí vuelve ('+cA.return_rate_any+'%)</h4>'
+        html+='<p>La tasa de retorno es comparable a la línea base ('+cC.return_rate_any+'%). El precio bajo funciona como puerta de entrada.</p></div>'
+      }
+    }
+
+    // Cohorte "other" (concursos flash) — si tiene alta recompra
+    if (ch.other && ch.other.return_rate_any > 30) {
+      html+='<div class="opp"><h4>Los compradores que llegan por concurso flash tienen '+ch.other.return_rate_any+'% de recompra</h4>'
+      html+='<p>'+fmt(ch.other.total_buyers)+' personas entraron con cupón de concurso. De ellas, '+ch.other.returners_any+' volvieron a comprar ('+ch.other.return_rate_any+'%). '
+      html+='Revenue por recompra: $'+fmt(Math.round(ch.other.return_rev/1000))+'K. '
+      html+='<strong>Los concursos flash son el motor de retención más fuerte.</strong></p></div>'
+    }
+
+    html+='</div>'
+  }
+
   document.getElementById('dashboard').innerHTML=html
 }
 
