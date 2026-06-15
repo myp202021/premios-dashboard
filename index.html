@@ -286,6 +286,98 @@ function render(d){
     html+='</div>'
   }
 
+  // ============================================================
+  // TABLERO DE EMBUDOS (Arquitectura PDF)
+  // ============================================================
+  var srcTotal = Object.values(s5.sources).reduce(function(a,b){return a+b},0)
+  var directPct = Math.round(s5.sources['(direct)'] / srcTotal * 100)
+  var metaPct = Math.round((s5.sources['Instagram'] + s5.sources['Facebook']) / srcTotal * 100)
+  var googlePct = Math.round((s5.sources['Google'] || 0) / srcTotal * 100)
+  var revPropio = Math.round(s5.sources['(direct)'] / srcTotal * s5.total_revenue)
+  var revMeta = Math.round(((s5.sources['Instagram']||0) + (s5.sources['Facebook']||0)) / srcTotal * s5.total_revenue)
+
+  html+='<div class="s"><div class="st">Tablero de embudos — Arquitectura de conversión</div>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">Métricas clave del modelo flywheel. Meta: mover el ratio propio/Meta de '+directPct+'/'+metaPct+' a 45/55 y luego 60/40.</p>'
+
+  // KPI embudo: % revenue propio vs meta
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">'
+  html+='<div class="k"><div class="kv" style="color:'+(directPct>=45?'#10B981':'#F59E0B')+'">'+directPct+'%</div><div class="kl">Revenue canal propio</div></div>'
+  html+='<div class="k"><div class="kv" style="color:'+(metaPct<=55?'#10B981':'#EF4444')+'">'+metaPct+'%</div><div class="kl">Revenue Meta Ads</div></div>'
+  html+='<div class="k"><div class="kv" style="color:'+(s5.fb.roas>=4?'#10B981':s5.fb.roas>=2?'#F59E0B':'#EF4444')+'">'+s5.fb.roas+'x</div><div class="kl">ROAS (meta 4x)</div></div>'
+  html+='<div class="k"><div class="kv" style="color:'+(ret.s4_to_s5.pct>=50?'#10B981':'#F59E0B')+'">'+ret.s4_to_s5.pct+'%</div><div class="kl">Retención S4→S5 (meta 55%)</div></div>'
+  html+='</div>'
+
+  // Tabla métricas por embudo
+  html+='<table><thead><tr><th>Embudo</th><th>KPI principal</th><th class="r">Actual</th><th class="r">Meta N°5</th><th class="r">Estado</th></tr></thead><tbody>'
+
+  var embudoMetrics = [
+    ['0 Instrumentación', '% Purchase deduplicados', '—', '98%+', '⚠️ Pendiente auditar'],
+    ['1 Adquisición', 'CPA por compra', '$'+fmt(s5.fb.cpa_per_order), 'Bajar', s5.fb.cpa_per_order < 5000 ? '✅' : '⚠️'],
+    ['1 Web', 'Conversión web', '~'+Math.round(s5.total_orders / (s5.fb.impressions || s5.fb.reach || 1) * 100)+'%', '4-6%', '⚠️'],
+    ['2 Nurture', '% revenue audiencia propia', directPct+'%', '45%', directPct >= 45 ? '✅ Cumple' : '⚠️ Falta '+(45-directPct)+'pts'],
+    ['3 Carrito', '% carritos recuperados', '~0%', '15-25%', '❌ Sin secuencia'],
+    ['4 Live', 'Pico 20:00 vs resto', fmt(s5.by_hour['20']||0)+' vs '+fmt(Math.round(s5.total_orders/24))+' prom', 'Maximizar', (s5.by_hour['20']||0) > s5.total_orders/24*2 ? '✅ 7x prom' : '⚠️'],
+    ['5 Retención', 'Recompra sorteo a sorteo', ret.s4_to_s5.pct+'%', '55-60%', ret.s4_to_s5.pct >= 50 ? '✅' : '⚠️ Falta '+(55-ret.s4_to_s5.pct)+'pts'],
+    ['Global', 'ROAS', s5.fb.roas+'x', '4x+', s5.fb.roas >= 4 ? '✅' : s5.fb.roas >= 2 ? '⚠️' : '❌'],
+    ['Global', '% revenue propio vs Meta', directPct+'/'+metaPct, '45/55', directPct >= 45 ? '✅' : '⚠️']
+  ]
+  embudoMetrics.forEach(function(row) {
+    var statusColor = row[4].startsWith('✅') ? '#10B981' : row[4].startsWith('❌') ? '#EF4444' : '#F59E0B'
+    html+='<tr><td class="b">'+row[0]+'</td><td>'+row[1]+'</td><td class="r">'+row[2]+'</td><td class="r" style="color:rgba(255,255,255,0.3)">'+row[3]+'</td><td class="r" style="color:'+statusColor+'">'+row[4]+'</td></tr>'
+  })
+  html+='</tbody></table>'
+
+  // Ventas por hora — gráfico de barras con marcadores de eventos
+  html+='<div class="st" style="margin-top:16px">Ventas por hora — Impacto del Live y Zoom</div>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">El pico de las 19-20h confirma que el live es publicidad y el Zoom es conversión. Early Bird a las 18:00 suaviza la curva.</p>'
+  var maxHour = Math.max.apply(null, Object.values(s5.by_hour))
+  html+='<div style="display:flex;align-items:end;gap:2px;height:120px;margin:12px 0">'
+  for (var h = 0; h < 24; h++) {
+    var val = s5.by_hour[String(h)] || 0
+    var pctH = Math.round(val / maxHour * 100)
+    var color = 'rgba(255,215,0,0.4)'
+    var label = ''
+    if (h === 18) { color = '#F59E0B'; label = 'Early Bird' }
+    if (h === 19 || h === 20) { color = '#E53935'; label = h===20?'LIVE':'Pico' }
+    if (h === 21 || h === 22) { color = '#10B981'; label = h===22?'Zoom':'' }
+    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+    if (val > maxHour * 0.3) html+='<div style="font-size:7px;color:rgba(255,255,255,0.4)">'+val+'</div>'
+    html+='<div style="width:100%;height:'+pctH+'%;background:'+color+';border-radius:2px 2px 0 0;min-height:2px"></div>'
+    html+='<div style="font-size:7px;color:rgba(255,255,255,'+(label?'0.8':'0.25')+')">'+h+'</div>'
+    if (label) html+='<div style="font-size:6px;color:'+color+';font-weight:700">'+label+'</div>'
+    html+='</div>'
+  }
+  html+='</div>'
+
+  // Insight Early Bird
+  var pre18 = 0, post18 = 0, live = (s5.by_hour['19']||0) + (s5.by_hour['20']||0)
+  for (var hh = 0; hh < 18; hh++) pre18 += s5.by_hour[String(hh)] || 0
+  for (var hh = 18; hh < 24; hh++) post18 += s5.by_hour[String(hh)] || 0
+  html+='<div class="g2">'
+  html+='<div class="insight"><h4>El 18:00-23:59 concentra el '+Math.round(post18/s5.total_orders*100)+'% de las ventas</h4>'
+  html+='<p>'+fmt(post18)+' de '+fmt(s5.total_orders)+' órdenes se hacen después de las 18:00. El live de las 20:00 genera '+fmt(live)+' órdenes ('+Math.round(live/s5.total_orders*100)+'% del total). <strong>El PDF propone Early Bird a las 18:00 con precio que sube a las 20:00 para aplanar el pico y capturar abandono.</strong></p></div>'
+  html+='<div class="alert"><h4>Acciones pendientes de implementar</h4>'
+  html+='<p><strong>1. Recuperación carrito (Embudo 3):</strong> Secuencia ManyChat 15min/1h/19:30/día siguiente. Ataca el 40-49% de abandono. Mayor ROI de todos.<br>'
+  html+='<strong>2. Deduplicación Purchase/InitiateCheckout:</strong> Auditar Pixel + GA4 en CartFlows. Sin esto se optimiza a ciegas.<br>'
+  html+='<strong>3. Early Bird 18:00:</strong> Precio que sube a las 20:00. Aplana pico, adelanta caja, da deadline al carrito.<br>'
+  html+='<strong>4. Ruta A → ChannelJoin:</strong> Ads fríos que lleven al Canal WhatsApp, no a la web. Baja dependencia de Meta.<br>'
+  html+='<strong>5. UGC del Zoom:</strong> Capturar reacción de ganadores. Creative fresco = CPA más bajo.</p></div>'
+  html+='</div>'
+
+  // Revenue propio vs Meta — evolución
+  html+='<div class="st" style="margin-top:16px">Composición de revenue: canal propio vs Meta</div>'
+  html+='<div style="display:flex;height:32px;border-radius:8px;overflow:hidden;margin:8px 0">'
+  html+='<div style="width:'+directPct+'%;background:#FFD700;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#0A0A0F">Propio '+directPct+'%</div>'
+  html+='<div style="width:'+metaPct+'%;background:#E53935;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">Meta '+metaPct+'%</div>'
+  html+='<div style="width:'+googlePct+'%;background:#34A853;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">Google '+googlePct+'%</div>'
+  html+='</div>'
+  html+='<div class="g3">'
+  html+='<div class="cd"><h3>Canal propio (directo)</h3><div style="font-size:20px;font-weight:900;color:#FFD700">'+fmtM(revPropio)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">'+fmt(s5.sources['(direct)'])+' órdenes · Costo: $0</div></div>'
+  html+='<div class="cd"><h3>Meta Ads (IG + FB)</h3><div style="font-size:20px;font-weight:900;color:#E53935">'+fmtM(revMeta)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">'+fmt((s5.sources['Instagram']||0)+(s5.sources['Facebook']||0))+' órdenes · Inversión: '+fmtM(s5.fb.spend)+'</div></div>'
+  html+='<div class="cd"><h3>Clave del flywheel</h3><div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.8">Cada peso que hoy le pagas a Meta por un cliente que YA te compró, muévelo a WhatsApp. El Canal tiene '+fmt(6000)+' suscriptores — es margen puro. Meta N°5: llegar a 45/55.</div></div>'
+  html+='</div>'
+  html+='</div>'
+
   document.getElementById('dashboard').innerHTML=html
 }
 
