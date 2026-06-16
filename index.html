@@ -420,6 +420,204 @@ function render(d){
 
   html+='</div>'
 
+  // ============================================================
+  // TICKET PROMEDIO DIARIO — COMPOSICIÓN POR TIER (14 días)
+  // ============================================================
+  html+='<div class="s">'
+  html+='<div class="st">Ticket promedio diario — Composición por tier</div>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Últimos 14 días. Barras apiladas por tier de ticket. Línea vertical marca la activación del ticket $2.500 (viernes 13 junio).</p>'
+
+  var tierData=[
+    {d:"06-03",ticket:6978,ord:93,t25:10,t5:47,t10:26,t25p:10,rev25:184000,pct25:28},
+    {d:"06-04",ticket:8680,ord:76,t25:0,t5:37,t10:28,t25p:11,rev25:212500,pct25:32},
+    {d:"06-05",ticket:7143,ord:94,t25:4,t5:50,t10:35,t25p:5,rev25:96000,pct25:14},
+    {d:"06-06",ticket:7953,ord:119,t25:3,t5:55,t10:47,t25p:14,rev25:249500,pct25:26},
+    {d:"06-07",ticket:8326,ord:46,t25:0,t5:19,t10:25,t25p:2,rev25:40000,pct25:10},
+    {d:"06-08",ticket:7458,ord:85,t25:3,t5:46,t10:28,t25p:8,rev25:148500,pct25:23},
+    {d:"06-09",ticket:7975,ord:61,t25:1,t5:28,t10:26,t25p:6,rev25:103000,pct25:21},
+    {d:"06-10",ticket:5866,ord:88,t25:38,t5:20,t10:23,t25p:7,rev25:123500,pct25:23},
+    {d:"06-11",ticket:7196,ord:117,t25:43,t5:26,t10:32,t25p:16,rev25:303250,pct25:36},
+    {d:"06-12",ticket:6002,ord:97,t25:32,t5:33,t10:28,t25p:4,rev25:78000,pct25:13},
+    {d:"06-13",ticket:6815,ord:126,t25:38,t5:33,t10:47,t25p:8,rev25:156000,pct25:18},
+    {d:"06-14",ticket:6925,ord:87,t25:19,t5:31,t10:34,t25p:3,rev25:60000,pct25:9},
+    {d:"06-15",ticket:6746,ord:164,t25:50,t5:54,t10:44,t25p:16,rev25:296000,pct25:26},
+    {d:"06-16",ticket:6740,ord:76,t25:23,t5:25,t10:23,t25p:5,rev25:100000,pct25:19}
+  ]
+  var maxTierOrd=164
+
+  // Stacked horizontal bars
+  html+='<div class="cd" style="margin-bottom:12px"><h3>Distribución diaria por tier de ticket</h3>'
+  html+='<div style="position:relative">'
+  for(var ti2=0;ti2<tierData.length;ti2++){
+    var td2=tierData[ti2]
+    var isViernes13=td2.d==="06-13"
+    var dayLabel=td2.d.replace("06-","Jun ")
+    var w25=Math.round(td2.t25/td2.ord*100)
+    var w5=Math.round(td2.t5/td2.ord*100)
+    var w10=Math.round(td2.t10/td2.ord*100)
+    var w25p=Math.round(td2.t25p/td2.ord*100)
+    var barBg=isViernes13?'rgba(229,57,53,0.08)':'transparent'
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;background:'+barBg+';padding:2px 4px;border-radius:4px'+(isViernes13?';border-left:3px solid #E53935':'')+'">'
+    html+='<span style="font-size:9px;color:rgba(255,255,255,'+(isViernes13?'0.9':'0.5')+');min-width:42px;font-weight:'+(isViernes13?'800':'400')+'">'+dayLabel+'</span>'
+    html+='<div style="display:flex;flex:1;height:22px;border-radius:3px;overflow:hidden">'
+    if(w25>0)html+='<div style="width:'+w25+'%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#0A0A0F">'+td2.t25+'</div>'
+    if(w5>0)html+='<div style="width:'+w5+'%;background:#3B82F6;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t5+'</div>'
+    if(w10>0)html+='<div style="width:'+w10+'%;background:#8B5CF6;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t10+'</div>'
+    if(w25p>0)html+='<div style="width:'+w25p+'%;background:#E53935;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t25p+'</div>'
+    html+='</div>'
+    html+='<span style="font-size:9px;color:#FFD700;font-weight:700;min-width:44px;text-align:right">$'+fmt(td2.ticket)+'</span>'
+    html+='<span style="font-size:8px;color:rgba(255,255,255,0.3);min-width:30px;text-align:right">'+td2.ord+' ord</span>'
+    if(isViernes13)html+='<span style="font-size:7px;color:#E53935;font-weight:700;margin-left:4px">VIERNES</span>'
+    html+='</div>'
+  }
+  html+='</div>'
+
+  // Legend
+  html+='<div style="display:flex;gap:16px;margin-top:10px;justify-content:center">'
+  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#F59E0B;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$2.5K</span></div>'
+  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#3B82F6;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$5K</span></div>'
+  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#8B5CF6;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$10K</span></div>'
+  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#E53935;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$25K+</span></div>'
+  html+='</div>'
+  html+='</div>'
+
+  // Key insight card
+  html+='<div class="insight"><h4>$25K+ = 9% de órdenes pero 24% del revenue</h4>'
+  html+='<p>Ticket promedio CON $25K+: <strong style="color:#FFD700">$7,201</strong> — SIN $25K+: <strong>$6,052</strong>. Los compradores premium son pocos pero mueven casi 1/4 del revenue. No descuidar este segmento mientras se escala el $2.500.</p></div>'
+
+  // Weekly summary
+  html+='<div class="cd" style="margin-top:12px"><h3>Evolución semanal del ticket</h3>'
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">'
+  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 25-31 may</div><div style="font-size:18px;font-weight:900;color:rgba(255,255,255,0.6)">$7,355</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 1-7 jun</div><div style="font-size:18px;font-weight:900;color:#10B981">$7,636</div><div style="font-size:8px;color:#10B981">+3.8%</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 8-14 jun</div><div style="font-size:18px;font-weight:900;color:#F59E0B">$6,841</div><div style="font-size:8px;color:#F59E0B">-10.4%</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 15+ jun</div><div style="font-size:18px;font-weight:900;color:#F59E0B">$6,744</div><div style="font-size:8px;color:#F59E0B">-1.4%</div></div>'
+  html+='</div>'
+  html+='<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:8px;text-align:center">Ticket baja por entrada de $2.500, pero revenue/día sube +33%. El volumen compensa con creces la caída de ticket.</div>'
+  html+='</div>'
+  html+='</div>'
+
+  // ============================================================
+  // RUTA A $100M — PLAN CON PALANCAS
+  // ============================================================
+  html+='<div class="s">'
+  html+='<div class="st">Ruta a $100M — Plan con palancas</div>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Proyección a cierre 19 julio 2026. Revenue actual $14.6M. Faltan '+diasRestantes+' días. Tres palancas activables esta semana.</p>'
+
+  // 1. BIG PROGRESS BAR
+  html+='<div style="position:relative;background:rgba(255,255,255,0.06);border-radius:14px;height:64px;margin-bottom:8px;overflow:hidden">'
+  html+='<div style="position:absolute;top:0;left:0;height:100%;width:14.6%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:14px"></div>'
+  html+='<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.8)">'
+  html+='$14.6M de $100M — 14.6%</div></div>'
+  html+='<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:20px">'
+  html+='<span>$0</span><span style="color:#FFD700;font-weight:700">$14.6M (hoy)</span><span style="color:#E53935;font-weight:700">$100M (meta)</span></div>'
+
+  // 2. DAILY TARGET COUNTER
+  html+='<div style="background:linear-gradient(135deg,rgba(229,57,53,0.12),rgba(255,215,0,0.06));border:2px solid rgba(229,57,53,0.3);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">'
+  html+='<div style="font-size:11px;font-weight:700;color:#E53935;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Brecha diaria para $100M</div>'
+  html+='<div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center">'
+  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Necesita</div><div style="font-size:24px;font-weight:900;color:#E53935">$2,668,391/día</div></div>'
+  html+='<div style="font-size:16px;color:rgba(255,255,255,0.2)">vs</div>'
+  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Hoy hace</div><div style="font-size:24px;font-weight:900;color:#FFD700">$608,812/día</div></div>'
+  html+='<div style="font-size:16px;color:rgba(255,255,255,0.2)">=</div>'
+  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Multiplicador</div><div style="font-size:24px;font-weight:900;color:#EF4444">4.4x</div></div>'
+  html+='</div>'
+  html+='</div>'
+
+  // 3. SCENARIOS TABLE
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Escenarios de cierre</h3>'
+  html+='<table><thead><tr><th>Escenario</th><th class="r">Revenue estimado</th><th class="r">Estado</th><th>Supuestos</th></tr></thead><tbody>'
+  html+='<tr><td class="b">Sin cambios (ritmo actual)</td><td class="r" style="color:#EF4444;font-weight:800">$34M</td><td class="r" style="color:#EF4444;font-weight:700">&#10060;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">$608K/día x '+diasRestantes+' días restantes + $14.6M acumulado</td></tr>'
+  html+='<tr><td class="b">Ritmo post-ticket $2.500</td><td class="r" style="color:#EF4444;font-weight:800">$39M</td><td class="r" style="color:#EF4444;font-weight:700">&#10060;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">$769K/día post-viernes, pero no alcanza</td></tr>'
+  html+='<tr style="background:rgba(16,185,129,0.06)"><td class="b" style="color:#10B981">Plan combinado (3 palancas)</td><td class="r" style="color:#10B981;font-weight:900;font-size:14px">$95-115M</td><td class="r" style="color:#10B981;font-weight:900;font-size:14px">&#9989;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">Ticket $2.500 + dormidos + Meta x2 + explosión natural</td></tr>'
+  html+='<tr><td class="b" style="color:#FFD700">Explosión S3 (optimista)</td><td class="r" style="color:#FFD700;font-weight:800">$139M</td><td class="r" style="color:#10B981;font-weight:700">&#9989;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">Si replica la curva exponencial de S3 en las últimas 3 semanas</td></tr>'
+  html+='</tbody></table></div>'
+
+  // 4. THREE PALANCA CARDS
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">'
+
+  // PALANCA 1: Meta x2
+  html+='<div class="cd" style="border-color:rgba(59,130,246,0.3)">'
+  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#3B82F6;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 1</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Meta Ads</span></div>'
+  html+='<h3 style="color:#3B82F6">Subir Meta +100% (duplicar)</h3>'
+  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
+  html+='De <strong style="color:#fff">$421K/día</strong> a <strong style="color:#3B82F6">$842K/día</strong><br>'
+  html+='Revenue extra: <strong style="color:#FFD700">+$22.5M</strong><br>'
+  html+='Costo adicional: <strong style="color:#EF4444">$13.5M</strong><br>'
+  html+='ROI esperado: <strong style="color:#10B981">1.67x</strong>'
+  html+='</div></div>'
+
+  // PALANCA 2: Dormidos
+  html+='<div class="cd" style="border-color:rgba(16,185,129,0.3)">'
+  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#10B981;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 2</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Costo $0</span></div>'
+  html+='<h3 style="color:#10B981">Dormidos (13,329 personas)</h3>'
+  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
+  html+='Costo: <strong style="color:#10B981">$0</strong><br>'
+  html+='Si reactiva 10%: <strong style="color:#FFD700">+$16.9M</strong><br>'
+  html+='Si reactiva 20%: <strong style="color:#FFD700">+$33.8M</strong><br>'
+  html+='Via: <strong style="color:#fff">WhatsApp Canal (6K) + Email</strong>'
+  html+='</div></div>'
+
+  // PALANCA 3: Ticket $2.500
+  html+='<div class="cd" style="border-color:rgba(255,215,0,0.3)">'
+  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#FFD700;color:#0A0A0F;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 3</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Ya activo</span></div>'
+  html+='<h3 style="color:#FFD700">Ticket $2.500 (ya activo)</h3>'
+  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
+  html+='Revenue proyectado: <strong style="color:#FFD700">+$24.6M</strong><br>'
+  html+='Costo adicional: <strong style="color:#10B981">$0</strong><br>'
+  html+='32 días restantes a $769K/día<br>'
+  html+='<strong style="color:#10B981">Ya funcionando desde viernes 13</strong>'
+  html+='</div></div>'
+  html+='</div>'
+
+  // 5. PLAN COMBINADO CARD (the key one, green border)
+  html+='<div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(255,215,0,0.05));border:2px solid rgba(16,185,129,0.5);border-radius:14px;padding:24px;margin-bottom:16px">'
+  html+='<div style="font-size:13px;font-weight:900;color:#10B981;margin-bottom:16px;text-align:center">PLAN COMBINADO — Ruta viable a $100M+</div>'
+  html+='<div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 16px;font-size:12px;line-height:2.2">'
+  html+='<div style="color:rgba(255,255,255,0.5)">Revenue actual:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">$14.6M</div>'
+  html+='<div style="color:rgba(255,255,255,0.5)">+ Ticket $2.500 (32d):</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$24.6M</div>'
+  html+='<div style="color:rgba(255,255,255,0.5)">+ Dormidos 20%:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$33.8M</div>'
+  html+='<div style="color:rgba(255,255,255,0.5)">+ Meta x2:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$22.5M</div>'
+  html+='<div style="color:rgba(255,255,255,0.5)">+ Explosión natural:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$15-20M</div>'
+  html+='<div style="color:#10B981;font-weight:900;font-size:14px;border-top:2px solid rgba(16,185,129,0.4);padding-top:8px">= TOTAL:</div><div style="border-top:2px solid rgba(16,185,129,0.4)"></div><div style="text-align:right;font-weight:900;font-size:18px;color:#10B981;border-top:2px solid rgba(16,185,129,0.4);padding-top:8px">$110-115M &#9989;</div>'
+  html+='</div></div>'
+
+  // 6. TIMELINE
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Timeline de ejecución</h3>'
+  html+='<div style="position:relative;padding-left:24px;margin-top:12px">'
+  // Vertical line
+  html+='<div style="position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,#E53935,#FFD700,#10B981)"></div>'
+
+  var timelineItems=[
+    {dates:"Sem 17-22 jun",label:"Mantener ritmo + lanzar campaña dormidos WA+email",color:"#FFD700",active:true},
+    {dates:"Sem 23-29 jun",label:"Escalar Meta x2, medir ROAS con nuevo presupuesto",color:"#3B82F6",active:false},
+    {dates:"Sem 30-6 jul",label:"Segunda campaña dormidos (urgencia: \"quedan 2 semanas\")",color:"#10B981",active:false},
+    {dates:"Sem 7-13 jul",label:"Pre-sorteo, explosión natural, push final de ads",color:"#8B5CF6",active:false},
+    {dates:"Sem 14-19 jul",label:"Cierre FOMO, últimos cupos, countdown en todos los canales",color:"#E53935",active:false}
+  ]
+  for(var tli=0;tli<timelineItems.length;tli++){
+    var item=timelineItems[tli]
+    html+='<div style="margin-bottom:14px;position:relative">'
+    html+='<div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;background:'+item.color+';border-radius:50%;border:2px solid '+(item.active?'#fff':'#0A0A0F')+'"></div>'
+    html+='<div style="font-size:10px;font-weight:800;color:'+item.color+'">'+item.dates+(item.active?' <span style="background:rgba(255,215,0,0.15);padding:1px 6px;border-radius:3px;font-size:8px;color:#FFD700">ESTA SEMANA</span>':'')+'</div>'
+    html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px">'+item.label+'</div>'
+    html+='</div>'
+  }
+  html+='</div></div>'
+
+  // 7. INVERSIÓN ADICIONAL CARD
+  html+='<div class="cd" style="border-color:rgba(59,130,246,0.3);margin-bottom:12px">'
+  html+='<h3 style="color:#3B82F6">Inversión adicional requerida</h3>'
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">'
+  html+='<div style="text-align:center;background:rgba(59,130,246,0.08);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Inversión extra Meta</div><div style="font-size:22px;font-weight:900;color:#3B82F6">$13.5M</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">32 días x $421K extra/día</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,215,0,0.06);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Revenue esperado</div><div style="font-size:22px;font-weight:900;color:#FFD700">$22.5M</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">ROAS conservador 1.67x</div></div>'
+  html+='<div style="text-align:center;background:rgba(16,185,129,0.08);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">ROI de la inversión</div><div style="font-size:22px;font-weight:900;color:#10B981">1.67x</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">$9M de ganancia neta</div></div>'
+  html+='</div>'
+  html+='<div class="opp" style="margin-top:12px"><h4>Las palancas de costo $0 se activan primero</h4><p>Dormidos (costo $0, potencial $33.8M) y ticket $2.500 (ya activo, +$24.6M) se ejecutan esta semana. Meta x2 se escala en semana 2 solo si el ROAS post-ticket se mantiene arriba de 1.5x. <strong>Orden: primero lo gratis, después lo pagado.</strong></p></div>'
+  html+='</div>'
+
+  html+='</div>'
+
   // Fuentes de tráfico
   html+='<div class="s"><div class="st">Fuentes de tráfico S5</div><div class="g2"><div>'+srcBars+'</div>'
   html+='<div class="cd"><h3>Distribución</h3>'
