@@ -105,12 +105,25 @@ function render(d){
   var avgDaily=Math.round(s5.total_orders/s5.days)
   var invDaily=s5.fb?Math.round(s5.fb.inv_per_day):0
 
-  // Comparativa por % avance
+  // Comparativa por % avance — usa duración total del sorteo, no solo días con datos
+  var SORTEO_SPANS={s3:{start:'2026-02-16',end:'2026-04-13'},s4:{start:'2026-04-12',end:'2026-05-27'},s5:{start:'2026-05-24',end:'2026-07-19'}}
+  function sorteoTotalDays(sorteo){
+    for(var k in SORTEO_SPANS){if(d.sorteos[k]===sorteo)return Math.round((new Date(SORTEO_SPANS[k].end)-new Date(SORTEO_SPANS[k].start))/86400000)}
+    return sorteo.days
+  }
+  function sorteoStart(sorteo){
+    for(var k in SORTEO_SPANS){if(d.sorteos[k]===sorteo)return new Date(SORTEO_SPANS[k].start)}
+    return new Date(Object.keys(sorteo.by_day).sort()[0])
+  }
   function ordersAtPct(sorteo,targetPct){
+    var total=sorteoTotalDays(sorteo)
+    var targetDay=Math.round(total*(targetPct/100))
+    var start=sorteoStart(sorteo)
+    var cutoff=new Date(start.getTime()+targetDay*86400000)
+    var cutStr=cutoff.toISOString().substring(0,10)
     var dayKeys=Object.keys(sorteo.by_day).sort()
-    var targetDay=Math.round(dayKeys.length*(targetPct/100))
     var count=0
-    for(var i=0;i<Math.min(targetDay,dayKeys.length);i++){count+=sorteo.by_day[dayKeys[i]].orders}
+    for(var i=0;i<dayKeys.length;i++){if(dayKeys[i]<=cutStr)count+=sorteo.by_day[dayKeys[i]].orders}
     return count
   }
 
@@ -176,12 +189,16 @@ function render(d){
   html+='<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:20px">'
   html+='<span>24 mayo</span><span style="color:#FFD700;font-weight:700">Hoy</span><span>19 julio (sorteo)</span></div>'
 
-  // Revenue at % helper
+  // Revenue at % helper — misma lógica que ordersAtPct
   function revenueAtPct(sorteo,targetPct){
+    var total=sorteoTotalDays(sorteo)
+    var targetDay=Math.round(total*(targetPct/100))
+    var start=sorteoStart(sorteo)
+    var cutoff=new Date(start.getTime()+targetDay*86400000)
+    var cutStr=cutoff.toISOString().substring(0,10)
     var dayKeys=Object.keys(sorteo.by_day).sort()
-    var targetDay=Math.round(dayKeys.length*(targetPct/100))
     var rev=0
-    for(var i=0;i<Math.min(targetDay,dayKeys.length);i++){rev+=sorteo.by_day[dayKeys[i]].rev}
+    for(var i=0;i<dayKeys.length;i++){if(dayKeys[i]<=cutStr)rev+=sorteo.by_day[dayKeys[i]].rev}
     return rev
   }
 
