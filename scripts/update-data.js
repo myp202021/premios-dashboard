@@ -1,6 +1,7 @@
 const fs = require('fs');
 
-const WP_AUTH = Buffer.from('Adminweb_Pinc:gnPy AC74 nrTl nxdw PFIP taci').toString('base64');
+const WC_CK = process.env.WC_CONSUMER_KEY || 'ck_45f622f52f0946c84911d9eeba7118f815ca65b2';
+const WC_CS = process.env.WC_CONSUMER_SECRET || 'cs_a064f21d2cbc373798abafccdb1cc47aabd8c697';
 const REPORTEI_TOKEN = process.env.REPORTEI_TOKEN || 'tQ6y526WgRvG75NzB1CiT5RoUx9dctNmBzex5NH3';
 const FB_INT_ID = 3606802;
 
@@ -12,7 +13,9 @@ const SORTEOS = [
 ];
 
 async function wcFetch(url) {
-  const res = await fetch(url, { headers: { 'Authorization': 'Basic ' + WP_AUTH } });
+  const sep = url.includes('?') ? '&' : '?';
+  const fullUrl = `${url}${sep}consumer_key=${WC_CK}&consumer_secret=${WC_CS}`;
+  const res = await fetch(fullUrl);
   return { data: await res.json(), total: parseInt(res.headers.get('X-WP-Total') || '0') };
 }
 
