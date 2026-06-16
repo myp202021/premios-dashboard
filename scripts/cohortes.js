@@ -16,7 +16,8 @@
 
 const fs = require('fs');
 
-const WP_AUTH = Buffer.from('Adminweb_Pinc:gnPy AC74 nrTl nxdw PFIP taci').toString('base64');
+const WC_CK = process.env.WC_CONSUMER_KEY || 'ck_45f622f52f0946c84911d9eeba7118f815ca65b2';
+const WC_CS = process.env.WC_CONSUMER_SECRET || 'cs_a064f21d2cbc373798abafccdb1cc47aabd8c697';
 const PRODUCT_S5 = 93696;
 
 // Clasificación de cupones
@@ -28,7 +29,9 @@ function isFlashCoupon(code) { return FLASH_COUPONS.has(code) || /^flash/.test(c
 function isConcursoCoupon(code) { return isWaCoupon(code) || isFlashCoupon(code); }
 
 async function wcFetch(url) {
-  const res = await fetch(url, { headers: { 'Authorization': 'Basic ' + WP_AUTH } });
+  const sep = url.includes('?') ? '&' : '?';
+  const fullUrl = `${url}${sep}consumer_key=${WC_CK}&consumer_secret=${WC_CS}`;
+  const res = await fetch(fullUrl);
   return { data: await res.json(), total: parseInt(res.headers.get('X-WP-Total') || '0') };
 }
 
