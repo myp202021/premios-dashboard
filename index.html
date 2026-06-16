@@ -331,17 +331,17 @@ function render(d){
   html+='<div class="st" style="margin-top:16px">Ventas por hora — Impacto del Live y Zoom</div>'
   html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">El pico de las 19-20h confirma que el live es publicidad y el Zoom es conversión. Early Bird a las 18:00 suaviza la curva.</p>'
   var maxHour = Math.max.apply(null, Object.values(s5.by_hour))
-  html+='<div style="display:flex;align-items:end;gap:2px;height:120px;margin:12px 0">'
+  html+='<div style="display:flex;align-items:end;gap:2px;height:180px;margin:12px 0">'
   for (var h = 0; h < 24; h++) {
     var val = s5.by_hour[String(h)] || 0
-    var pctH = Math.round(val / maxHour * 100)
+    var pctH = val > 0 ? Math.max(Math.round(val / maxHour * 100), 6) : 1
     var color = 'rgba(255,215,0,0.4)'
     var label = ''
     if (h === 18) { color = '#F59E0B'; label = 'Early Bird' }
     if (h === 19 || h === 20) { color = '#E53935'; label = h===20?'LIVE':'Pico' }
     if (h === 21 || h === 22) { color = '#10B981'; label = h===22?'Zoom':'' }
     html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
-    if (val > maxHour * 0.3) html+='<div style="font-size:7px;color:rgba(255,255,255,0.4)">'+val+'</div>'
+    if (val > 0) html+='<div style="font-size:7px;color:rgba(255,255,255,'+(val>maxHour*0.3?'0.7':'0.3')+')">'+val+'</div>'
     html+='<div style="width:100%;height:'+pctH+'%;background:'+color+';border-radius:2px 2px 0 0;min-height:2px"></div>'
     html+='<div style="font-size:7px;color:rgba(255,255,255,'+(label?'0.8':'0.25')+')">'+h+'</div>'
     if (label) html+='<div style="font-size:6px;color:'+color+';font-weight:700">'+label+'</div>'
