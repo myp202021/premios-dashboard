@@ -584,14 +584,60 @@ function render(d){
   html+='<div class="alert" style="margin-top:8px"><h4>Orden correcto: primero lo gratis, después lo pagado</h4><p>Carrito abandonado + dormidos (costo $0, mayor ROI) se activan esta semana. Meta ×2 solo se escala si el ROAS aguanta después de subir 50%. El revenue de cada palanca se contabiliza cuando el gate pasa, no antes.</p></div>'
   html+='</div>'
 
-  // REFERENCIA HISTÓRICA
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Referencia: qué pasó en S3 y S4 en las últimas 2 semanas</h3>'
+  // INVERSIÓN COMPARATIVA — la pieza que faltaba
+  html+='<div class="cd" style="margin-bottom:16px;border-color:rgba(139,92,246,0.3)"><h3 style="color:#A78BFA">Comparativa con inversión — al '+pctAvance+'% de avance</h3>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:10px">S5 invierte 44% de lo que S3 gastaba al mismo punto. El ROAS de S5 es mejor que S3 y S4 a esta altura.</p>'
+
+  // Compute spend at same % for S3/S4 (proportional)
+  var s3SpendAtPct=Math.round(s3.fb.spend*s5.days/s3.days)
+  var s4SpendAtPct=Math.round(s4.fb.spend*s5.days/s4.days)
+  var s5Spend=s5.fb.spend
+  var s5DailySpend=Math.round(s5Spend/s5.days)
+
+  html+='<table><thead><tr><th>Al '+pctAvance+'% de avance</th><th class="r">S3</th><th class="r">S4</th><th class="r" style="color:#FFD700">S5</th></tr></thead><tbody>'
+  html+='<tr><td class="b">Revenue</td><td class="r">'+fmtM(ordersAtPct(s3,pctAvance)>0?revenueAtPct(s3,pctAvance):0)+'</td><td class="r">'+fmtM(revenueAtPct(s4,pctAvance))+'</td><td class="r" style="color:#FFD700;font-weight:800">'+fmtM(s5.total_revenue)+'</td></tr>'
+  html+='<tr><td class="b">Inversión Meta</td><td class="r" style="color:#EF4444">$'+fmt(s3SpendAtPct)+'</td><td class="r">$'+fmt(s4SpendAtPct)+'</td><td class="r" style="color:#10B981">$'+fmt(s5Spend)+'</td></tr>'
+  html+='<tr><td class="b">ROAS al punto</td><td class="r">'+((revenueAtPct(s3,pctAvance)||1)/s3SpendAtPct).toFixed(2)+'x</td><td class="r">'+(revenueAtPct(s4,pctAvance)/s4SpendAtPct).toFixed(2)+'x</td><td class="r" style="color:#10B981;font-weight:800">'+(s5.total_revenue/s5Spend).toFixed(2)+'x</td></tr>'
+  html+='<tr><td class="b">Inv. Meta/día</td><td class="r">$'+fmt(Math.round(s3.fb.spend/s3.days))+'</td><td class="r">$'+fmt(Math.round(s4.fb.spend/s4.days))+'</td><td class="r">$'+fmt(s5DailySpend)+'</td></tr>'
+  html+='</tbody></table>'
+
+  // What S3/S4 did from here to end
+  html+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:800;color:#A78BFA;margin-bottom:8px">Desde el '+pctAvance+'% hasta el cierre:</div></div>'
+  html+='<table><thead><tr><th>Segunda mitad</th><th class="r">S3</th><th class="r">S4</th><th class="r">Si S5 sigue ritmo</th></tr></thead><tbody>'
+
+  // S3 second half
+  var s3RemSpend=s3.fb.spend-s3SpendAtPct
+  var s3RemRev=s3.total_revenue-revenueAtPct(s3,pctAvance)
+  var s3RemDays=s3.days-Math.round(s3.days*pctAvance/100)
+  var s4RemSpend=s4.fb.spend-s4SpendAtPct
+  var s4RemRev=s4.total_revenue-revenueAtPct(s4,pctAvance)
+  var s4RemDays=s4.days-Math.round(s4.days*pctAvance/100)
+  var s3RemRoas=s3RemSpend>0?(s3RemRev/s3RemSpend):0
+  var s4RemRoas=s4RemSpend>0?(s4RemRev/s4RemSpend):0
+
+  // S5 projections if it follows S3 or S4 investment from here
+  var s5IfS3=s5.total_revenue+Math.round(s3RemSpend/s3RemDays)*diasRestantes*s3RemRoas
+  var s5IfS4=s5.total_revenue+Math.round(s4RemSpend/s4RemDays)*diasRestantes*s4RemRoas
+
+  html+='<tr><td class="b">Revenue restante</td><td class="r">'+fmtM(s3RemRev)+'</td><td class="r">'+fmtM(s4RemRev)+'</td><td class="r">—</td></tr>'
+  html+='<tr><td class="b">Inversión restante</td><td class="r">$'+fmt(s3RemSpend)+'</td><td class="r">$'+fmt(s4RemSpend)+'</td><td class="r">—</td></tr>'
+  html+='<tr><td class="b">Inv. Meta/día restante</td><td class="r" style="color:#EF4444">$'+fmt(Math.round(s3RemSpend/s3RemDays))+'</td><td class="r">$'+fmt(Math.round(s4RemSpend/s4RemDays))+'</td><td class="r">$'+fmt(s5DailySpend)+' (actual)</td></tr>'
+  html+='<tr><td class="b">ROAS segunda mitad</td><td class="r" style="color:#10B981;font-weight:800">'+s3RemRoas.toFixed(2)+'x</td><td class="r" style="color:#10B981;font-weight:800">'+s4RemRoas.toFixed(2)+'x</td><td class="r">'+(s5.total_revenue/s5Spend).toFixed(2)+'x (actual)</td></tr>'
+  html+='<tr style="background:rgba(139,92,246,0.06)"><td class="b" style="color:#A78BFA">Si S5 invierte igual</td><td class="r" style="font-weight:900;color:#A78BFA;font-size:14px">'+fmtM(Math.round(s5IfS3))+'</td><td class="r" style="font-weight:900;color:#A78BFA;font-size:14px">'+fmtM(Math.round(s5IfS4))+'</td><td class="r">—</td></tr>'
+  html+='</tbody></table>'
+
+  html+='<div class="insight" style="margin-top:8px"><h4>La segunda mitad tiene ROAS muy superior — históricamente 3x</h4>'
+  html+='<p>S3 tuvo ROAS '+s3RemRoas.toFixed(1)+'x en su segunda mitad. S4 tuvo '+s4RemRoas.toFixed(1)+'x. Esto es porque la audiencia ya conoce el sorteo, el FOMO sube, la conversión mejora. '
+  html+='<strong>Si S5 invierte al ritmo de S3 ($'+fmt(Math.round(s3RemSpend/s3RemDays))+'/día) y el ROAS de segunda mitad se comporta como históricamente, los $100M son alcanzables.</strong> '
+  html+='Si invierte al ritmo de S4, el rango es $75-85M. La inversión es la variable de decisión.</p></div>'
+  html+='</div>'
+
+  // REFERENCIA: últimas 2 semanas
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Explosión últimas 2 semanas — dato histórico</h3>'
   html+='<div class="g2" style="margin-top:8px">'
-  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S3 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$67.4M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$4.8M/día · 60% del total · OJO: $53M invertidos en Meta</div></div>'
-  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S4 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$38.1M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$2.7M/día · 52% del total · Inversión Meta más comparable a S5</div></div>'
-  html+='</div>'
-  html+='<div class="insight" style="margin-top:8px"><h4>La explosión de segunda mitad es real pero no es magia</h4><p>S3 y S4 concentraron 52-60% del revenue en las últimas 2 semanas. Eso SÍ va a pasar en S5 — es el FOMO natural del cierre. Pero S3 cerró $111M con $53M en Meta (5.3x lo que lleva S5). Compararse con S3 sin ese asterisco es engañarse. <strong>S4 es la referencia honesta: cerró $72.7M con inversión comparable.</strong></p></div>'
-  html+='</div>'
+  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S3 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$67.4M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$4.8M/día · 60% del total</div></div>'
+  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S4 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$38.1M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$2.7M/día · 52% del total</div></div>'
+  html+='</div></div>'
 
   // TIMELINE
   html+='<div class="cd" style="margin-bottom:12px"><h3>Prioridades esta semana</h3>'
@@ -617,7 +663,10 @@ function render(d){
   html+='<div class="s"><div class="st">Nuevos vs Recurrentes — S5</div><div class="g3">'
   html+='<div class="cd"><h3>Compradores nuevos</h3><div style="font-size:24px;font-weight:900;color:#3B82F6">'+fmt(ret.s5_new_buyers)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">Revenue: '+fmtM(ret.s5_new_rev)+' · Ticket: $'+fmt(ret.s5_new_ticket)+'</div></div>'
   html+='<div class="cd"><h3>Recurrentes (ya compraron antes)</h3><div style="font-size:24px;font-weight:900;color:#10B981">'+fmt(s5.unique_buyers-ret.s5_new_buyers)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">Revenue: '+fmtM(ret.s5_ret_rev)+' · Ticket: $'+fmt(ret.s5_ret_ticket)+'</div></div>'
-  html+='<div class="cd"><h3>Retención cross-sorteo</h3><div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:2">S3→S4: '+ret.s3_to_s4.pct+'% ('+fmt(ret.s3_to_s4.count)+')<br>S4→S5: '+ret.s4_to_s5.pct+'% ('+fmt(ret.s4_to_s5.count)+')<br>Los 3 sorteos: '+fmt(ret.all_three)+'</div></div>'
+  // Retención: denominador = compradores del sorteo ANTERIOR
+  var retS3toS4Real=Math.round(ret.s3_to_s4.count*100/s3.unique_buyers)
+  var retS4toS5Real=Math.round(ret.s4_to_s5.count*100/s4.unique_buyers)
+  html+='<div class="cd"><h3>Retención cross-sorteo</h3><div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:2">S3→S4: '+retS3toS4Real+'% ('+fmt(ret.s3_to_s4.count)+' de '+fmt(s3.unique_buyers)+')<br>S4→S5: '+retS4toS5Real+'% ('+fmt(ret.s4_to_s5.count)+' de '+fmt(s4.unique_buyers)+')<br>Los 3 sorteos: '+fmt(ret.all_three)+'</div></div>'
   html+='</div>'
 
   // Oportunidad dormidos
@@ -739,7 +788,7 @@ function render(d){
     ['1 Web', 'Conversión web', '~'+Math.round(s5.total_orders / (s5.fb.impressions || s5.fb.reach || 1) * 100)+'%', '4-6%', '⚠️'],
     ['2 Nurture', '% revenue audiencia propia', directPct+'%', '45%', directPct >= 45 ? '✅ Cumple' : '⚠️ Falta '+(45-directPct)+'pts'],
     ['3 Carrito', '% carritos recuperados', '~0%', '15-25%', '❌ Sin secuencia'],
-    ['4 Live', 'Pico 20:00 vs resto', fmt(s5.by_hour['20']||0)+' vs '+fmt(Math.round(s5.total_orders/24))+' prom', 'Maximizar', (s5.by_hour['20']||0) > s5.total_orders/24*2 ? '✅ 7x prom' : '⚠️'],
+    ['4 Live', 'Pico 20:00 vs resto', fmt(s5.by_hour['20']||0)+' vs '+fmt(Math.round(s5.total_orders/24))+' prom', 'Maximizar', (s5.by_hour['20']||0) > s5.total_orders/24*2 ? '✅ ~4x prom' : '⚠️'],
     ['5 Retención', 'Recompra sorteo a sorteo', ret.s4_to_s5.pct+'%', '55-60%', ret.s4_to_s5.pct >= 50 ? '✅' : '⚠️ Falta '+(55-ret.s4_to_s5.pct)+'pts'],
     ['Global', 'ROAS', s5.fb.roas+'x', '4x+', s5.fb.roas >= 4 ? '✅' : s5.fb.roas >= 2 ? '⚠️' : '❌'],
     ['Global', '% revenue propio vs Meta', directPct+'/'+metaPct, '45/55', directPct >= 45 ? '✅' : '⚠️']
