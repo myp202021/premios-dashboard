@@ -498,123 +498,110 @@ function render(d){
   html+='</div>'
 
   // ============================================================
-  // RUTA A $100M — PLAN CON PALANCAS
+  // PROYECCIÓN Y META — DOS ESCENARIOS HONESTOS
   // ============================================================
+
+  // Calculate dynamic projections from data
+  var s5DaysSorted=Object.keys(s5.by_day).sort()
+  var last7=s5DaysSorted.slice(-7), first17=s5DaysSorted.slice(0,-7)
+  var last7Rev=0,last7Ord=0,first17Rev=0
+  for(var i=0;i<last7.length;i++){last7Rev+=s5.by_day[last7[i]].rev;last7Ord+=s5.by_day[last7[i]].orders}
+  for(var i=0;i<first17.length;i++){first17Rev+=s5.by_day[first17[i]].rev}
+  var last7Daily=Math.round(last7Rev/7)
+  var first17Daily=first17.length>0?Math.round(first17Rev/first17.length):0
+  var trendPct=first17Daily>0?Math.round((last7Daily/first17Daily-1)*100):0
+  var totalDaily=Math.round(s5.total_revenue/s5.days)
+  // S4 acceleration: 2.2x in second half
+  var projLinear=s5.total_revenue+last7Daily*diasRestantes
+  var projS4Curve=s5.total_revenue+Math.round(last7Daily*2.2)*diasRestantes
+  var TARGET=100000000
+  var needDaily=diasRestantes>0?Math.round((TARGET-s5.total_revenue)/diasRestantes):0
+  var needMult=last7Daily>0?(needDaily/last7Daily).toFixed(1):'?'
+  var gap=TARGET-s5.total_revenue
+  var pctOfTarget=Math.round(s5.total_revenue/TARGET*100)
+
   html+='<div class="s">'
-  html+='<div class="st">Ruta a $100M — Plan con palancas</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Proyección a cierre 19 julio 2026. Revenue actual $14.6M. Faltan '+diasRestantes+' días. Tres palancas activables esta semana.</p>'
+  html+='<div class="st">Proyección al cierre — Dos escenarios</div>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Calculado dinámicamente. Tendencia últimos 7 días: $'+fmt(last7Daily)+'/día (+'+trendPct+'% vs primeros '+first17.length+' días). S4 aceleró 2.2x en segunda mitad. S3 aceleró 6x pero gastó 5.3x más en Meta.</p>'
 
-  // 1. BIG PROGRESS BAR
-  html+='<div style="position:relative;background:rgba(255,255,255,0.06);border-radius:14px;height:64px;margin-bottom:8px;overflow:hidden">'
-  html+='<div style="position:absolute;top:0;left:0;height:100%;width:14.6%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:14px"></div>'
-  html+='<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.8)">'
-  html+='$14.6M de $100M — 14.6%</div></div>'
-  html+='<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:20px">'
-  html+='<span>$0</span><span style="color:#FFD700;font-weight:700">$14.6M (hoy)</span><span style="color:#E53935;font-weight:700">$100M (meta)</span></div>'
+  // TWO SCENARIOS SIDE BY SIDE
+  html+='<div class="g2" style="margin-bottom:16px">'
 
-  // 2. DAILY TARGET COUNTER
-  html+='<div style="background:linear-gradient(135deg,rgba(229,57,53,0.12),rgba(255,215,0,0.06));border:2px solid rgba(229,57,53,0.3);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">'
-  html+='<div style="font-size:11px;font-weight:700;color:#E53935;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Brecha diaria para $100M</div>'
-  html+='<div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center">'
-  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Necesita</div><div style="font-size:24px;font-weight:900;color:#E53935">$2,668,391/día</div></div>'
-  html+='<div style="font-size:16px;color:rgba(255,255,255,0.2)">vs</div>'
-  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Hoy hace</div><div style="font-size:24px;font-weight:900;color:#FFD700">$608,812/día</div></div>'
-  html+='<div style="font-size:16px;color:rgba(255,255,255,0.2)">=</div>'
-  html+='<div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Multiplicador</div><div style="font-size:24px;font-weight:900;color:#EF4444">4.4x</div></div>'
-  html+='</div>'
-  html+='</div>'
-
-  // 3. SCENARIOS TABLE
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Escenarios de cierre</h3>'
-  html+='<table><thead><tr><th>Escenario</th><th class="r">Revenue estimado</th><th class="r">Estado</th><th>Supuestos</th></tr></thead><tbody>'
-  html+='<tr><td class="b">Sin cambios (ritmo actual)</td><td class="r" style="color:#EF4444;font-weight:800">$34M</td><td class="r" style="color:#EF4444;font-weight:700">&#10060;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">$608K/día x '+diasRestantes+' días restantes + $14.6M acumulado</td></tr>'
-  html+='<tr><td class="b">Ritmo post-ticket $2.500</td><td class="r" style="color:#EF4444;font-weight:800">$39M</td><td class="r" style="color:#EF4444;font-weight:700">&#10060;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">$769K/día post-viernes, pero no alcanza</td></tr>'
-  html+='<tr style="background:rgba(16,185,129,0.06)"><td class="b" style="color:#10B981">Plan combinado (3 palancas)</td><td class="r" style="color:#10B981;font-weight:900;font-size:14px">$95-115M</td><td class="r" style="color:#10B981;font-weight:900;font-size:14px">&#9989;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">Ticket $2.500 + dormidos + Meta x2 + explosión natural</td></tr>'
-  html+='<tr><td class="b" style="color:#FFD700">Explosión S3 (optimista)</td><td class="r" style="color:#FFD700;font-weight:800">$139M</td><td class="r" style="color:#10B981;font-weight:700">&#9989;</td><td style="font-size:9px;color:rgba(255,255,255,0.4)">Si replica la curva exponencial de S3 en las últimas 3 semanas</td></tr>'
-  html+='</tbody></table></div>'
-
-  // 4. THREE PALANCA CARDS
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">'
-
-  // PALANCA 1: Meta x2
-  html+='<div class="cd" style="border-color:rgba(59,130,246,0.3)">'
-  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#3B82F6;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 1</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Meta Ads</span></div>'
-  html+='<h3 style="color:#3B82F6">Subir Meta +100% (duplicar)</h3>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
-  html+='De <strong style="color:#fff">$421K/día</strong> a <strong style="color:#3B82F6">$842K/día</strong><br>'
-  html+='Revenue extra: <strong style="color:#FFD700">+$22.5M</strong><br>'
-  html+='Costo adicional: <strong style="color:#EF4444">$13.5M</strong><br>'
-  html+='ROI esperado: <strong style="color:#10B981">1.67x</strong>'
+  // SCENARIO A: REALISTIC (S4 curve)
+  html+='<div style="background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));border:2px solid rgba(255,215,0,0.4);border-radius:14px;padding:20px">'
+  html+='<div style="font-size:10px;font-weight:800;color:#FFD700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Proyección real (curva S4)</div>'
+  html+='<div style="font-size:36px;font-weight:900;color:#FFD700">$'+fmtM(projS4Curve)+'</div>'
+  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.8">'
+  html+='Tendencia actual $'+fmt(last7Daily)+'/día × aceleración 2.2x × '+diasRestantes+' días<br>'
+  html+='S4 a este punto iba -18% arriba, cerró en $72.7M<br>'
+  html+='Inversión Meta S5 comparable a S4 en proporción<br>'
+  html+='<strong style="color:#FFD700">Rango: $55-75M</strong> según ejecución de palancas'
   html+='</div></div>'
 
-  // PALANCA 2: Dormidos
-  html+='<div class="cd" style="border-color:rgba(16,185,129,0.3)">'
-  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#10B981;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 2</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Costo $0</span></div>'
-  html+='<h3 style="color:#10B981">Dormidos (13,329 personas)</h3>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
-  html+='Costo: <strong style="color:#10B981">$0</strong><br>'
-  html+='Si reactiva 10%: <strong style="color:#FFD700">+$16.9M</strong><br>'
-  html+='Si reactiva 20%: <strong style="color:#FFD700">+$33.8M</strong><br>'
-  html+='Via: <strong style="color:#fff">WhatsApp Canal (6K) + Email</strong>'
+  // SCENARIO B: META $100M
+  html+='<div style="background:linear-gradient(135deg,rgba(229,57,53,0.08),rgba(229,57,53,0.02));border:2px solid rgba(229,57,53,0.4);border-radius:14px;padding:20px">'
+  html+='<div style="font-size:10px;font-weight:800;color:#E53935;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Meta $100M — qué necesita</div>'
+  html+='<div style="font-size:36px;font-weight:900;color:#E53935">$'+fmt(needDaily)+'/día</div>'
+  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.8">'
+  html+='Hoy hace $'+fmt(last7Daily)+'/día → necesita <strong style="color:#E53935">'+needMult+'x</strong><br>'
+  html+='Faltan $'+fmtM(gap)+' en '+diasRestantes+' días<br>'
+  html+='Requiere: dormidos + carrito + Meta agresivo + explosión<br>'
+  html+='<strong style="color:#E53935">Techo, no plan. Solo con todas las palancas.</strong>'
   html+='</div></div>'
 
-  // PALANCA 3: Ticket $2.500
-  html+='<div class="cd" style="border-color:rgba(255,215,0,0.3)">'
-  html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="background:#FFD700;color:#0A0A0F;font-size:9px;font-weight:900;padding:2px 8px;border-radius:4px">PALANCA 3</div><span style="font-size:10px;color:rgba(255,255,255,0.5)">Ya activo</span></div>'
-  html+='<h3 style="color:#FFD700">Ticket $2.500 (ya activo)</h3>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2;margin-top:8px">'
-  html+='Revenue proyectado: <strong style="color:#FFD700">+$24.6M</strong><br>'
-  html+='Costo adicional: <strong style="color:#10B981">$0</strong><br>'
-  html+='32 días restantes a $769K/día<br>'
-  html+='<strong style="color:#10B981">Ya funcionando desde viernes 13</strong>'
-  html+='</div></div>'
   html+='</div>'
 
-  // 5. PLAN COMBINADO CARD (the key one, green border)
-  html+='<div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(255,215,0,0.05));border:2px solid rgba(16,185,129,0.5);border-radius:14px;padding:24px;margin-bottom:16px">'
-  html+='<div style="font-size:13px;font-weight:900;color:#10B981;margin-bottom:16px;text-align:center">PLAN COMBINADO — Ruta viable a $100M+</div>'
-  html+='<div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 16px;font-size:12px;line-height:2.2">'
-  html+='<div style="color:rgba(255,255,255,0.5)">Revenue actual:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">$14.6M</div>'
-  html+='<div style="color:rgba(255,255,255,0.5)">+ Ticket $2.500 (32d):</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$24.6M</div>'
-  html+='<div style="color:rgba(255,255,255,0.5)">+ Dormidos 20%:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$33.8M</div>'
-  html+='<div style="color:rgba(255,255,255,0.5)">+ Meta x2:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$22.5M</div>'
-  html+='<div style="color:rgba(255,255,255,0.5)">+ Explosión natural:</div><div style="border-bottom:1px solid rgba(255,255,255,0.06)"></div><div style="text-align:right;font-weight:700;color:#FFD700">+$15-20M</div>'
-  html+='<div style="color:#10B981;font-weight:900;font-size:14px;border-top:2px solid rgba(16,185,129,0.4);padding-top:8px">= TOTAL:</div><div style="border-top:2px solid rgba(16,185,129,0.4)"></div><div style="text-align:right;font-weight:900;font-size:18px;color:#10B981;border-top:2px solid rgba(16,185,129,0.4);padding-top:8px">$110-115M &#9989;</div>'
+  // PROGRESS BAR vs $100M
+  html+='<div style="position:relative;background:rgba(255,255,255,0.06);border-radius:10px;height:40px;margin-bottom:4px;overflow:hidden">'
+  html+='<div style="position:absolute;top:0;left:0;height:100%;width:'+pctOfTarget+'%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:10px"></div>'
+  // Mark where S4 curve lands
+  var s4CurvePct=Math.min(Math.round(projS4Curve/TARGET*100),100)
+  html+='<div style="position:absolute;top:0;left:'+s4CurvePct+'%;height:100%;width:2px;background:#FFD700;opacity:0.8"></div>'
+  html+='<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.6)">'
+  html+='$'+fmtM(s5.total_revenue)+' de $100M ('+pctOfTarget+'%)</div></div>'
+  html+='<div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,0.25);margin-bottom:16px">'
+  html+='<span>$0</span><span style="color:#FFD700">▲ Proy. real ~$'+fmtM(projS4Curve)+'</span><span>$100M</span></div>'
+
+  // TENDENCIA + WHAT NEEDS TO HAPPEN DAILY
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Tendencia y target diario</h3>'
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:10px">'
+  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4)">Primeros '+first17.length+'d</div><div style="font-size:18px;font-weight:900;color:rgba(255,255,255,0.5)">$'+fmt(first17Daily)+'</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">/día</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,215,0,0.06);border-radius:8px;padding:12px"><div style="font-size:9px;color:#FFD700">Últimos 7d</div><div style="font-size:18px;font-weight:900;color:#FFD700">$'+fmt(last7Daily)+'</div><div style="font-size:8px;color:#FFD700">+'+trendPct+'% ▲</div></div>'
+  html+='<div style="text-align:center;background:rgba(255,215,0,0.08);border-radius:8px;padding:12px"><div style="font-size:9px;color:#FFD700">Para $64M (real)</div><div style="font-size:18px;font-weight:900;color:#FFD700">$'+fmt(Math.round(last7Daily*2.2))+'</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">curva S4 (2.2x)</div></div>'
+  html+='<div style="text-align:center;background:rgba(229,57,53,0.08);border-radius:8px;padding:12px"><div style="font-size:9px;color:#E53935">Para $100M</div><div style="font-size:18px;font-weight:900;color:#E53935">$'+fmt(needDaily)+'</div><div style="font-size:8px;color:#E53935">'+needMult+'x actual</div></div>'
   html+='</div></div>'
 
-  // 6. TIMELINE
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Timeline de ejecución</h3>'
-  html+='<div style="position:relative;padding-left:24px;margin-top:12px">'
-  // Vertical line
-  html+='<div style="position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,#E53935,#FFD700,#10B981)"></div>'
+  // PALANCAS COMO EXPERIMENTOS (no como revenue reservado)
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Palancas — como experimentos, no como revenue contabilizado</h3>'
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px">Cada palanca es un test con gate. El revenue solo se suma al plan cuando el gate pasa.</p>'
+  html+='<table><thead><tr><th>Palanca</th><th class="r">Potencial</th><th class="r">Costo</th><th>Gate</th><th>Estado</th></tr></thead><tbody>'
+  html+='<tr><td class="b" style="color:#10B981">Carrito abandonado</td><td class="r" style="color:#10B981;font-weight:800">Mayor ROI</td><td class="r" style="color:#10B981">~$0</td><td>Implementar secuencia ManyChat, medir recuperación real</td><td style="color:#EF4444;font-weight:700">❌ Sin construir</td></tr>'
+  html+='<tr><td class="b" style="color:#10B981">Dormidos ('+fmt(ret.dormant)+' personas)</td><td class="r">$8-17M</td><td class="r" style="color:#10B981">$0</td><td>Test 500 primero → medir reactivación 48h → escalar si >5%</td><td style="color:#F59E0B;font-weight:700">⏳ Por testear</td></tr>'
+  html+='<tr><td class="b" style="color:#FFD700">Ticket $2.500</td><td class="r">+$24.6M</td><td class="r" style="color:#10B981">$0</td><td>Ya activo. Mantener si ticket prom no baja de $6K</td><td style="color:#10B981;font-weight:700">✅ Activo</td></tr>'
+  html+='<tr><td class="b" style="color:#3B82F6">Meta ×2</td><td class="r">+$11-22M</td><td class="r" style="color:#EF4444">$13.5M</td><td>Solo si ROAS >1.5x después de escalar 50% primero</td><td style="color:#F59E0B;font-weight:700">⏳ Gate pendiente</td></tr>'
+  html+='<tr style="background:rgba(255,255,255,0.02)"><td class="b">Explosión natural (últimas 2 sem)</td><td class="r">40-60% del total</td><td class="r">$0</td><td>Histórico S3: 60%, S4: 52%. Sucede orgánicamente.</td><td style="color:rgba(255,255,255,0.4)">Semana 7-19 jul</td></tr>'
+  html+='</tbody></table>'
+  html+='<div class="alert" style="margin-top:8px"><h4>Orden correcto: primero lo gratis, después lo pagado</h4><p>Carrito abandonado + dormidos (costo $0, mayor ROI) se activan esta semana. Meta ×2 solo se escala si el ROAS aguanta después de subir 50%. El revenue de cada palanca se contabiliza cuando el gate pasa, no antes.</p></div>'
+  html+='</div>'
 
-  var timelineItems=[
-    {dates:"Sem 17-22 jun",label:"Mantener ritmo + lanzar campaña dormidos WA+email",color:"#FFD700",active:true},
-    {dates:"Sem 23-29 jun",label:"Escalar Meta x2, medir ROAS con nuevo presupuesto",color:"#3B82F6",active:false},
-    {dates:"Sem 30-6 jul",label:"Segunda campaña dormidos (urgencia: \"quedan 2 semanas\")",color:"#10B981",active:false},
-    {dates:"Sem 7-13 jul",label:"Pre-sorteo, explosión natural, push final de ads",color:"#8B5CF6",active:false},
-    {dates:"Sem 14-19 jul",label:"Cierre FOMO, últimos cupos, countdown en todos los canales",color:"#E53935",active:false}
-  ]
-  for(var tli=0;tli<timelineItems.length;tli++){
-    var item=timelineItems[tli]
-    html+='<div style="margin-bottom:14px;position:relative">'
-    html+='<div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;background:'+item.color+';border-radius:50%;border:2px solid '+(item.active?'#fff':'#0A0A0F')+'"></div>'
-    html+='<div style="font-size:10px;font-weight:800;color:'+item.color+'">'+item.dates+(item.active?' <span style="background:rgba(255,215,0,0.15);padding:1px 6px;border-radius:3px;font-size:8px;color:#FFD700">ESTA SEMANA</span>':'')+'</div>'
-    html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px">'+item.label+'</div>'
-    html+='</div>'
-  }
+  // REFERENCIA HISTÓRICA
+  html+='<div class="cd" style="margin-bottom:16px"><h3>Referencia: qué pasó en S3 y S4 en las últimas 2 semanas</h3>'
+  html+='<div class="g2" style="margin-top:8px">'
+  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S3 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$67.4M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$4.8M/día · 60% del total · OJO: $53M invertidos en Meta</div></div>'
+  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S4 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$38.1M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$2.7M/día · 52% del total · Inversión Meta más comparable a S5</div></div>'
+  html+='</div>'
+  html+='<div class="insight" style="margin-top:8px"><h4>La explosión de segunda mitad es real pero no es magia</h4><p>S3 y S4 concentraron 52-60% del revenue en las últimas 2 semanas. Eso SÍ va a pasar en S5 — es el FOMO natural del cierre. Pero S3 cerró $111M con $53M en Meta (5.3x lo que lleva S5). Compararse con S3 sin ese asterisco es engañarse. <strong>S4 es la referencia honesta: cerró $72.7M con inversión comparable.</strong></p></div>'
+  html+='</div>'
+
+  // TIMELINE
+  html+='<div class="cd" style="margin-bottom:12px"><h3>Prioridades esta semana</h3>'
+  html+='<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.5);line-height:2.2">'
+  html+='<strong style="color:#E53935">1.</strong> Construir secuencia carrito abandonado (ManyChat 15min/1h/día siguiente) — <strong style="color:#10B981">mayor ROI, costo $0</strong><br>'
+  html+='<strong style="color:#E53935">2.</strong> Test dormidos: enviar a 500 personas vía WA+email, medir reactivación a 48h<br>'
+  html+='<strong style="color:#E53935">3.</strong> Mantener ticket $2.500 activo, monitorear que ticket promedio no baje de $6K<br>'
+  html+='<strong style="color:#E53935">4.</strong> Subir Meta 50% (no 100%), medir ROAS a 5 días antes de escalar más<br>'
+  html+='<strong style="color:rgba(255,255,255,0.3)">5.</strong> Semana 2+: escalar según resultados de los gates'
   html+='</div></div>'
-
-  // 7. INVERSIÓN ADICIONAL CARD
-  html+='<div class="cd" style="border-color:rgba(59,130,246,0.3);margin-bottom:12px">'
-  html+='<h3 style="color:#3B82F6">Inversión adicional requerida</h3>'
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">'
-  html+='<div style="text-align:center;background:rgba(59,130,246,0.08);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Inversión extra Meta</div><div style="font-size:22px;font-weight:900;color:#3B82F6">$13.5M</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">32 días x $421K extra/día</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,215,0,0.06);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Revenue esperado</div><div style="font-size:22px;font-weight:900;color:#FFD700">$22.5M</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">ROAS conservador 1.67x</div></div>'
-  html+='<div style="text-align:center;background:rgba(16,185,129,0.08);border-radius:10px;padding:14px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">ROI de la inversión</div><div style="font-size:22px;font-weight:900;color:#10B981">1.67x</div><div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">$9M de ganancia neta</div></div>'
-  html+='</div>'
-  html+='<div class="opp" style="margin-top:12px"><h4>Las palancas de costo $0 se activan primero</h4><p>Dormidos (costo $0, potencial $33.8M) y ticket $2.500 (ya activo, +$24.6M) se ejecutan esta semana. Meta x2 se escala en semana 2 solo si el ROAS post-ticket se mantiene arriba de 1.5x. <strong>Orden: primero lo gratis, después lo pagado.</strong></p></div>'
-  html+='</div>'
 
   html+='</div>'
 
