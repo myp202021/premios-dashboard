@@ -1,6 +1,6 @@
 {
-  "updated": "2026-06-19T16:35:08.987Z",
-  "total_orders": 2377,
+  "updated": "2026-06-19T19:35:17.955Z",
+  "total_orders": 2399,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -31,17 +31,17 @@
   "cohortes": {
     "A": {
       "name": "Precio bajo ($2.500, sin cupón WA)",
-      "total_buyers": 221,
+      "total_buyers": 230,
       "returners_any": 8,
       "returners_flash": 1,
       "returners_wa": 7,
-      "return_rate_any": 4,
+      "return_rate_any": 3,
       "return_rate_flash": 0,
       "return_rate_wa": 3,
       "avg_days_to_return": 2,
-      "first_purchase_rev": 551750,
+      "first_purchase_rev": 574250,
       "return_rev": 36250,
-      "total_rev": 588000,
+      "total_rev": 610500,
       "avg_first_ticket": 2497,
       "avg_return_ticket": 4531
     },
@@ -79,19 +79,19 @@
     },
     "C": {
       "name": "Línea base (≥$5.000, sin cupón)",
-      "total_buyers": 1000,
-      "returners_any": 95,
+      "total_buyers": 1011,
+      "returners_any": 97,
       "returners_flash": 33,
       "returners_wa": 41,
       "return_rate_any": 10,
       "return_rate_flash": 3,
       "return_rate_wa": 4,
       "avg_days_to_return": 4,
-      "first_purchase_rev": 8102500,
-      "return_rev": 1095000,
-      "total_rev": 9197500,
+      "first_purchase_rev": 8192500,
+      "return_rev": 1102500,
+      "total_rev": 9295000,
       "avg_first_ticket": 8103,
-      "avg_return_ticket": 11526
+      "avg_return_ticket": 11366
     },
     "other": {
       "name": "Otros (con cupón no-WA en primera compra)",
