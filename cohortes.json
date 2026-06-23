@@ -1,6 +1,6 @@
 {
-  "updated": "2026-06-23T17:53:07.728Z",
-  "total_orders": 2853,
+  "updated": "2026-06-23T19:57:53.379Z",
+  "total_orders": 2858,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -47,18 +47,18 @@
     },
     "B": {
       "name": "Canal WhatsApp (cupón w*)",
-      "total_buyers": 48,
+      "total_buyers": 49,
       "returners_any": 6,
       "returners_flash": 0,
       "returners_wa": 5,
-      "return_rate_any": 13,
+      "return_rate_any": 12,
       "return_rate_flash": 0,
       "return_rate_wa": 10,
       "avg_days_to_return": 3,
-      "first_purchase_rev": 411300,
+      "first_purchase_rev": 420300,
       "return_rev": 66950,
-      "total_rev": 478250,
-      "avg_first_ticket": 8569,
+      "total_rev": 487250,
+      "avg_first_ticket": 8578,
       "avg_return_ticket": 11158
     },
     "AB": {
@@ -79,7 +79,7 @@
     },
     "C": {
       "name": "Línea base (≥$5.000, sin cupón)",
-      "total_buyers": 1245,
+      "total_buyers": 1249,
       "returners_any": 126,
       "returners_flash": 33,
       "returners_wa": 58,
@@ -87,10 +87,10 @@
       "return_rate_flash": 3,
       "return_rate_wa": 5,
       "avg_days_to_return": 5,
-      "first_purchase_rev": 10102500,
+      "first_purchase_rev": 10127500,
       "return_rev": 1513000,
-      "total_rev": 11615500,
-      "avg_first_ticket": 8114,
+      "total_rev": 11640500,
+      "avg_first_ticket": 8108,
       "avg_return_ticket": 12008
     },
     "other": {
