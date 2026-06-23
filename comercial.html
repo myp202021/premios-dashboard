@@ -177,11 +177,19 @@ function render(d) {
   const revDrop = ((1 - s5RevDay / s3RevDay) * 100).toFixed(0);
   const roasDrop = s3.fb?.roas > 0 ? ((1 - s5.fb.roas / s3.fb.roas) * 100).toFixed(0) : 0;
 
+  // Conv rate click→compra
+  const s3clicks = s3.fb.spend / s3.fb.cpc;
+  const s5clicks = s5.fb.spend / s5.fb.cpc;
+  const s3conv = (s3.total_orders / s3clicks * 100).toFixed(2);
+  const s5conv = (s5.total_orders / s5clicks * 100).toFixed(2);
+  const convDrop = ((1 - s5conv / s3conv) * 100).toFixed(0);
+
   document.getElementById('insight1').innerHTML = '<div class="insight"><h4>Diagnóstico S5</h4><ul>' +
-    '<li><strong>Inversión diaria cayó ' + invDrop + '%</strong> — de ' + fmtP(s3InvDay) + '/día (S3) a ' + fmtP(s5InvDay) + '/día (S5). Esta es la causa principal.</li>' +
-    '<li><strong>ROAS cayó ' + roasDrop + '%</strong> — de ' + s3.fb.roas + 'x (S3) a ' + s5.fb.roas + 'x (S5). Cada peso invertido rinde menos.</li>' +
-    '<li><strong>Revenue diario cayó ' + revDrop + '%</strong> — efecto combinado de menos inversión + menor eficiencia.</li>' +
-    '<li>Si se invirtiera al nivel de S3 (' + fmtP(s3InvDay) + '/día), con el ROAS actual (1.5x), el revenue sería ~' + fmtP(s3InvDay * s5.days * s5.fb.roas) + '</li>' +
+    '<li><strong>Precio del sticker bajó de $5.000 a $3.000 (-40%)</strong> — cada venta genera menos revenue.</li>' +
+    '<li><strong>Conversión click→compra cayó ' + convDrop + '%</strong> — de ' + s3conv + '% (S3) a ' + s5conv + '% (S5). La gente llega al sitio pero compra menos.</li>' +
+    '<li><strong>ROAS cayó ' + roasDrop + '%</strong> — de ' + s3.fb.roas + 'x (S3) a ' + s5.fb.roas + 'x (S5). Efecto combinado de menor precio + menor conversión.</li>' +
+    '<li><strong>CTR subió</strong> de ' + s3.fb.ctr + '% a ' + s5.fb.ctr + '% — los anuncios funcionan mejor, el problema está post-click (sitio/oferta/precio).</li>' +
+    '<li>En volumen de stickers: S5 lleva ' + fmt(s5.total_stickers) + ' vs ' + fmt(s3.total_stickers) + ' de S3 (' + (s5.total_stickers/s3.total_stickers*100).toFixed(1) + '% al día ' + s5.days + ').</li>' +
     '</ul></div>';
 
   // === SEC 2: TIPOS DE TICKET ===
@@ -223,11 +231,21 @@ function render(d) {
   h2 += '<td class="r rd">-' + ticketDrop + '%</td></tr>';
   h2 += '</tbody></table>';
 
+  // Precio unitario por sorteo
+  h2 += '<tr class="total"><td>PRECIO UNITARIO STICKER</td>';
+  h2 += '<td class="r" colspan="2">$5.000</td>';
+  h2 += '<td class="r" colspan="2">$5.000</td>';
+  h2 += '<td class="r" colspan="2">$3.000</td>';
+  h2 += '<td class="r rd">-40%</td></tr>';
+  h2 += '</tbody></table>';
+
   // Insight tickets
-  h2 += '<div class="insight"><h4>Cambio de mix</h4><ul>';
-  h2 += '<li>S3 vendía mayormente <strong>Pack 10</strong> (72% de órdenes). S5 vende mayormente <strong>Pack 2</strong> y <strong>Pack 8</strong>.</li>';
+  h2 += '<div class="insight"><h4>Cambio de precio + mix</h4><ul>';
+  h2 += '<li><strong>El precio del sticker bajó de $5.000 a $3.000 (-40%).</strong> Esto explica gran parte de la caída de revenue.</li>';
+  h2 += '<li>S3 vendía mayormente <strong>Pack 10 a $50.000</strong> (72% de órdenes). S5 vende <strong>Pack 2 a $5.000</strong> y <strong>Pack 8 a $10.000</strong>.</li>';
   h2 += '<li>El ticket promedio cayó <strong>' + ticketDrop + '%</strong> — de ' + fmtP(s3.avg_ticket) + ' a ' + fmtP(s5.avg_ticket) + '.</li>';
   h2 += '<li>Para igualar el revenue de S3 con el ticket actual, necesitaría <strong>' + fmt(Math.round(s3.total_revenue / s5.avg_ticket)) + ' órdenes</strong> (vs ' + fmt(s3.total_orders) + ' que tuvo S3).</li>';
+  h2 += '<li>En <strong>stickers vendidos</strong>, S5 lleva ' + fmt(s5.total_stickers) + ' vs ' + fmt(s3.total_stickers) + ' de S3 (' + (s5.total_stickers / s3.total_stickers * 100).toFixed(1) + '%).</li>';
   h2 += '</ul></div>';
   document.getElementById('t2').innerHTML = h2;
 
