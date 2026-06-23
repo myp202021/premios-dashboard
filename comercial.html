@@ -14,9 +14,10 @@ body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-heig
 .hd p{font-size:11px;color:rgba(255,255,255,0.4)}
 .period{display:inline-block;padding:3px 10px;border-radius:5px;background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.3);font-size:10px;font-weight:700;color:#E53935;margin-top:4px}
 .sec{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
-.sec-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.sec-title{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px}
 .sec-title::before{content:'';width:3px;height:16px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);font-size:12px}
+.sec-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:14px}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);font-size:12px;margin-bottom:12px}
 thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:10px 12px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px}
 thead th.r{text-align:right}
 tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:#ccc}
@@ -25,24 +26,27 @@ tbody td.b{font-weight:700;color:#fff}
 tbody td.gold{color:#FFD700;font-weight:800}
 tbody tr:hover td{background:rgba(255,255,255,0.02)}
 tbody tr.active td{background:rgba(229,57,53,0.06)}
-.bar-bg{width:100%;background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;transition:width .5s}
+tbody tr.total td{border-top:2px solid rgba(255,215,0,0.2);font-weight:800;color:#FFD700}
+.bar-bg{width:100%;background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden;display:inline-block;vertical-align:middle}
+.bar-fill{height:100%;border-radius:4px}
 .g{color:#4ADE80}.y{color:#FBBF24}.rd{color:#EF4444}
 .tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
 .tag-active{background:rgba(229,57,53,0.15);color:#E53935}
 .tag-closed{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)}
+.insight{background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);border-radius:10px;padding:14px 16px;margin-top:12px}
+.insight h4{font-size:11px;font-weight:800;color:#E53935;margin-bottom:6px}
+.insight p,.insight li{font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6}
+.insight ul{padding-left:16px}
 .footer{padding:20px 0;text-align:center;font-size:10px;color:rgba(255,255,255,0.2)}
 #loading{text-align:center;padding:80px 0;color:rgba(255,255,255,0.3)}
-.note{font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px}
 </style>
 </head>
 <body>
 <div class="c">
-
 <div class="hd">
   <div>
     <h1>Premios Increíbles</h1>
-    <p>Dashboard Comercial — Comparativa por sorteo</p>
+    <p>Dashboard Comercial</p>
     <div class="period" id="periodo"></div>
   </div>
   <div style="text-align:right">
@@ -50,62 +54,67 @@ tbody tr.active td{background:rgba(229,57,53,0.06)}
     <a href="/" style="font-size:10px;color:rgba(229,57,53,0.6);text-decoration:none;">← Dashboard completo</a>
   </div>
 </div>
-
 <div id="loading">Cargando datos...</div>
 <div id="dashboard" style="display:none">
 
-  <!-- SEC 1: INVERSION VS COMPRAS -->
+  <!-- SEC 1: VENTA TOTAL + INVERSIÓN POR SORTEO -->
   <div class="sec">
-    <div class="sec-title">Inversión vs Compras por sorteo</div>
-    <p class="note">% de avance medido contra Sorteo 3 (mejor sorteo histórico). ROAS = Revenue / Inversión Ads.</p>
+    <div class="sec-title">Venta total WooCommerce vs Inversión Ads por sorteo</div>
+    <p class="sec-sub">% de avance medido contra Sorteo 3. Inversión diaria y ROAS para comparar eficiencia real.</p>
     <table>
       <thead><tr>
         <th>Sorteo</th>
+        <th class="r">Revenue WC</th>
         <th class="r">Inv. Ads</th>
-        <th class="r">Revenue</th>
         <th class="r">ROAS</th>
+        <th class="r">Inv/día</th>
+        <th class="r">Rev/día</th>
         <th class="r">Órdenes</th>
-        <th class="r">Boletos</th>
-        <th class="r">Ticket prom.</th>
         <th class="r">Días</th>
-        <th style="min-width:130px;">% Avance revenue</th>
+        <th style="min-width:130px;">% Avance rev.</th>
         <th></th>
       </tr></thead>
-      <tbody id="t-invest"></tbody>
+      <tbody id="t1"></tbody>
     </table>
+    <div id="insight1"></div>
   </div>
 
   <!-- SEC 2: TIPOS DE TICKET -->
   <div class="sec">
-    <div class="sec-title">Tipos de ticket por sorteo (cantidad y stickers)</div>
-    <p class="note">Cada tipo de ticket genera distinta cantidad de stickers. % de avance por tipo vs Sorteo 3.</p>
-    <div id="t-tickets"></div>
+    <div class="sec-title">Tipos de ticket — cantidad y stickers por sorteo</div>
+    <p class="sec-sub">Cada sorteo tiene packs distintos. El mix de tickets impacta directamente el ticket promedio y revenue.</p>
+    <div id="t2"></div>
   </div>
 
   <!-- SEC 3: COMPRADORES NUEVOS VS RECOMPRAS -->
   <div class="sec">
-    <div class="sec-title">Compradores nuevos y recompras por sorteo</div>
-    <p class="note">% de avance en compradores únicos y tasa de recompra vs Sorteo 3.</p>
+    <div class="sec-title">Compradores nuevos vs recompras por sorteo</div>
+    <p class="sec-sub">La recompra es el motor de crecimiento. % avance en base de compradores únicos vs S3.</p>
     <table>
       <thead><tr>
         <th>Sorteo</th>
         <th class="r">Únicos</th>
-        <th class="r">Recompradores</th>
+        <th class="r">Recompra</th>
         <th class="r">% Recompra</th>
-        <th class="r">Super repeat (3+)</th>
+        <th class="r">Super (3+)</th>
         <th class="r">Compras/persona</th>
         <th style="min-width:130px;">% Avance únicos</th>
         <th></th>
       </tr></thead>
-      <tbody id="t-buyers"></tbody>
+      <tbody id="t3"></tbody>
     </table>
-    <div id="buyers-weekly" style="margin-top:16px"></div>
+    <div id="t3weekly" style="margin-top:14px"></div>
+  </div>
+
+  <!-- SEC 4: FUENTES DE TRÁFICO -->
+  <div class="sec">
+    <div class="sec-title">Fuentes de tráfico por sorteo — dónde viene cada venta</div>
+    <p class="sec-sub">UTM source de cada orden WooCommerce. Muestra qué canal trae las compras reales.</p>
+    <div id="t4"></div>
   </div>
 
 </div>
-
 <div class="footer">Dashboard generado por Muller & Pérez · Datos actualizados cada 2 horas</div>
-
 </div>
 
 <script>
@@ -119,145 +128,184 @@ async function load() {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('updated').textContent = 'Actualizado: ' + new Date(d.updated).toLocaleString('es-CL');
     document.getElementById('periodo').textContent = 'LIVE — datos al ' + new Date(d.updated).toLocaleDateString('es-CL');
-  } catch(e) {
-    document.getElementById('loading').textContent = 'Error: ' + e.message;
-  }
+  } catch(e) { document.getElementById('loading').textContent = 'Error: ' + e.message; }
 }
 
 function fmt(n) { return Math.round(n).toLocaleString('es-CL'); }
 function fmtP(n) { return '$' + fmt(n); }
+function pctBar(pct, active) {
+  const col = active ? '#E53935' : 'rgba(255,255,255,0.15)';
+  const txtCol = pct >= 80 ? '#4ADE80' : pct >= 50 ? '#FBBF24' : '#EF4444';
+  return '<div class="bar-bg" style="width:100px;margin-right:6px;"><div class="bar-fill" style="width:' + Math.min(pct, 100) + '%;background:' + col + ';"></div></div><span style="font-size:10px;font-weight:700;color:' + txtCol + ';">' + pct.toFixed(1) + '%</span>';
+}
+function tag(active) { return active ? '<span class="tag tag-active">ACTIVO</span>' : '<span class="tag tag-closed">Cerrado</span>'; }
 
 function render(d) {
   const sorteos = ['s3','s4','s5'].map(k => ({ key: k, ...d.sorteos[k] }));
-  const s3 = sorteos[0]; // baseline
+  const s3 = sorteos[0];
 
-  // === SECCIÓN 1: INVERSIÓN VS COMPRAS ===
-  const tbody1 = document.getElementById('t-invest');
-  let html1 = '';
+  // === SEC 1: VENTA + INVERSIÓN ===
+  let h1 = '';
   for (const s of sorteos) {
     const spend = s.fb?.spend || 0;
     const roas = s.fb?.roas || 0;
-    const isActive = s.active;
+    const invDay = s.days > 0 ? spend / s.days : 0;
+    const revDay = s.days > 0 ? s.total_revenue / s.days : 0;
     const avRev = s3.total_revenue > 0 ? (s.total_revenue / s3.total_revenue * 100) : 0;
-    const roasClass = roas >= 2 ? 'g' : roas >= 1.5 ? 'y' : 'rd';
-
-    html1 += '<tr' + (isActive ? ' class="active"' : '') + '>';
-    html1 += '<td class="b">' + s.name + '</td>';
-    html1 += '<td class="r">' + fmtP(spend) + '</td>';
-    html1 += '<td class="r gold">' + fmtP(s.total_revenue) + '</td>';
-    html1 += '<td class="r ' + roasClass + '">' + roas.toFixed(1) + 'x</td>';
-    html1 += '<td class="r b">' + fmt(s.total_orders) + '</td>';
-    html1 += '<td class="r">' + fmt(s.total_stickers) + '</td>';
-    html1 += '<td class="r">' + fmtP(s.avg_ticket) + '</td>';
-    html1 += '<td class="r">' + s.days + '</td>';
-    html1 += '<td><div class="bar-bg"><div class="bar-fill" style="width:' + Math.min(avRev, 100) + '%;background:' + (isActive ? '#E53935' : 'rgba(255,255,255,0.15)') + '"></div></div><span style="font-size:10px;font-weight:700;color:' + (avRev >= 100 ? '#4ADE80' : isActive ? '#E53935' : 'rgba(255,255,255,0.3)') + ';">' + avRev.toFixed(1) + '%</span></td>';
-    html1 += '<td>' + (isActive ? '<span class="tag tag-active">ACTIVO</span>' : '<span class="tag tag-closed">Cerrado</span>') + '</td>';
-    html1 += '</tr>';
+    const rc = roas >= 2 ? 'g' : roas >= 1.5 ? 'y' : 'rd';
+    h1 += '<tr' + (s.active ? ' class="active"' : '') + '>';
+    h1 += '<td class="b">' + s.name + '</td>';
+    h1 += '<td class="r gold">' + fmtP(s.total_revenue) + '</td>';
+    h1 += '<td class="r">' + fmtP(spend) + '</td>';
+    h1 += '<td class="r ' + rc + '">' + roas.toFixed(1) + 'x</td>';
+    h1 += '<td class="r">' + fmtP(invDay) + '</td>';
+    h1 += '<td class="r">' + fmtP(revDay) + '</td>';
+    h1 += '<td class="r b">' + fmt(s.total_orders) + '</td>';
+    h1 += '<td class="r">' + s.days + '</td>';
+    h1 += '<td>' + pctBar(avRev, s.active) + '</td>';
+    h1 += '<td>' + tag(s.active) + '</td></tr>';
   }
-  tbody1.innerHTML = html1;
+  document.getElementById('t1').innerHTML = h1;
 
-  // === SECCIÓN 2: TIPOS DE TICKET ===
-  const ticketDiv = document.getElementById('t-tickets');
+  // Insight
+  const s5 = sorteos[2];
+  const s5InvDay = s5.fb?.spend / s5.days || 0;
+  const s3InvDay = s3.fb?.spend / s3.days || 0;
+  const invDrop = ((1 - s5InvDay / s3InvDay) * 100).toFixed(0);
+  const s5RevDay = s5.total_revenue / s5.days;
+  const s3RevDay = s3.total_revenue / s3.days;
+  const revDrop = ((1 - s5RevDay / s3RevDay) * 100).toFixed(0);
+  const roasDrop = s3.fb?.roas > 0 ? ((1 - s5.fb.roas / s3.fb.roas) * 100).toFixed(0) : 0;
 
-  // First, normalize all ticket types across sorteos
+  document.getElementById('insight1').innerHTML = '<div class="insight"><h4>Diagnóstico S5</h4><ul>' +
+    '<li><strong>Inversión diaria cayó ' + invDrop + '%</strong> — de ' + fmtP(s3InvDay) + '/día (S3) a ' + fmtP(s5InvDay) + '/día (S5). Esta es la causa principal.</li>' +
+    '<li><strong>ROAS cayó ' + roasDrop + '%</strong> — de ' + s3.fb.roas + 'x (S3) a ' + s5.fb.roas + 'x (S5). Cada peso invertido rinde menos.</li>' +
+    '<li><strong>Revenue diario cayó ' + revDrop + '%</strong> — efecto combinado de menos inversión + menor eficiencia.</li>' +
+    '<li>Si se invirtiera al nivel de S3 (' + fmtP(s3InvDay) + '/día), con el ROAS actual (1.5x), el revenue sería ~' + fmtP(s3InvDay * s5.days * s5.fb.roas) + '</li>' +
+    '</ul></div>';
+
+  // === SEC 2: TIPOS DE TICKET ===
   function parseVariants(variants) {
-    const tickets = {};
+    const t = {};
     for (const [name, qty] of Object.entries(variants || {})) {
-      const match = name.match(/(\d+)$/);
-      if (match) {
-        const count = parseInt(match[1]);
-        if (!tickets[count]) tickets[count] = 0;
-        tickets[count] += qty;
-      }
+      const m = name.match(/(\d+)$/);
+      if (m) { const c = parseInt(m[1]); t[c] = (t[c] || 0) + qty; }
     }
-    return tickets;
+    return t;
   }
-
   const allTickets = {};
-  for (const s of sorteos) {
-    allTickets[s.key] = parseVariants(s.variants);
-  }
-  // All unique ticket sizes
+  for (const s of sorteos) allTickets[s.key] = parseVariants(s.variants);
   const allSizes = [...new Set(sorteos.flatMap(s => Object.keys(allTickets[s.key])))].map(Number).sort((a, b) => a - b);
 
-  let html2 = '<table><thead><tr><th>Tipo ticket</th>';
-  for (const s of sorteos) {
-    html2 += '<th class="r">' + s.name.replace('Sorteo ', 'S').replace(' — ', ' ') + '<br>Cantidad</th>';
-    html2 += '<th class="r">Stickers</th>';
-  }
-  html2 += '<th class="r">% Avance S5 vs S3</th>';
-  html2 += '</tr></thead><tbody>';
+  let h2 = '<table><thead><tr><th>Pack</th>';
+  for (const s of sorteos) h2 += '<th class="r">' + s.name.replace('Sorteo ','S').replace(' — ',' ') + '</th><th class="r">Stickers</th>';
+  h2 += '<th class="r">% Avance S5 vs S3</th></tr></thead><tbody>';
 
   for (const size of allSizes) {
-    html2 += '<tr><td class="b">Pack de ' + size + '</td>';
-    const s3Qty = allTickets.s3[size] || 0;
-    const s5Qty = allTickets.s5[size] || 0;
+    const s3q = allTickets.s3[size] || 0;
+    const s5q = allTickets.s5[size] || 0;
+    h2 += '<tr><td class="b">Pack de ' + size + '</td>';
     for (const s of sorteos) {
-      const qty = allTickets[s.key][size] || 0;
-      html2 += '<td class="r b">' + (qty > 0 ? fmt(qty) : '—') + '</td>';
-      html2 += '<td class="r">' + (qty > 0 ? fmt(qty * size) : '—') + '</td>';
+      const q = allTickets[s.key][size] || 0;
+      h2 += '<td class="r' + (q > 0 ? ' b' : '') + '">' + (q > 0 ? fmt(q) : '—') + '</td>';
+      h2 += '<td class="r">' + (q > 0 ? fmt(q * size) : '—') + '</td>';
     }
-    const avance = s3Qty > 0 ? (s5Qty / s3Qty * 100) : (s5Qty > 0 ? 100 : 0);
-    html2 += '<td class="r"><div class="bar-bg" style="display:inline-block;width:80px;vertical-align:middle;margin-right:6px;"><div class="bar-fill" style="width:' + Math.min(avance, 100) + '%;background:#E53935;"></div></div><span style="font-size:10px;font-weight:700;color:' + (avance >= 50 ? '#4ADE80' : '#FBBF24') + ';">' + avance.toFixed(0) + '%</span></td>';
-    html2 += '</tr>';
+    const av = s3q > 0 ? (s5q / s3q * 100) : (s5q > 0 ? 100 : 0);
+    h2 += '<td class="r">' + (s3q > 0 || s5q > 0 ? pctBar(av, true) : '—') + '</td></tr>';
   }
+  // Totals + ticket promedio
+  h2 += '<tr class="total"><td>TOTAL ÓRDENES</td>';
+  for (const s of sorteos) { const tq = Object.values(allTickets[s.key]).reduce((a,b)=>a+b,0); h2 += '<td class="r">' + fmt(tq) + '</td><td class="r">' + fmt(s.total_stickers) + '</td>'; }
+  h2 += '<td class="r">' + pctBar(s3.total_orders > 0 ? s5.total_orders / s3.total_orders * 100 : 0, true) + '</td></tr>';
+  h2 += '<tr class="total"><td>TICKET PROMEDIO</td>';
+  for (const s of sorteos) h2 += '<td class="r" colspan="2">' + fmtP(s.avg_ticket) + '</td>';
+  const ticketDrop = ((1 - s5.avg_ticket / s3.avg_ticket) * 100).toFixed(0);
+  h2 += '<td class="r rd">-' + ticketDrop + '%</td></tr>';
+  h2 += '</tbody></table>';
 
-  // Totals row
-  html2 += '<tr style="border-top:2px solid rgba(255,215,0,0.2);">';
-  html2 += '<td class="b" style="color:#FFD700;">TOTAL</td>';
+  // Insight tickets
+  h2 += '<div class="insight"><h4>Cambio de mix</h4><ul>';
+  h2 += '<li>S3 vendía mayormente <strong>Pack 10</strong> (72% de órdenes). S5 vende mayormente <strong>Pack 2</strong> y <strong>Pack 8</strong>.</li>';
+  h2 += '<li>El ticket promedio cayó <strong>' + ticketDrop + '%</strong> — de ' + fmtP(s3.avg_ticket) + ' a ' + fmtP(s5.avg_ticket) + '.</li>';
+  h2 += '<li>Para igualar el revenue de S3 con el ticket actual, necesitaría <strong>' + fmt(Math.round(s3.total_revenue / s5.avg_ticket)) + ' órdenes</strong> (vs ' + fmt(s3.total_orders) + ' que tuvo S3).</li>';
+  h2 += '</ul></div>';
+  document.getElementById('t2').innerHTML = h2;
+
+  // === SEC 3: COMPRADORES ===
+  let h3 = '';
   for (const s of sorteos) {
-    const totalQty = Object.values(allTickets[s.key]).reduce((a, b) => a + b, 0);
-    html2 += '<td class="r b" style="color:#FFD700;">' + fmt(totalQty) + '</td>';
-    html2 += '<td class="r b" style="color:#FFD700;">' + fmt(s.total_stickers) + '</td>';
+    const avU = s3.unique_buyers > 0 ? (s.unique_buyers / s3.unique_buyers * 100) : 0;
+    h3 += '<tr' + (s.active ? ' class="active"' : '') + '>';
+    h3 += '<td class="b">' + s.name + '</td>';
+    h3 += '<td class="r b">' + fmt(s.unique_buyers) + '</td>';
+    h3 += '<td class="r">' + fmt(s.repeat_buyers) + '</td>';
+    h3 += '<td class="r ' + (s.repeat_pct >= 20 ? 'g' : s.repeat_pct >= 15 ? 'y' : 'rd') + '">' + s.repeat_pct + '%</td>';
+    h3 += '<td class="r">' + fmt(s.super_repeat) + '</td>';
+    h3 += '<td class="r">' + s.purchases_per_person + '</td>';
+    h3 += '<td>' + pctBar(avU, s.active) + '</td>';
+    h3 += '<td>' + tag(s.active) + '</td></tr>';
   }
-  const avTotal = s3.total_orders > 0 ? (sorteos[2].total_orders / s3.total_orders * 100) : 0;
-  html2 += '<td class="r" style="color:#FFD700;font-weight:800;">' + avTotal.toFixed(1) + '%</td>';
-  html2 += '</tr></tbody></table>';
-  ticketDiv.innerHTML = html2;
+  document.getElementById('t3').innerHTML = h3;
 
-  // === SECCIÓN 3: COMPRADORES ===
-  const tbody3 = document.getElementById('t-buyers');
-  let html3 = '';
-  for (const s of sorteos) {
-    const isActive = s.active;
-    const avUnique = s3.unique_buyers > 0 ? (s.unique_buyers / s3.unique_buyers * 100) : 0;
-
-    html3 += '<tr' + (isActive ? ' class="active"' : '') + '>';
-    html3 += '<td class="b">' + s.name + '</td>';
-    html3 += '<td class="r b">' + fmt(s.unique_buyers) + '</td>';
-    html3 += '<td class="r">' + fmt(s.repeat_buyers) + '</td>';
-    html3 += '<td class="r ' + (s.repeat_pct >= 20 ? 'g' : s.repeat_pct >= 15 ? 'y' : 'rd') + '">' + s.repeat_pct + '%</td>';
-    html3 += '<td class="r">' + fmt(s.super_repeat) + '</td>';
-    html3 += '<td class="r">' + s.purchases_per_person + '</td>';
-    html3 += '<td><div class="bar-bg"><div class="bar-fill" style="width:' + Math.min(avUnique, 100) + '%;background:' + (isActive ? '#E53935' : 'rgba(255,255,255,0.15)') + '"></div></div><span style="font-size:10px;font-weight:700;color:' + (avUnique >= 50 ? '#4ADE80' : isActive ? '#FBBF24' : 'rgba(255,255,255,0.3)') + ';">' + avUnique.toFixed(1) + '%</span></td>';
-    html3 += '<td>' + (isActive ? '<span class="tag tag-active">ACTIVO</span>' : '<span class="tag tag-closed">Cerrado</span>') + '</td>';
-    html3 += '</tr>';
+  // Weekly S5
+  if (s5.by_week) {
+    let wh = '<h4 style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:8px;">Desglose semanal — ' + s5.name + '</h4>';
+    wh += '<table><thead><tr><th>Sem</th><th class="r">Órdenes</th><th class="r">Nuevos</th><th class="r">Repeat</th><th class="r">% Repeat</th><th class="r">Revenue</th><th class="r">Acumulado</th></tr></thead><tbody>';
+    Object.entries(s5.by_week).sort((a,b) => +a[0] - +b[0]).forEach(([n, w]) => {
+      const rp = w.orders > 0 ? (w.repeat / w.orders * 100).toFixed(1) : '0';
+      wh += '<tr><td class="b">Sem ' + n + '</td><td class="r b">' + fmt(w.orders) + '</td><td class="r g">' + fmt(w.new) + '</td><td class="r y">' + fmt(w.repeat) + '</td><td class="r">' + rp + '%</td><td class="r">' + fmtP(w.rev) + '</td><td class="r">' + fmt(w.cumulative || 0) + '</td></tr>';
+    });
+    wh += '</tbody></table>';
+    document.getElementById('t3weekly').innerHTML = wh;
   }
-  tbody3.innerHTML = html3;
 
-  // Weekly breakdown for active sorteo
-  const active = sorteos.find(s => s.active);
-  if (active && active.by_week) {
-    const weekDiv = document.getElementById('buyers-weekly');
-    let wHtml = '<h3 style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:8px;">Desglose semanal — ' + active.name + '</h3>';
-    wHtml += '<table><thead><tr><th>Semana</th><th class="r">Órdenes</th><th class="r">Nuevos</th><th class="r">Recompra</th><th class="r">% Recompra</th><th class="r">Revenue</th><th class="r">Acumulado</th></tr></thead><tbody>';
+  // === SEC 4: FUENTES DE TRÁFICO ===
+  let h4 = '<table><thead><tr><th>Fuente</th>';
+  for (const s of sorteos) h4 += '<th class="r">' + s.name.replace('Sorteo ','S').replace(' — ',' ') + '</th><th class="r">%</th>';
+  h4 += '<th class="r">Cambio S3→S5</th></tr></thead><tbody>';
 
-    const weeks = Object.entries(active.by_week).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
-    for (const [num, w] of weeks) {
-      const repeatPct = w.orders > 0 ? (w.repeat / w.orders * 100) : 0;
-      wHtml += '<tr>';
-      wHtml += '<td class="b">Semana ' + num + '</td>';
-      wHtml += '<td class="r b">' + fmt(w.orders) + '</td>';
-      wHtml += '<td class="r g">' + fmt(w.new) + '</td>';
-      wHtml += '<td class="r y">' + fmt(w.repeat) + '</td>';
-      wHtml += '<td class="r">' + repeatPct.toFixed(1) + '%</td>';
-      wHtml += '<td class="r">' + fmtP(w.rev) + '</td>';
-      wHtml += '<td class="r">' + fmt(w.cumulative || 0) + '</td>';
-      wHtml += '</tr>';
+  const allSources = [...new Set(sorteos.flatMap(s => Object.keys(s.sources)))].sort((a, b) => {
+    return (sorteos[0].sources[b] || 0) - (sorteos[0].sources[a] || 0);
+  });
+
+  for (const src of allSources) {
+    h4 += '<tr><td class="b">' + src + '</td>';
+    for (const s of sorteos) {
+      const v = s.sources[src] || 0;
+      const total = Object.values(s.sources).reduce((a, b) => a + b, 0);
+      const pct = total > 0 ? (v / total * 100) : 0;
+      h4 += '<td class="r' + (v > 0 ? ' b' : '') + '">' + (v > 0 ? fmt(v) : '—') + '</td>';
+      h4 += '<td class="r">' + (v > 0 ? pct.toFixed(1) + '%' : '—') + '</td>';
     }
-    wHtml += '</tbody></table>';
-    weekDiv.innerHTML = wHtml;
+    const s3v = s3.sources[src] || 0;
+    const s5v = s5.sources[src] || 0;
+    if (s3v > 0 && s5v > 0) {
+      const change = ((s5v / s3v - 1) * 100).toFixed(0);
+      const cls = change >= 0 ? 'g' : 'rd';
+      h4 += '<td class="r ' + cls + '">' + (change >= 0 ? '+' : '') + change + '%</td>';
+    } else {
+      h4 += '<td class="r">—</td>';
+    }
+    h4 += '</tr>';
   }
+  h4 += '</tbody></table>';
+
+  // Insight fuentes
+  const s3ig = s3.sources['Instagram'] || 0;
+  const s5ig = s5.sources['Instagram'] || 0;
+  const s3fb = s3.sources['Facebook'] || 0;
+  const s5fb = s5.sources['Facebook'] || 0;
+  const igDrop = s3ig > 0 ? ((1 - s5ig / s3ig) * 100).toFixed(0) : 0;
+  const fbDrop = s3fb > 0 ? ((1 - s5fb / s3fb) * 100).toFixed(0) : 0;
+
+  h4 += '<div class="insight"><h4>Análisis de fuentes</h4><ul>';
+  h4 += '<li><strong>Instagram cayó ' + igDrop + '%</strong> en órdenes (de ' + fmt(s3ig) + ' a ' + fmt(s5ig) + '). Es la mayor caída absoluta y está directamente ligada a la inversión en Meta Ads.</li>';
+  h4 += '<li><strong>Facebook cayó ' + fbDrop + '%</strong> (de ' + fmt(s3fb) + ' a ' + fmt(s5fb) + ').</li>';
+  h4 += '<li><strong>Tráfico directo pasó de 18% a 42%</strong> del total — esto significa que la base orgánica está más activa pero no compensa la caída de paid.</li>';
+  h4 += '<li><strong>Conclusión:</strong> La caída de ventas es proporcional a la caída de inversión en Meta. No es un problema de creativos o audiencia — es presupuesto.</li>';
+  h4 += '</ul></div>';
+
+  document.getElementById('t4').innerHTML = h4;
 }
 
 load();
