@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Comercial — Premios Increíbles</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5;font-size:13px}
+.c{max-width:1100px;margin:0 auto;padding:0 24px}
+.hd{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.hd h1{font-size:22px;font-weight:900}
+.hd p{font-size:11px;color:rgba(255,255,255,0.4)}
+.period{display:inline-block;padding:3px 10px;border-radius:5px;background:rgba(229,57,53,0.15);border:1px solid rgba(229,57,53,0.3);font-size:10px;font-weight:700;color:#E53935;margin-top:4px}
+.sec{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.sec-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.sec-title::before{content:'';width:3px;height:16px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);font-size:12px}
+thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:10px 12px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px}
+thead th.r{text-align:right}
+tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:#ccc}
+tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody td.b{font-weight:700;color:#fff}
+tbody td.gold{color:#FFD700;font-weight:800}
+tbody tr:hover td{background:rgba(255,255,255,0.02)}
+tbody tr.active td{background:rgba(229,57,53,0.06)}
+.bar-bg{width:100%;background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.g{color:#4ADE80}.y{color:#FBBF24}.rd{color:#EF4444}
+.tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+.tag-active{background:rgba(229,57,53,0.15);color:#E53935}
+.tag-closed{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)}
+.footer{padding:20px 0;text-align:center;font-size:10px;color:rgba(255,255,255,0.2)}
+#loading{text-align:center;padding:80px 0;color:rgba(255,255,255,0.3)}
+.note{font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="c">
+
+<div class="hd">
+  <div>
+    <h1>Premios Increíbles</h1>
+    <p>Dashboard Comercial — Comparativa por sorteo</p>
+    <div class="period" id="periodo"></div>
+  </div>
+  <div style="text-align:right">
+    <p id="updated" style="font-size:10px;color:rgba(255,255,255,0.3)"></p>
+    <a href="/" style="font-size:10px;color:rgba(229,57,53,0.6);text-decoration:none;">← Dashboard completo</a>
+  </div>
+</div>
+
+<div id="loading">Cargando datos...</div>
+<div id="dashboard" style="display:none">
+
+  <!-- SEC 1: INVERSION VS COMPRAS -->
+  <div class="sec">
+    <div class="sec-title">Inversión vs Compras por sorteo</div>
+    <p class="note">% de avance medido contra Sorteo 3 (mejor sorteo histórico). ROAS = Revenue / Inversión Ads.</p>
+    <table>
+      <thead><tr>
+        <th>Sorteo</th>
+        <th class="r">Inv. Ads</th>
+        <th class="r">Revenue</th>
+        <th class="r">ROAS</th>
+        <th class="r">Órdenes</th>
+        <th class="r">Boletos</th>
+        <th class="r">Ticket prom.</th>
+        <th class="r">Días</th>
+        <th style="min-width:130px;">% Avance revenue</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="t-invest"></tbody>
+    </table>
+  </div>
+
+  <!-- SEC 2: TIPOS DE TICKET -->
+  <div class="sec">
+    <div class="sec-title">Tipos de ticket por sorteo (cantidad y stickers)</div>
+    <p class="note">Cada tipo de ticket genera distinta cantidad de stickers. % de avance por tipo vs Sorteo 3.</p>
+    <div id="t-tickets"></div>
+  </div>
+
+  <!-- SEC 3: COMPRADORES NUEVOS VS RECOMPRAS -->
+  <div class="sec">
+    <div class="sec-title">Compradores nuevos y recompras por sorteo</div>
+    <p class="note">% de avance en compradores únicos y tasa de recompra vs Sorteo 3.</p>
+    <table>
+      <thead><tr>
+        <th>Sorteo</th>
+        <th class="r">Únicos</th>
+        <th class="r">Recompradores</th>
+        <th class="r">% Recompra</th>
+        <th class="r">Super repeat (3+)</th>
+        <th class="r">Compras/persona</th>
+        <th style="min-width:130px;">% Avance únicos</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="t-buyers"></tbody>
+    </table>
+    <div id="buyers-weekly" style="margin-top:16px"></div>
+  </div>
+
+</div>
+
+<div class="footer">Dashboard generado por Muller & Pérez · Datos actualizados cada 2 horas</div>
+
+</div>
+
+<script>
+async function load() {
+  try {
+    const res = await fetch('/api/data');
+    const d = await res.json();
+    if (!d || !d.sorteos) throw new Error('Sin datos');
+    render(d);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('updated').textContent = 'Actualizado: ' + new Date(d.updated).toLocaleString('es-CL');
+    document.getElementById('periodo').textContent = 'LIVE — datos al ' + new Date(d.updated).toLocaleDateString('es-CL');
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Error: ' + e.message;
+  }
+}
+
+function fmt(n) { return Math.round(n).toLocaleString('es-CL'); }
+function fmtP(n) { return '$' + fmt(n); }
+
+function render(d) {
+  const sorteos = ['s3','s4','s5'].map(k => ({ key: k, ...d.sorteos[k] }));
+  const s3 = sorteos[0]; // baseline
+
+  // === SECCIÓN 1: INVERSIÓN VS COMPRAS ===
+  const tbody1 = document.getElementById('t-invest');
+  let html1 = '';
+  for (const s of sorteos) {
+    const spend = s.fb?.spend || 0;
+    const roas = s.fb?.roas || 0;
+    const isActive = s.active;
+    const avRev = s3.total_revenue > 0 ? (s.total_revenue / s3.total_revenue * 100) : 0;
+    const roasClass = roas >= 2 ? 'g' : roas >= 1.5 ? 'y' : 'rd';
+
+    html1 += '<tr' + (isActive ? ' class="active"' : '') + '>';
+    html1 += '<td class="b">' + s.name + '</td>';
+    html1 += '<td class="r">' + fmtP(spend) + '</td>';
+    html1 += '<td class="r gold">' + fmtP(s.total_revenue) + '</td>';
+    html1 += '<td class="r ' + roasClass + '">' + roas.toFixed(1) + 'x</td>';
+    html1 += '<td class="r b">' + fmt(s.total_orders) + '</td>';
+    html1 += '<td class="r">' + fmt(s.total_stickers) + '</td>';
+    html1 += '<td class="r">' + fmtP(s.avg_ticket) + '</td>';
+    html1 += '<td class="r">' + s.days + '</td>';
+    html1 += '<td><div class="bar-bg"><div class="bar-fill" style="width:' + Math.min(avRev, 100) + '%;background:' + (isActive ? '#E53935' : 'rgba(255,255,255,0.15)') + '"></div></div><span style="font-size:10px;font-weight:700;color:' + (avRev >= 100 ? '#4ADE80' : isActive ? '#E53935' : 'rgba(255,255,255,0.3)') + ';">' + avRev.toFixed(1) + '%</span></td>';
+    html1 += '<td>' + (isActive ? '<span class="tag tag-active">ACTIVO</span>' : '<span class="tag tag-closed">Cerrado</span>') + '</td>';
+    html1 += '</tr>';
+  }
+  tbody1.innerHTML = html1;
+
+  // === SECCIÓN 2: TIPOS DE TICKET ===
+  const ticketDiv = document.getElementById('t-tickets');
+
+  // First, normalize all ticket types across sorteos
+  function parseVariants(variants) {
+    const tickets = {};
+    for (const [name, qty] of Object.entries(variants || {})) {
+      const match = name.match(/(\d+)$/);
+      if (match) {
+        const count = parseInt(match[1]);
+        if (!tickets[count]) tickets[count] = 0;
+        tickets[count] += qty;
+      }
+    }
+    return tickets;
+  }
+
+  const allTickets = {};
+  for (const s of sorteos) {
+    allTickets[s.key] = parseVariants(s.variants);
+  }
+  // All unique ticket sizes
+  const allSizes = [...new Set(sorteos.flatMap(s => Object.keys(allTickets[s.key])))].map(Number).sort((a, b) => a - b);
+
+  let html2 = '<table><thead><tr><th>Tipo ticket</th>';
+  for (const s of sorteos) {
+    html2 += '<th class="r">' + s.name.replace('Sorteo ', 'S').replace(' — ', ' ') + '<br>Cantidad</th>';
+    html2 += '<th class="r">Stickers</th>';
+  }
+  html2 += '<th class="r">% Avance S5 vs S3</th>';
+  html2 += '</tr></thead><tbody>';
+
+  for (const size of allSizes) {
+    html2 += '<tr><td class="b">Pack de ' + size + '</td>';
+    const s3Qty = allTickets.s3[size] || 0;
+    const s5Qty = allTickets.s5[size] || 0;
+    for (const s of sorteos) {
+      const qty = allTickets[s.key][size] || 0;
+      html2 += '<td class="r b">' + (qty > 0 ? fmt(qty) : '—') + '</td>';
+      html2 += '<td class="r">' + (qty > 0 ? fmt(qty * size) : '—') + '</td>';
+    }
+    const avance = s3Qty > 0 ? (s5Qty / s3Qty * 100) : (s5Qty > 0 ? 100 : 0);
+    html2 += '<td class="r"><div class="bar-bg" style="display:inline-block;width:80px;vertical-align:middle;margin-right:6px;"><div class="bar-fill" style="width:' + Math.min(avance, 100) + '%;background:#E53935;"></div></div><span style="font-size:10px;font-weight:700;color:' + (avance >= 50 ? '#4ADE80' : '#FBBF24') + ';">' + avance.toFixed(0) + '%</span></td>';
+    html2 += '</tr>';
+  }
+
+  // Totals row
+  html2 += '<tr style="border-top:2px solid rgba(255,215,0,0.2);">';
+  html2 += '<td class="b" style="color:#FFD700;">TOTAL</td>';
+  for (const s of sorteos) {
+    const totalQty = Object.values(allTickets[s.key]).reduce((a, b) => a + b, 0);
+    html2 += '<td class="r b" style="color:#FFD700;">' + fmt(totalQty) + '</td>';
+    html2 += '<td class="r b" style="color:#FFD700;">' + fmt(s.total_stickers) + '</td>';
+  }
+  const avTotal = s3.total_orders > 0 ? (sorteos[2].total_orders / s3.total_orders * 100) : 0;
+  html2 += '<td class="r" style="color:#FFD700;font-weight:800;">' + avTotal.toFixed(1) + '%</td>';
+  html2 += '</tr></tbody></table>';
+  ticketDiv.innerHTML = html2;
+
+  // === SECCIÓN 3: COMPRADORES ===
+  const tbody3 = document.getElementById('t-buyers');
+  let html3 = '';
+  for (const s of sorteos) {
+    const isActive = s.active;
+    const avUnique = s3.unique_buyers > 0 ? (s.unique_buyers / s3.unique_buyers * 100) : 0;
+
+    html3 += '<tr' + (isActive ? ' class="active"' : '') + '>';
+    html3 += '<td class="b">' + s.name + '</td>';
+    html3 += '<td class="r b">' + fmt(s.unique_buyers) + '</td>';
+    html3 += '<td class="r">' + fmt(s.repeat_buyers) + '</td>';
+    html3 += '<td class="r ' + (s.repeat_pct >= 20 ? 'g' : s.repeat_pct >= 15 ? 'y' : 'rd') + '">' + s.repeat_pct + '%</td>';
+    html3 += '<td class="r">' + fmt(s.super_repeat) + '</td>';
+    html3 += '<td class="r">' + s.purchases_per_person + '</td>';
+    html3 += '<td><div class="bar-bg"><div class="bar-fill" style="width:' + Math.min(avUnique, 100) + '%;background:' + (isActive ? '#E53935' : 'rgba(255,255,255,0.15)') + '"></div></div><span style="font-size:10px;font-weight:700;color:' + (avUnique >= 50 ? '#4ADE80' : isActive ? '#FBBF24' : 'rgba(255,255,255,0.3)') + ';">' + avUnique.toFixed(1) + '%</span></td>';
+    html3 += '<td>' + (isActive ? '<span class="tag tag-active">ACTIVO</span>' : '<span class="tag tag-closed">Cerrado</span>') + '</td>';
+    html3 += '</tr>';
+  }
+  tbody3.innerHTML = html3;
+
+  // Weekly breakdown for active sorteo
+  const active = sorteos.find(s => s.active);
+  if (active && active.by_week) {
+    const weekDiv = document.getElementById('buyers-weekly');
+    let wHtml = '<h3 style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:8px;">Desglose semanal — ' + active.name + '</h3>';
+    wHtml += '<table><thead><tr><th>Semana</th><th class="r">Órdenes</th><th class="r">Nuevos</th><th class="r">Recompra</th><th class="r">% Recompra</th><th class="r">Revenue</th><th class="r">Acumulado</th></tr></thead><tbody>';
+
+    const weeks = Object.entries(active.by_week).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+    for (const [num, w] of weeks) {
+      const repeatPct = w.orders > 0 ? (w.repeat / w.orders * 100) : 0;
+      wHtml += '<tr>';
+      wHtml += '<td class="b">Semana ' + num + '</td>';
+      wHtml += '<td class="r b">' + fmt(w.orders) + '</td>';
+      wHtml += '<td class="r g">' + fmt(w.new) + '</td>';
+      wHtml += '<td class="r y">' + fmt(w.repeat) + '</td>';
+      wHtml += '<td class="r">' + repeatPct.toFixed(1) + '%</td>';
+      wHtml += '<td class="r">' + fmtP(w.rev) + '</td>';
+      wHtml += '<td class="r">' + fmt(w.cumulative || 0) + '</td>';
+      wHtml += '</tr>';
+    }
+    wHtml += '</tbody></table>';
+    weekDiv.innerHTML = wHtml;
+  }
+}
+
+load();
+setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>
