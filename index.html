@@ -153,21 +153,7 @@ function render(d){
   html+='</div>';
 
   /* ═══════════════════════════════════════════
-     4. CAMPAÑAS META
-     ═══════════════════════════════════════════ */
-  html+='<div class="s"><div class="st">Campañas Meta</div>';
-  html+=buildCampaignsTable(s5);
-  html+='</div>';
-
-  /* ═══════════════════════════════════════════
-     5. ANUNCIOS META
-     ═══════════════════════════════════════════ */
-  html+='<div class="s"><div class="st">Top 10 Anuncios Meta</div>';
-  html+=buildAdsTable(s5);
-  html+='</div>';
-
-  /* ═══════════════════════════════════════════
-     6. STICKER PACKS
+     4. STICKER PACKS
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Sticker Packs — Distribución</div>';
   html+=buildPacksSection(s5,s4,s3);
@@ -217,28 +203,34 @@ function render(d){
    SECTION BUILDERS
    ══════════════════════════════════════════════════════════════ */
 
-/* ── 2. Revenue/Day Chart — S3 vs S4 vs S5 by sorteo day ── */
+/* ── 2. Revenue/Day Chart — S3 vs S4 vs S5 comparados al mismo día del sorteo ── */
 function buildRevenueChart(s3,s4,s5){
-  function getDailyData(sorteo){
+  function getDailyRevs(sorteo){
     var days=Object.keys(sorteo.by_day).sort();
-    return days.map(function(d){return {date:d, rev:sorteo.by_day[d].rev||0, orders:sorteo.by_day[d].orders||0}});
+    return days.map(function(d){return {date:d, rev:sorteo.by_day[d].rev||0}});
   }
-  var d3=getDailyData(s3), d4=getDailyData(s4), d5=getDailyData(s5);
-  var maxDays=Math.max(d3.length,d4.length,d5.length);
-  if(maxDays<2) return '<p class="fallback">Datos insuficientes para graficar</p>';
+  var d3=getDailyRevs(s3), d4=getDailyRevs(s4), d5=getDailyRevs(s5);
+  /* El eje X va hasta donde lleva S5. S3/S4 se recortan al mismo largo */
+  var xDays=d5.length;
+  if(xDays<2) return '<p class="fallback">Datos insuficientes</p>';
+  var t3=d3.slice(0,xDays), t4=d4.slice(0,xDays);
 
-  var allRevs=d3.map(function(d){return d.rev}).concat(d4.map(function(d){return d.rev})).concat(d5.map(function(d){return d.rev}));
-  var maxVal=Math.max.apply(null,allRevs)||1;
+  /* max revenue considerando solo los días visibles */
+  var allR=[];
+  t3.forEach(function(d){allR.push(d.rev)});
+  t4.forEach(function(d){allR.push(d.rev)});
+  d5.forEach(function(d){allR.push(d.rev)});
+  var maxVal=Math.max.apply(null,allR)||1;
 
-  var W=1140, H=340, padL=65, padR=110, padT=25, padB=60;
-  var chartW=W-padL-padR, chartH=H-padT-padB;
+  var W=1140,H=320,padL=65,padR=90,padT=25,padB=55;
+  var chartW=W-padL-padR,chartH=H-padT-padB;
   var yMax=Math.ceil(maxVal/500000)*500000;
   if(yMax<maxVal) yMax=maxVal*1.1;
 
-  function xP(i){return padL+i/(maxDays-1)*chartW}
+  function xP(i){return padL+i/(xDays-1)*chartW}
   function yP(v){return padT+chartH-v/yMax*chartH}
 
-  var svg='<div class="chart-wrap"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-height:280px">';
+  var svg='<div class="chart-wrap"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-height:260px">';
 
   /* y gridlines */
   for(var t=0;t<=5;t++){
@@ -247,52 +239,45 @@ function buildRevenueChart(s3,s4,s5){
     svg+='<text x="'+(padL-8)+'" y="'+(yy+3)+'" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9" font-family="Montserrat">'+fmtK(yv)+'</text>';
   }
 
-  /* series */
+  /* lines: S3 (white), S4 (red), S5 (gold) — all trimmed to S5 length */
   var series=[
-    {data:d3, color:'rgba(255,255,255,0.3)', width:1.5, name:'S3', sub:s3.name+' — '+d3.length+' días — '+fmtM(s3.total_revenue)},
-    {data:d4, color:'#E53935', width:1.5, name:'S4', sub:s4.name+' — '+d4.length+' días — '+fmtM(s4.total_revenue)},
-    {data:d5, color:'#FFD700', width:2.5, name:'S5', sub:s5.name+' — '+d5.length+' días — '+fmtM(s5.total_revenue)}
+    {data:t3,color:'rgba(255,255,255,0.3)',w:1.5,name:'S3',full:d3.length},
+    {data:t4,color:'#E53935',w:1.5,name:'S4',full:d4.length},
+    {data:d5,color:'#FFD700',w:2.5,name:'S5',full:d5.length}
   ];
-
   series.forEach(function(s){
     if(s.data.length<2) return;
     var pts=s.data.map(function(d,i){return Math.round(xP(i))+','+Math.round(yP(d.rev))});
-    svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="'+s.width+'" stroke-linecap="round" stroke-linejoin="round"/>';
-    /* end label */
+    svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="'+s.w+'" stroke-linecap="round" stroke-linejoin="round"/>';
     var li=s.data.length-1;
-    svg+='<text x="'+Math.round(xP(li)+6)+'" y="'+Math.round(yP(s.data[li].rev)+4)+'" fill="'+s.color+'" font-size="10" font-family="Montserrat" font-weight="800">'+s.name+'</text>';
+    svg+='<text x="'+Math.round(xP(li)+5)+'" y="'+Math.round(yP(s.data[li].rev)+4)+'" fill="'+s.color+'" font-size="9" font-family="Montserrat" font-weight="800">'+s.name+' ('+s.full+'d)</text>';
   });
 
   /* S5 area fill */
-  if(d5.length>1){
-    var pts5=d5.map(function(d,i){return Math.round(xP(i))+','+Math.round(yP(d.rev))});
-    svg+='<polygon points="'+Math.round(xP(0))+','+Math.round(yP(0))+' '+pts5.join(' ')+' '+Math.round(xP(d5.length-1))+','+Math.round(yP(0))+'" fill="url(#goldGrad)" opacity="0.08"/>';
-    svg+='<defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></linearGradient></defs>';
-  }
+  var pts5=d5.map(function(d,i){return Math.round(xP(i))+','+Math.round(yP(d.rev))});
+  svg+='<polygon points="'+Math.round(xP(0))+','+Math.round(yP(0))+' '+pts5.join(' ')+' '+Math.round(xP(d5.length-1))+','+Math.round(yP(0))+'" fill="url(#goldGrad)" opacity="0.08"/>';
+  svg+='<defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></linearGradient></defs>';
 
   /* day 18 marker */
-  if(d5.length>=18){
+  if(xDays>=18){
     var mx=xP(17);
     svg+='<line x1="'+Math.round(mx)+'" y1="'+padT+'" x2="'+Math.round(mx)+'" y2="'+(H-padB)+'" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,3"/>';
     svg+='<text x="'+Math.round(mx)+'" y="'+(padT-4)+'" text-anchor="middle" fill="#10B981" font-size="9" font-family="Montserrat" font-weight="700">Día 18 ('+d5[17].date.substring(5)+')</text>';
   }
 
-  /* x-axis: día del sorteo + fecha S5 debajo */
-  for(var i=0;i<maxDays;i+=7){
+  /* x-axis labels */
+  for(var i=0;i<xDays;i+=5){
     var xx=Math.round(xP(i));
     svg+='<text x="'+xx+'" y="'+(H-padB+14)+'" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8" font-family="Montserrat" font-weight="600">Día '+(i+1)+'</text>';
-    if(i<d5.length){
-      svg+='<text x="'+xx+'" y="'+(H-padB+26)+'" text-anchor="middle" fill="rgba(255,215,0,0.3)" font-size="7" font-family="Montserrat">'+d5[i].date.substring(5)+'</text>';
-    }
+    svg+='<text x="'+xx+'" y="'+(H-padB+25)+'" text-anchor="middle" fill="rgba(255,215,0,0.3)" font-size="7" font-family="Montserrat">'+d5[i].date.substring(5)+'</text>';
   }
+  /* last day label */
+  svg+='<text x="'+Math.round(xP(xDays-1))+'" y="'+(H-padB+14)+'" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8" font-family="Montserrat" font-weight="600">Día '+xDays+'</text>';
+  svg+='<text x="'+Math.round(xP(xDays-1))+'" y="'+(H-padB+25)+'" text-anchor="middle" fill="rgba(255,215,0,0.3)" font-size="7" font-family="Montserrat">'+d5[xDays-1].date.substring(5)+'</text>';
 
-  /* legend bar at bottom */
-  var lgY=H-8;
-  series.forEach(function(s,idx){
-    var lx=padL+idx*320;
-    svg+='<line x1="'+lx+'" y1="'+lgY+'" x2="'+(lx+20)+'" y2="'+lgY+'" stroke="'+s.color+'" stroke-width="2"/>';
-    svg+='<text x="'+(lx+25)+'" y="'+(lgY+3)+'" fill="'+s.color+'" font-size="8" font-family="Montserrat">'+s.sub+'</text>';
-  });
+  /* legend */
+  var lgY=H-5;
+  svg+='<text x="'+padL+'" y="'+lgY+'" fill="rgba(255,255,255,0.25)" font-size="8" font-family="Montserrat">Comparando los primeros '+xDays+' días de cada sorteo. S3=blanco ('+d3.length+'d total), S4=rojo ('+d4.length+'d), S5=dorado ('+d5.length+'d, en curso)</text>';
 
   svg+='</svg></div>';
   return svg;
