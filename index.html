@@ -18,6 +18,7 @@ body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-heig
 .k::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}
 .kv{font-size:20px;font-weight:900;margin-bottom:2px;color:#FFD700}
 .kl{font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.k .spark{margin-top:6px}
 .s{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
 .st{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .st::before{content:'';width:3px;height:14px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
@@ -32,6 +33,9 @@ tbody td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:r
 tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
 tbody td.b{font-weight:700;color:#fff}
 tbody tr:hover td{background:rgba(229,57,53,0.04)}
+tbody tr.row-green td{background:rgba(16,185,129,0.07)}
+tbody tr.row-red td{background:rgba(229,57,53,0.07)}
+tbody tr:nth-child(even) td{background:rgba(255,255,255,0.015)}
 .insight{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.12);border-radius:10px;padding:12px;margin-top:10px}
 .insight h4{font-size:11px;font-weight:800;color:#FFD700;margin-bottom:4px}
 .insight p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}
@@ -46,9 +50,11 @@ tbody tr:hover td{background:rgba(229,57,53,0.04)}
 .bar{display:flex;align-items:center;gap:6px;margin-bottom:5px}
 .bar-fill{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:700;min-width:24px}
 .bar-label{font-size:10px;color:rgba(255,255,255,0.4);min-width:80px}
-.daily-card{background:linear-gradient(135deg,rgba(229,57,53,0.1),rgba(255,215,0,0.05));border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:16px;text-align:center}
-.daily-card .dv{font-size:28px;font-weight:900;color:#FFD700}
-.daily-card .dl{font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px}
+.stacked-bar{display:flex;height:24px;border-radius:6px;overflow:hidden;margin-top:6px;margin-bottom:4px}
+.stacked-seg{display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;min-width:20px;color:#fff}
+.fallback{text-align:center;padding:30px;color:rgba(255,255,255,0.25);font-size:12px;font-style:italic}
+.chart-wrap{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;overflow-x:auto}
+.chart-wrap svg{display:block}
 @media(max-width:768px){.kg{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
 </style>
 </head>
@@ -69,794 +75,740 @@ tbody tr:hover td{background:rgba(229,57,53,0.04)}
 </div>
 
 <script>
+/* ── helpers ── */
 function fmt(n){return n.toLocaleString('es-CL')}
 function fmtM(n){return '$'+(n/1000000).toFixed(1)+'M'}
 function fmtK(n){return '$'+Math.round(n/1000)+'K'}
 function pct(a,b){return b>0?Math.round(a/b*100):0}
 
-fetch('data.json?v='+Date.now()).then(r=>r.json()).then(render).catch(e=>{
-  document.getElementById('dashboard').innerHTML='<p style="color:#EF4444;text-align:center;padding:40px">Error: '+e.message+'</p>'
-})
-
-function render(d){
-  var s5=d.sorteos.s5, s4=d.sorteos.s4, s3=d.sorteos.s3, ret=d.retention, m=d.meta
-  var u=new Date(d.updated)
-  var S5_START=new Date('2026-05-24'), S5_END=new Date('2026-07-19')
-  var totalDaysS5=Math.round((S5_END-S5_START)/86400000)
-  var diasTranscurridos=Math.round((new Date()-S5_START)/86400000)
-  if(diasTranscurridos<0)diasTranscurridos=0
-  if(diasTranscurridos>totalDaysS5)diasTranscurridos=totalDaysS5
-  var pctAvance=Math.round(diasTranscurridos/totalDaysS5*100)
-  var diasRestantes=totalDaysS5-diasTranscurridos
-
-  // Header
-  document.getElementById('hd-sub').innerHTML='Análisis multi-sorteo · '+fmt(m.total_orders_analyzed)+' órdenes · '+fmt(m.total_buyers)+' compradores · Actualizado '+u.toLocaleString('es-CL')
-  document.getElementById('hd-period').innerHTML='Sorteo 5 activo · Día '+s5.days+' de ~'+totalDaysS5+' · '+pctAvance+'% de avance · Cierre 19 julio 2026'
-
-  // Footer
-  document.getElementById('foot').textContent='Dashboard BI · Muller & Pérez · '+fmt(m.total_orders_analyzed)+' órdenes · Actualizado '+u.toLocaleString('es-CL')+' · Auto-refresh 10 min'
-
-  // Indicador diario
-  var days=Object.keys(s5.by_day).sort()
-  var today=days[days.length-1]
-  var todayData=s5.by_day[today]
-  var yesterday=days.length>1?days[days.length-2]:today
-  var yesterdayData=s5.by_day[yesterday]
-  var avgDaily=Math.round(s5.total_orders/s5.days)
-  var invDaily=s5.fb?Math.round(s5.fb.inv_per_day):0
-
-  // Comparativa por % avance — usa duración total del sorteo, no solo días con datos
-  var SORTEO_SPANS={s3:{start:'2026-02-16',end:'2026-04-13'},s4:{start:'2026-04-12',end:'2026-05-27'},s5:{start:'2026-05-24',end:'2026-07-19'}}
-  function sorteoTotalDays(sorteo){
-    for(var k in SORTEO_SPANS){if(d.sorteos[k]===sorteo)return Math.round((new Date(SORTEO_SPANS[k].end)-new Date(SORTEO_SPANS[k].start))/86400000)}
-    return sorteo.days
-  }
-  function sorteoStart(sorteo){
-    for(var k in SORTEO_SPANS){if(d.sorteos[k]===sorteo)return new Date(SORTEO_SPANS[k].start)}
-    return new Date(Object.keys(sorteo.by_day).sort()[0])
-  }
-  function ordersAtPct(sorteo,targetPct){
-    var total=sorteoTotalDays(sorteo)
-    var targetDay=Math.round(total*(targetPct/100))
-    var start=sorteoStart(sorteo)
-    var cutoff=new Date(start.getTime()+targetDay*86400000)
-    var cutStr=cutoff.toISOString().substring(0,10)
-    var dayKeys=Object.keys(sorteo.by_day).sort()
-    var count=0
-    for(var i=0;i<dayKeys.length;i++){if(dayKeys[i]<=cutStr)count+=sorteo.by_day[dayKeys[i]].orders}
-    return count
-  }
-
-  // (comparativa table moved to section below)
-
-  // Sources bars
-  var srcTotal=Object.values(s5.sources).reduce(function(a,b){return a+b},0)
-  var srcBars=''
-  var srcColors={'(direct)':'#FFD700','Instagram':'#E1306C','Facebook':'#1877F2','Google':'#34A853','Otros':'#64748B'}
-  Object.entries(s5.sources).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){
-    var w=Math.round(e[1]/srcTotal*100)
-    srcBars+='<div class="bar"><span class="bar-label">'+e[0]+'</span><div class="bar-fill" style="width:'+w+'%;background:'+(srcColors[e[0]]||'#666')+'">'+fmt(e[1])+'</div><span style="font-size:9px;color:rgba(255,255,255,0.3)">'+w+'%</span></div>'
-  })
-
-  // Daily table (last 7 days)
-  var last7=days.slice(-7)
-  var dailyRows=''
-  last7.forEach(function(day){
-    var dd=s5.by_day[day]
-    var dayName=new Date(day+'T12:00:00').toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short'})
-    dailyRows+='<tr><td class="b">'+dayName+'</td><td class="r">'+fmt(dd.orders)+'</td><td class="r">'+fmtK(dd.rev)+'</td><td class="r">'+fmt(dd.stickers)+'</td></tr>'
-  })
-
-  // Build dashboard
-  var html=''
-
-  // KPIs
-  html+='<div class="kg">'
-  html+='<div class="k"><div class="kv">'+fmtM(s5.total_revenue)+'</div><div class="kl">Revenue S5</div></div>'
-  html+='<div class="k"><div class="kv">'+fmt(s5.total_orders)+'</div><div class="kl">Órdenes S5</div></div>'
-  html+='<div class="k"><div class="kv">'+fmtK(invDaily)+'</div><div class="kl">Inv. diaria actual</div></div>'
-  html+='<div class="k"><div class="kv">'+(s5.fb?s5.fb.roas+'x':'—')+'</div><div class="kl">ROAS S5</div></div>'
-  html+='<div class="k"><div class="kv">'+fmt(ret.dormant)+'</div><div class="kl">Compradores dormidos</div></div>'
-  html+='<div class="k"><div class="kv">'+pctAvance+'%</div><div class="kl">Avance sorteo</div></div>'
-  html+='</div>'
-
-  // Indicador diario
-  html+='<div class="s"><div class="st">Indicador diario</div>'
-  html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">'
-  html+='<div class="daily-card"><div class="dv">'+fmt(yesterdayData.orders)+'</div><div class="dl">Órdenes ayer ('+yesterday.substring(5)+')</div></div>'
-  html+='<div class="daily-card"><div class="dv">'+fmtK(yesterdayData.rev)+'</div><div class="dl">Revenue ayer</div></div>'
-  html+='<div class="daily-card"><div class="dv">'+fmt(avgDaily)+'</div><div class="dl">Promedio diario</div></div>'
-  html+='<div class="daily-card"><div class="dv">'+fmtK(invDaily)+'</div><div class="dl">Inv. diaria Meta</div></div>'
-  html+='<div class="daily-card"><div class="dv">'+(s5.fb?'$'+fmt(s5.fb.cpa_per_order):'—')+'</div><div class="dl">CPA por orden</div></div>'
-  html+='</div>'
-
-  // Last 7 days table
-  html+='<table style="margin-top:12px"><thead><tr><th>Día</th><th class="r">Órdenes</th><th class="r">Revenue</th><th class="r">Stickers</th></tr></thead><tbody>'+dailyRows+'</tbody></table>'
-  html+='</div>'
-
-  // ============================================================
-  // COMPARATIVA POR % DE AVANCE — barra dinámica + proyecciones
-  // ============================================================
-  html+='<div class="s">'
-  html+='<div class="st">Avance Sorteo 5 — Comparativa en tiempo real</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Compara cada sorteo al mismo % de avance hacia su fecha de cierre. Se actualiza automáticamente.</p>'
-
-  // Barra de avance visual
-  html+='<div style="position:relative;background:rgba(255,255,255,0.06);border-radius:10px;height:48px;margin-bottom:6px;overflow:hidden">'
-  html+='<div style="position:absolute;top:0;left:0;height:100%;width:'+pctAvance+'%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:10px"></div>'
-  html+='<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.6)">'
-  html+='Día '+diasTranscurridos+' de '+totalDaysS5+' — '+pctAvance+'% — Faltan '+diasRestantes+' días</div></div>'
-  html+='<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:20px">'
-  html+='<span>24 mayo</span><span style="color:#FFD700;font-weight:700">Hoy</span><span>19 julio (sorteo)</span></div>'
-
-  // Revenue at % helper — misma lógica que ordersAtPct
-  function revenueAtPct(sorteo,targetPct){
-    var total=sorteoTotalDays(sorteo)
-    var targetDay=Math.round(total*(targetPct/100))
-    var start=sorteoStart(sorteo)
-    var cutoff=new Date(start.getTime()+targetDay*86400000)
-    var cutStr=cutoff.toISOString().substring(0,10)
-    var dayKeys=Object.keys(sorteo.by_day).sort()
-    var rev=0
-    for(var i=0;i<dayKeys.length;i++){if(dayKeys[i]<=cutStr)rev+=sorteo.by_day[dayKeys[i]].rev}
-    return rev
-  }
-
-  // Tabla comparativa
-  html+='<div class="table-wrap" style="overflow-x:auto"><table><thead><tr><th>% AVANCE</th><th class="r">S3 ÓRDENES</th><th class="r">S3 REVENUE</th><th class="r">% VENDIDO</th><th class="r">S4 ÓRDENES</th><th class="r">S4 REVENUE</th><th class="r">% VENDIDO</th><th class="r">S5 ÓRDENES</th><th class="r">S5 REVENUE</th><th class="r">% VENDIDO</th></tr></thead><tbody>'
-  var pctSteps2=[10,20,30,40,50,60,70,80,90,100]
-  for(var pi=0;pi<pctSteps2.length;pi++){
-    var p=pctSteps2[pi]
-    var o3=ordersAtPct(s3,p),o4=ordersAtPct(s4,p),o5=ordersAtPct(s5,p)
-    var r3=revenueAtPct(s3,p),r4=revenueAtPct(s4,p),r5=revenueAtPct(s5,p)
-    var p3=pct(o3,s3.total_orders),p4=pct(o4,s4.total_orders)
-    var isNow=Math.abs(p-pctAvance)<=5
-    var isPast=p<=pctAvance
-    var bg=isNow?' style="background:rgba(255,215,0,0.08);border-left:3px solid #FFD700"':''
-    var s5o=isPast?'<td class="r" style="color:#FFD700;font-weight:800">'+fmt(o5)+'</td>':'<td class="r" style="color:rgba(255,255,255,0.15)">—</td>'
-    var s5r=isPast?'<td class="r" style="color:#FFD700;font-weight:800">'+fmtM(r5)+'</td>':'<td class="r" style="color:rgba(255,255,255,0.15)">—</td>'
-    var s5p=isPast?'<td class="r" style="color:#FFD700;font-weight:800">'+pct(o5,s5.total_orders)+'%</td>':'<td class="r" style="color:rgba(255,255,255,0.15)">—</td>'
-    var label=isNow?'<span style="color:#FFD700;font-weight:900">'+p+'% ◀ HOY</span>':p+'%'
-    html+='<tr'+bg+'><td class="b">'+label+'</td><td class="r">'+fmt(o3)+'</td><td class="r">'+fmtM(r3)+'</td><td class="r" style="color:rgba(255,255,255,0.3)">'+p3+'%</td><td class="r">'+fmt(o4)+'</td><td class="r">'+fmtM(r4)+'</td><td class="r" style="color:rgba(255,255,255,0.3)">'+p4+'%</td>'+s5o+s5r+s5p+'</tr>'
-  }
-  html+='</tbody></table></div>'
-
-  // Cálculos comparativa
-  var s3AtPct=ordersAtPct(s3,pctAvance),s4AtPct=ordersAtPct(s4,pctAvance),s5AtPct=s5.total_orders
-  var r3AtPct=revenueAtPct(s3,pctAvance),r4AtPct=revenueAtPct(s4,pctAvance)
-  var s3PctVendido=pct(s3AtPct,s3.total_orders),s4PctVendido=pct(s4AtPct,s4.total_orders)
-  var projS3rev=r3AtPct>0?Math.round(s5.total_revenue/(r3AtPct/s3.total_revenue)):0
-  var projS3ord=s3PctVendido>0?Math.round(s5AtPct/(s3PctVendido/100)):0
-  var projS4rev=r4AtPct>0?Math.round(s5.total_revenue/(r4AtPct/s4.total_revenue)):0
-  var projS4ord=s4PctVendido>0?Math.round(s5AtPct/(s4PctVendido/100)):0
-  var vsS3=s5AtPct>s3AtPct,vsS4=s5AtPct>s4AtPct
-
-  // 3 cards: vs S3, vs S4, proyección
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">'
-  html+='<div class="cd" style="border-color:rgba('+(vsS3?'16,185,129':'239,68,68')+',0.3)"><h3 style="color:'+(vsS3?'#10B981':'#EF4444')+'">S5 vs S3 al '+pctAvance+'%</h3>'
-  html+='<div style="font-size:22px;font-weight:900;color:'+(vsS3?'#10B981':'#EF4444')+'">'+(vsS3?'+':'')+Math.round((s5AtPct/Math.max(s3AtPct,1)-1)*100)+'%</div>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px">S5: '+fmt(s5AtPct)+' órdenes | '+fmtM(s5.total_revenue)+'<br>S3 tenía: '+fmt(s3AtPct)+' órdenes | '+fmtM(r3AtPct)+'</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">S3 al '+pctAvance+'% llevaba el '+s3PctVendido+'% del total final</div></div>'
-
-  html+='<div class="cd" style="border-color:rgba('+(vsS4?'16,185,129':'239,68,68')+',0.3)"><h3 style="color:'+(vsS4?'#10B981':'#EF4444')+'">S5 vs S4 al '+pctAvance+'%</h3>'
-  html+='<div style="font-size:22px;font-weight:900;color:'+(vsS4?'#10B981':'#EF4444')+'">'+(vsS4?'+':'')+Math.round((s5AtPct/Math.max(s4AtPct,1)-1)*100)+'%</div>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px">S5: '+fmt(s5AtPct)+' órdenes | '+fmtM(s5.total_revenue)+'<br>S4 tenía: '+fmt(s4AtPct)+' órdenes | '+fmtM(r4AtPct)+'</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px">S4 al '+pctAvance+'% llevaba el '+s4PctVendido+'% del total final</div></div>'
-
-  html+='<div class="cd" style="border-color:rgba(255,215,0,0.3)"><h3>Proyección al cierre</h3>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:2.2">'
-  html+='Si explota como S3:<br><span style="font-size:18px;font-weight:900;color:#10B981">'+fmtM(projS3rev)+'</span> <span style="color:rgba(255,255,255,0.3)">'+fmt(projS3ord)+' órd</span><br>'
-  html+='Si crece como S4:<br><span style="font-size:18px;font-weight:900;color:#F59E0B">'+fmtM(projS4rev)+'</span> <span style="color:rgba(255,255,255,0.3)">'+fmt(projS4ord)+' órd</span>'
-  html+='</div></div></div>'
-
-  // Insight final
-  html+='<div class="insight" style="margin-top:12px"><h4>Al '+pctAvance+'% del camino — '+diasRestantes+' días para el sorteo</h4><p>'
-  if(vsS3)html+='<strong class="up">S5 va '+Math.round((s5AtPct/Math.max(s3AtPct,1)-1)*100)+'% arriba de S3 al mismo punto.</strong> '
-  else html+='S3 tenía '+Math.round((s3AtPct/Math.max(s5AtPct,1)-1)*100)+'% más órdenes al mismo punto. '
-  if(vsS4)html+='<strong class="up">S5 también supera a S4.</strong> '
-  else html+='S4 iba '+Math.round((s4AtPct/Math.max(s5AtPct,1)-1)*100)+'% más fuerte, pero con '+(s4.fb.spend>0&&s5.fb.spend>0?(s4.fb.spend/s5.fb.spend).toFixed(1):'?')+'x más inversión Meta. '
-  html+='En S3 y S4 el <strong>60-80% de las ventas se concentró en la segunda mitad</strong>. Quedan '+diasRestantes+' días.</p></div>'
-  html+='</div>'
-
-  // ============================================================
-  // ANÁLISIS TICKET $2.500 — IMPACTO DESDE VIERNES 13 JUNIO
-  // ============================================================
-  html+='<div class="s">'
-  html+='<div class="st">Análisis Ticket $2.500 — Impacto desde viernes 13 junio</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Datos verificados: antes (24 may–12 jun, 20 días) vs después (13–16 jun, 4 días). Inversión Meta real incluida.</p>'
-
-  // 1. VEREDICTO CARD
-  html+='<div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(255,215,0,0.06));border:2px solid rgba(16,185,129,0.4);border-radius:14px;padding:24px;text-align:center;margin-bottom:16px">'
-  html+='<div style="font-size:11px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Veredicto basado en datos</div>'
-  html+='<div style="font-size:28px;font-weight:900;color:#10B981;margin-bottom:8px">El ticket $2.500 FUNCIONA</div>'
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px">'
-  html+='<div><div style="font-size:22px;font-weight:900;color:#FFD700">+43%</div><div style="font-size:9px;color:rgba(255,255,255,0.4)">Órdenes/día</div></div>'
-  html+='<div><div style="font-size:22px;font-weight:900;color:#FFD700">+33%</div><div style="font-size:9px;color:rgba(255,255,255,0.4)">Revenue/día</div></div>'
-  html+='<div><div style="font-size:22px;font-weight:900;color:#10B981">1.67x</div><div style="font-size:9px;color:rgba(255,255,255,0.4)">ROAS (era 1.01x)</div></div>'
-  html+='<div><div style="font-size:22px;font-weight:900;color:#10B981">-43%</div><div style="font-size:9px;color:rgba(255,255,255,0.4)">CPA ($4,082 vs $7,182)</div></div>'
-  html+='</div>'
-  html+='<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:12px">Inversión Meta solo +12% → Revenue +33% → El volumen extra viene de demanda real, no de más gasto</div>'
-  html+='</div>'
-
-  // 2. BEFORE VS AFTER TABLE
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Before vs After — Comparativa diaria</h3>'
-  html+='<table><thead><tr><th>Métrica</th><th class="r">Antes (24 may–12 jun)</th><th class="r">Después (13–16 jun)</th><th class="r">Cambio</th></tr></thead><tbody>'
-  html+='<tr><td class="b">Órdenes totales</td><td class="r">1,576</td><td class="r" style="color:#FFD700;font-weight:800">452</td><td class="r" style="color:rgba(255,255,255,0.3)">4 días</td></tr>'
-  html+='<tr><td class="b">Órdenes/día</td><td class="r">78.8</td><td class="r" style="color:#FFD700;font-weight:800">113</td><td class="r" style="color:#10B981;font-weight:700">+43%</td></tr>'
-  html+='<tr><td class="b">Revenue total</td><td class="r">$11,531,500</td><td class="r" style="color:#FFD700;font-weight:800">$3,077,500</td><td class="r" style="color:rgba(255,255,255,0.3)">4 días</td></tr>'
-  html+='<tr><td class="b">Revenue/día</td><td class="r">$576,575</td><td class="r" style="color:#FFD700;font-weight:800">$769,375</td><td class="r" style="color:#10B981;font-weight:700">+33%</td></tr>'
-  html+='<tr><td class="b">Ticket promedio</td><td class="r">$7,317</td><td class="r">$6,809</td><td class="r" style="color:#F59E0B">-7%</td></tr>'
-  html+='<tr><td class="b">Inversión Meta/día</td><td class="r">$412,634</td><td class="r">$460,202</td><td class="r" style="color:#F59E0B">+12%</td></tr>'
-  html+='<tr><td class="b">ROAS</td><td class="r">1.01x</td><td class="r" style="color:#10B981;font-weight:800">1.67x</td><td class="r" style="color:#10B981;font-weight:700">+65%</td></tr>'
-  html+='<tr><td class="b">CPA por orden</td><td class="r">$7,182</td><td class="r" style="color:#10B981;font-weight:800">$4,082</td><td class="r" style="color:#10B981;font-weight:700">-43%</td></tr>'
-  html+='</tbody></table>'
-  html+='<div class="insight"><h4>La clave: inversión solo +12% pero revenue +33%</h4><p>El ticket $2.500 no infla el gasto — atrae demanda incremental. Cada peso invertido rinde 65% más que antes del viernes 13.</p></div>'
-  html+='</div>'
-
-  // 3. WHO BUYS CHART — horizontal stacked bar
-  html+='<div class="cd" style="margin-bottom:12px"><h3>¿Quién compra post-viernes? (452 órdenes, 13–16 jun)</h3>'
-  html+='<div style="display:flex;height:40px;border-radius:8px;overflow:hidden;margin:12px 0">'
-  html+='<div style="width:73%;background:#3B82F6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">Primera vez 73%</div>'
-  html+='<div style="width:15%;background:#10B981;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">Rec. 15%</div>'
-  html+='<div style="width:9%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#0A0A0F">9%</div>'
-  html+='<div style="width:3%;background:#8B5CF6;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff"></div>'
-  html+='</div>'
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:8px">'
-  html+='<div style="text-align:center"><div style="width:10px;height:10px;background:#3B82F6;border-radius:50%;display:inline-block;margin-right:4px"></div><span style="font-size:10px;color:rgba(255,255,255,0.6)"><strong>329</strong> Primera vez (73%)<br>Ticket $6,606</span></div>'
-  html+='<div style="text-align:center"><div style="width:10px;height:10px;background:#10B981;border-radius:50%;display:inline-block;margin-right:4px"></div><span style="font-size:10px;color:rgba(255,255,255,0.6)"><strong>68</strong> Recurrente S3/S4+S5 (15%)<br>Ticket $7,419</span></div>'
-  html+='<div style="text-align:center"><div style="width:10px;height:10px;background:#F59E0B;border-radius:50%;display:inline-block;margin-right:4px"></div><span style="font-size:10px;color:rgba(255,255,255,0.6)"><strong>40</strong> Reactivado (9%)<br>Ticket $7,438</span></div>'
-  html+='<div style="text-align:center"><div style="width:10px;height:10px;background:#8B5CF6;border-radius:50%;display:inline-block;margin-right:4px"></div><span style="font-size:10px;color:rgba(255,255,255,0.6)"><strong>15</strong> Recompra S5 (3%)<br>Ticket $6,817</span></div>'
-  html+='</div>'
-  html+='<div class="opp" style="margin-top:12px"><h4>73% nunca habían comprado en Premios Increíbles</h4><p>329 compradores nuevos en 4 días. El ticket $2.500 funciona como puerta de entrada masiva. Los recurrentes y reactivados mantienen ticket alto ($7,400+), confirmando que el $2.500 no canibaliza.</p></div>'
-  html+='</div>'
-
-  // 4. TICKET DISTRIBUTION — $2.500 is ADDITIVE
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Distribución de tickets — El $2.500 es ADITIVO, no canibaliza</h3>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px">Compradores primera vez post-viernes: 329 personas. Los tickets $5K y $10K se mantienen intactos.</p>'
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
-  // $2.500 bar
-  html+='<div style="text-align:center">'
-  html+='<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px;height:120px;display:flex;flex-direction:column;justify-content:flex-end">'
-  html+='<div style="background:#3B82F6;border-radius:4px;height:28%;width:100%"></div></div>'
-  html+='<div style="font-size:14px;font-weight:900;color:#3B82F6;margin-top:6px">28%</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.4)">$2.500</div>'
-  html+='<div style="font-size:8px;color:rgba(255,255,255,0.3)">NUEVO</div></div>'
-  // $5K bar
-  html+='<div style="text-align:center">'
-  html+='<div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:8px;height:120px;display:flex;flex-direction:column;justify-content:flex-end">'
-  html+='<div style="background:#FFD700;border-radius:4px;height:33%;width:100%"></div></div>'
-  html+='<div style="font-size:14px;font-weight:900;color:#FFD700;margin-top:6px">33%</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.4)">$5.000</div>'
-  html+='<div style="font-size:8px;color:#10B981">= IGUAL</div></div>'
-  // $10K bar
-  html+='<div style="text-align:center">'
-  html+='<div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:8px;height:120px;display:flex;flex-direction:column;justify-content:flex-end">'
-  html+='<div style="background:#FFD700;border-radius:4px;height:33%;width:100%"></div></div>'
-  html+='<div style="font-size:14px;font-weight:900;color:#FFD700;margin-top:6px">33%</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.4)">$10.000</div>'
-  html+='<div style="font-size:8px;color:#10B981">= IGUAL</div></div>'
-  // $25K+ bar
-  html+='<div style="text-align:center">'
-  html+='<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:8px;height:120px;display:flex;flex-direction:column;justify-content:flex-end">'
-  html+='<div style="background:#8B5CF6;border-radius:4px;height:4%;width:100%"></div></div>'
-  html+='<div style="font-size:14px;font-weight:900;color:#8B5CF6;margin-top:6px">4%</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.4)">$25.000+</div>'
-  html+='<div style="font-size:8px;color:rgba(255,255,255,0.3)">nicho</div></div>'
-  html+='</div>'
-  html+='<div class="insight"><h4>$5K y $10K siguen siendo el 66% de las compras nuevas</h4><p>El ticket $2.500 captura un segmento que antes NO compraba. No roba share a los tickets existentes — es volumen 100% incremental. Esto explica por qué el revenue/día sube +33% con solo -7% en ticket promedio.</p></div>'
-  html+='</div>'
-
-  // 5. DAILY TICKET TREND — bar chart last 10 days
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Tendencia ticket promedio — Últimos 10 días</h3>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px">El ticket NO se desploma. Se estabiliza en ~$6,800 post-viernes. Los compradores de $5K y $10K siguen comprando.</p>'
-  var ticketData=[{d:"Jun 7",t:8326,o:46,mark:""},{d:"Jun 8",t:7458,o:85,mark:""},{d:"Jun 9",t:7975,o:61,mark:""},{d:"Jun 10",t:5866,o:88,mark:""},{d:"Jun 11",t:7196,o:117,mark:""},{d:"Jun 12",t:6002,o:97,mark:""},{d:"Jun 13",t:6815,o:126,mark:"TICKET $2.500"},{d:"Jun 14",t:6925,o:87,mark:""},{d:"Jun 15",t:6746,o:164,mark:"RECORD"},{d:"Jun 16",t:6796,o:75,mark:""}]
-  var maxTicket=8326
-  html+='<div style="display:flex;align-items:end;gap:4px;height:180px;margin:8px 0;position:relative">'
-  // Vertical line at Jun 13
-  html+='<div style="position:absolute;left:calc(60% + 2px);top:0;bottom:30px;width:2px;background:rgba(229,57,53,0.4);z-index:1"></div>'
-  html+='<div style="position:absolute;left:calc(60% + 6px);top:4px;font-size:8px;color:#E53935;font-weight:700;z-index:2">VIERNES 13</div>'
-  for(var ti=0;ti<ticketData.length;ti++){
-    var td=ticketData[ti]
-    var hPct=Math.round(td.t/maxTicket*100)
-    var barColor=ti>=6?'#FFD700':'rgba(255,215,0,0.35)'
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:3">'
-    html+='<div style="font-size:8px;color:rgba(255,255,255,0.6);font-weight:700">$'+Math.round(td.t/1000)+'K</div>'
-    html+='<div style="font-size:7px;color:rgba(255,255,255,0.3)">'+td.o+' ord</div>'
-    html+='<div style="width:100%;height:'+hPct+'%;background:'+barColor+';border-radius:3px 3px 0 0;min-height:4px"></div>'
-    html+='<div style="font-size:7px;color:rgba(255,255,255,'+(ti>=6?'0.8':'0.3')+');white-space:nowrap">'+td.d+'</div>'
-    if(td.mark)html+='<div style="font-size:6px;color:'+(td.mark==='RECORD'?'#10B981':'#E53935')+';font-weight:700">'+td.mark+'</div>'
-    html+='</div>'
-  }
-  html+='</div>'
-  html+='<div class="insight"><h4>Jun 15 = RÉCORD de órdenes (164) con ticket estable en $6,746</h4><p>El ticket promedio bajó de $7,317 a ~$6,800 (-7%), pero las órdenes subieron +43%. El resultado neto es +33% más revenue por día. El ticket se estabiliza, no cae en picada.</p></div>'
-  html+='</div>'
-
-  // 6. LTV TABLE
-  html+='<div class="g2" style="margin-bottom:12px">'
-  html+='<div class="cd"><h3>LTV por lealtad — Valor de por vida del comprador</h3>'
-  html+='<table><thead><tr><th>Sorteos</th><th class="r">Personas</th><th class="r">LTV</th><th class="r">Órdenes prom.</th><th class="r">Multiplicador</th></tr></thead><tbody>'
-  html+='<tr><td class="b">1 sorteo</td><td class="r">12,985</td><td class="r">$10,313</td><td class="r">1.2</td><td class="r" style="color:rgba(255,255,255,0.3)">base</td></tr>'
-  html+='<tr><td class="b" style="color:#FFD700">2 sorteos</td><td class="r">1,511</td><td class="r" style="color:#FFD700;font-weight:800">$34,048</td><td class="r">4.0</td><td class="r" style="color:#10B981;font-weight:800">3.3x</td></tr>'
-  html+='<tr><td class="b" style="color:#10B981">3 sorteos</td><td class="r">149</td><td class="r" style="color:#10B981;font-weight:800">$88,755</td><td class="r">10.3</td><td class="r" style="color:#10B981;font-weight:800">8.6x</td></tr>'
-  html+='</tbody></table>'
-  html+='<div class="opp"><h4>Un comprador que repite vale 3.3x más</h4><p>De $10K a $34K solo con que vuelva un sorteo más. Y los que llegan al tercer sorteo valen 8.6x. Cada peso invertido en retención se multiplica exponencialmente.</p></div>'
-  html+='</div>'
-
-  // 7. DORMIDOS CALLOUT
-  html+='<div class="cd" style="border-color:rgba(16,185,129,0.3)">'
-  html+='<h3 style="color:#10B981">Compradores dormidos = Oro sin tocar</h3>'
-  html+='<div style="text-align:center;padding:16px 0">'
-  html+='<div style="font-size:36px;font-weight:900;color:#10B981">13,329</div>'
-  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">compradores dormidos (S3/S4, no compraron en S5)</div>'
-  html+='<div style="font-size:28px;font-weight:900;color:#FFD700;margin-top:12px">$74.6M</div>'
-  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">potencial si se reactiva el 10%</div>'
-  html+='</div>'
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'
-  html+='<div style="background:rgba(16,185,129,0.08);border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:#10B981;font-weight:700;text-transform:uppercase">Retención S3→S4</div><div style="font-size:18px;font-weight:900;color:#fff;margin-top:4px">14%</div></div>'
-  html+='<div style="background:rgba(239,68,68,0.08);border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:#EF4444;font-weight:700;text-transform:uppercase">Retención S4→S5</div><div style="font-size:18px;font-weight:900;color:#fff;margin-top:4px">6%</div></div>'
-  html+='</div>'
-  html+='<div class="opp" style="margin-top:10px"><h4>Acción recomendada: campaña WhatsApp + Email a dormidos</h4><p>Ya confían, ya pagaron, ya tienen cuenta. Con el ticket $2.500 como gancho ("vuelve por $2.500") se puede reactivar una fracción significativa. Costo de reactivación: ~$0 vs CPA nuevo de $11,641. <strong>ROI infinito.</strong></p></div>'
-  html+='</div>'
-  html+='</div>'
-
-  // 8. UNIT ECONOMICS SUMMARY
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Unit Economics S5 — Resumen</h3>'
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0">'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:10px;padding:14px"><div style="font-size:20px;font-weight:900;color:#F59E0B">$11,641</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:4px">CPA nuevo comprador</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:10px;padding:14px"><div style="font-size:20px;font-weight:900;color:#FFD700">$7,203</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:4px">Primera compra promedio</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:10px;padding:14px"><div style="font-size:20px;font-weight:900;color:#10B981">1.45x</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:4px">ROAS primera compra</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:10px;padding:14px"><div style="font-size:20px;font-weight:900;color:#10B981">1.54</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:4px">Órdenes por comprador</div></div>'
-  html+='</div>'
-  html+='<table><thead><tr><th>Métrica</th><th class="r">Valor</th><th class="r">Interpretación</th></tr></thead><tbody>'
-  html+='<tr><td class="b">CPA nuevo comprador</td><td class="r" style="color:#F59E0B">$11,641</td><td class="r" style="color:rgba(255,255,255,0.4)">Inversión para traer 1 cliente nuevo</td></tr>'
-  html+='<tr><td class="b">Primera compra promedio</td><td class="r" style="color:#FFD700">$7,203</td><td class="r" style="color:rgba(255,255,255,0.4)">Ingreso inmediato del nuevo</td></tr>'
-  html+='<tr><td class="b">ROAS primera compra</td><td class="r" style="color:#10B981">1.45x</td><td class="r" style="color:rgba(255,255,255,0.4)">Recupera el 45% extra en día 1</td></tr>'
-  html+='<tr><td class="b">Repeat dentro de S5</td><td class="r">17%</td><td class="r" style="color:rgba(255,255,255,0.4)">1 de cada 6 vuelve a comprar en S5</td></tr>'
-  html+='<tr><td class="b">Órdenes por comprador</td><td class="r" style="color:#10B981">1.54</td><td class="r" style="color:rgba(255,255,255,0.4)">Promedio incluyendo recompras</td></tr>'
-  html+='<tr><td class="b">LTV si repite 2 sorteos</td><td class="r" style="color:#FFD700;font-weight:800">$34,048</td><td class="r" style="color:#10B981">2.9x el CPA — rentable a mediano plazo</td></tr>'
-  html+='</tbody></table>'
-  html+='<div class="insight"><h4>Conclusión: el $2.500 abre la puerta, la retención paga la fiesta</h4><p>Primera compra ya recupera con ROAS 1.45x. Pero el negocio real está en la retención: si el 17% que recompra dentro de S5 vuelve en S6, el LTV sube a $34K (2.9x el CPA). El ticket $2.500 es la mejor inversión en crecimiento de base.</p></div>'
-  html+='</div>'
-
-  html+='</div>'
-
-  // ============================================================
-  // TICKET PROMEDIO DIARIO — COMPOSICIÓN POR TIER (14 días)
-  // ============================================================
-  html+='<div class="s">'
-  html+='<div class="st">Ticket promedio diario — Composición por tier</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Últimos 14 días. Barras apiladas por tier de ticket. Línea vertical marca la activación del ticket $2.500 (viernes 13 junio).</p>'
-
-  var tierData=[
-    {d:"06-03",ticket:6978,ord:93,t25:10,t5:47,t10:26,t25p:10,rev25:184000,pct25:28},
-    {d:"06-04",ticket:8680,ord:76,t25:0,t5:37,t10:28,t25p:11,rev25:212500,pct25:32},
-    {d:"06-05",ticket:7143,ord:94,t25:4,t5:50,t10:35,t25p:5,rev25:96000,pct25:14},
-    {d:"06-06",ticket:7953,ord:119,t25:3,t5:55,t10:47,t25p:14,rev25:249500,pct25:26},
-    {d:"06-07",ticket:8326,ord:46,t25:0,t5:19,t10:25,t25p:2,rev25:40000,pct25:10},
-    {d:"06-08",ticket:7458,ord:85,t25:3,t5:46,t10:28,t25p:8,rev25:148500,pct25:23},
-    {d:"06-09",ticket:7975,ord:61,t25:1,t5:28,t10:26,t25p:6,rev25:103000,pct25:21},
-    {d:"06-10",ticket:5866,ord:88,t25:38,t5:20,t10:23,t25p:7,rev25:123500,pct25:23},
-    {d:"06-11",ticket:7196,ord:117,t25:43,t5:26,t10:32,t25p:16,rev25:303250,pct25:36},
-    {d:"06-12",ticket:6002,ord:97,t25:32,t5:33,t10:28,t25p:4,rev25:78000,pct25:13},
-    {d:"06-13",ticket:6815,ord:126,t25:38,t5:33,t10:47,t25p:8,rev25:156000,pct25:18},
-    {d:"06-14",ticket:6925,ord:87,t25:19,t5:31,t10:34,t25p:3,rev25:60000,pct25:9},
-    {d:"06-15",ticket:6746,ord:164,t25:50,t5:54,t10:44,t25p:16,rev25:296000,pct25:26},
-    {d:"06-16",ticket:6740,ord:76,t25:23,t5:25,t10:23,t25p:5,rev25:100000,pct25:19}
-  ]
-  var maxTierOrd=164
-
-  // Stacked horizontal bars
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Distribución diaria por tier de ticket</h3>'
-  html+='<div style="position:relative">'
-  for(var ti2=0;ti2<tierData.length;ti2++){
-    var td2=tierData[ti2]
-    var isViernes13=td2.d==="06-13"
-    var dayLabel=td2.d.replace("06-","Jun ")
-    var w25=Math.round(td2.t25/td2.ord*100)
-    var w5=Math.round(td2.t5/td2.ord*100)
-    var w10=Math.round(td2.t10/td2.ord*100)
-    var w25p=Math.round(td2.t25p/td2.ord*100)
-    var barBg=isViernes13?'rgba(229,57,53,0.08)':'transparent'
-    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;background:'+barBg+';padding:2px 4px;border-radius:4px'+(isViernes13?';border-left:3px solid #E53935':'')+'">'
-    html+='<span style="font-size:9px;color:rgba(255,255,255,'+(isViernes13?'0.9':'0.5')+');min-width:42px;font-weight:'+(isViernes13?'800':'400')+'">'+dayLabel+'</span>'
-    html+='<div style="display:flex;flex:1;height:22px;border-radius:3px;overflow:hidden">'
-    if(w25>0)html+='<div style="width:'+w25+'%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#0A0A0F">'+td2.t25+'</div>'
-    if(w5>0)html+='<div style="width:'+w5+'%;background:#3B82F6;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t5+'</div>'
-    if(w10>0)html+='<div style="width:'+w10+'%;background:#8B5CF6;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t10+'</div>'
-    if(w25p>0)html+='<div style="width:'+w25p+'%;background:#E53935;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff">'+td2.t25p+'</div>'
-    html+='</div>'
-    html+='<span style="font-size:9px;color:#FFD700;font-weight:700;min-width:44px;text-align:right">$'+fmt(td2.ticket)+'</span>'
-    html+='<span style="font-size:8px;color:rgba(255,255,255,0.3);min-width:30px;text-align:right">'+td2.ord+' ord</span>'
-    if(isViernes13)html+='<span style="font-size:7px;color:#E53935;font-weight:700;margin-left:4px">VIERNES</span>'
-    html+='</div>'
-  }
-  html+='</div>'
-
-  // Legend
-  html+='<div style="display:flex;gap:16px;margin-top:10px;justify-content:center">'
-  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#F59E0B;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$2.5K</span></div>'
-  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#3B82F6;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$5K</span></div>'
-  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#8B5CF6;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$10K</span></div>'
-  html+='<div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#E53935;border-radius:2px"></div><span style="font-size:9px;color:rgba(255,255,255,0.5)">$25K+</span></div>'
-  html+='</div>'
-  html+='</div>'
-
-  // Key insight card
-  html+='<div class="insight"><h4>$25K+ = 9% de órdenes pero 24% del revenue</h4>'
-  html+='<p>Ticket promedio CON $25K+: <strong style="color:#FFD700">$7,201</strong> — SIN $25K+: <strong>$6,052</strong>. Los compradores premium son pocos pero mueven casi 1/4 del revenue. No descuidar este segmento mientras se escala el $2.500.</p></div>'
-
-  // Weekly summary
-  html+='<div class="cd" style="margin-top:12px"><h3>Evolución semanal del ticket</h3>'
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 25-31 may</div><div style="font-size:18px;font-weight:900;color:rgba(255,255,255,0.6)">$7,355</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 1-7 jun</div><div style="font-size:18px;font-weight:900;color:#10B981">$7,636</div><div style="font-size:8px;color:#10B981">+3.8%</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 8-14 jun</div><div style="font-size:18px;font-weight:900;color:#F59E0B">$6,841</div><div style="font-size:8px;color:#F59E0B">-10.4%</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">Sem 15+ jun</div><div style="font-size:18px;font-weight:900;color:#F59E0B">$6,744</div><div style="font-size:8px;color:#F59E0B">-1.4%</div></div>'
-  html+='</div>'
-  html+='<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:8px;text-align:center">Ticket baja por entrada de $2.500, pero revenue/día sube +33%. El volumen compensa con creces la caída de ticket.</div>'
-  html+='</div>'
-  html+='</div>'
-
-  // ============================================================
-  // PROYECCIÓN Y META — DOS ESCENARIOS HONESTOS
-  // ============================================================
-
-  // Calculate dynamic projections from data
-  var s5DaysSorted=Object.keys(s5.by_day).sort()
-  var last7=s5DaysSorted.slice(-7), first17=s5DaysSorted.slice(0,-7)
-  var last7Rev=0,last7Ord=0,first17Rev=0
-  for(var i=0;i<last7.length;i++){last7Rev+=s5.by_day[last7[i]].rev;last7Ord+=s5.by_day[last7[i]].orders}
-  for(var i=0;i<first17.length;i++){first17Rev+=s5.by_day[first17[i]].rev}
-  var last7Daily=Math.round(last7Rev/7)
-  var first17Daily=first17.length>0?Math.round(first17Rev/first17.length):0
-  var trendPct=first17Daily>0?Math.round((last7Daily/first17Daily-1)*100):0
-  var totalDaily=Math.round(s5.total_revenue/s5.days)
-  // S4 acceleration: 2.2x in second half
-  var projLinear=s5.total_revenue+last7Daily*diasRestantes
-  var projS4Curve=s5.total_revenue+Math.round(last7Daily*2.2)*diasRestantes
-  var TARGET=100000000
-  var needDaily=diasRestantes>0?Math.round((TARGET-s5.total_revenue)/diasRestantes):0
-  var needMult=last7Daily>0?(needDaily/last7Daily).toFixed(1):'?'
-  var gap=TARGET-s5.total_revenue
-  var pctOfTarget=Math.round(s5.total_revenue/TARGET*100)
-
-  html+='<div class="s">'
-  html+='<div class="st">Proyección al cierre — Dos escenarios</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 16px;">Calculado dinámicamente. Tendencia últimos 7 días: $'+fmt(last7Daily)+'/día (+'+trendPct+'% vs primeros '+first17.length+' días). S4 aceleró 2.2x en segunda mitad. S3 aceleró 6x pero gastó 5.3x más en Meta.</p>'
-
-  // TWO SCENARIOS SIDE BY SIDE
-  html+='<div class="g2" style="margin-bottom:16px">'
-
-  // SCENARIO A: REALISTIC (S4 curve)
-  html+='<div style="background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));border:2px solid rgba(255,215,0,0.4);border-radius:14px;padding:20px">'
-  html+='<div style="font-size:10px;font-weight:800;color:#FFD700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Proyección real (curva S4)</div>'
-  html+='<div style="font-size:36px;font-weight:900;color:#FFD700">$'+fmtM(projS4Curve)+'</div>'
-  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.8">'
-  html+='Tendencia actual $'+fmt(last7Daily)+'/día × aceleración 2.2x × '+diasRestantes+' días<br>'
-  html+='S4 a este punto iba -18% arriba, cerró en $72.7M<br>'
-  html+='Inversión Meta S5 comparable a S4 en proporción<br>'
-  html+='<strong style="color:#FFD700">Rango: $55-75M</strong> según ejecución de palancas'
-  html+='</div></div>'
-
-  // SCENARIO B: META $100M
-  html+='<div style="background:linear-gradient(135deg,rgba(229,57,53,0.08),rgba(229,57,53,0.02));border:2px solid rgba(229,57,53,0.4);border-radius:14px;padding:20px">'
-  html+='<div style="font-size:10px;font-weight:800;color:#E53935;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Meta $100M — qué necesita</div>'
-  html+='<div style="font-size:36px;font-weight:900;color:#E53935">$'+fmt(needDaily)+'/día</div>'
-  html+='<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.8">'
-  html+='Hoy hace $'+fmt(last7Daily)+'/día → necesita <strong style="color:#E53935">'+needMult+'x</strong><br>'
-  html+='Faltan $'+fmtM(gap)+' en '+diasRestantes+' días<br>'
-  html+='Requiere: dormidos + carrito + Meta agresivo + explosión<br>'
-  html+='<strong style="color:#E53935">Techo, no plan. Solo con todas las palancas.</strong>'
-  html+='</div></div>'
-
-  html+='</div>'
-
-  // PROGRESS BAR vs $100M
-  html+='<div style="position:relative;background:rgba(255,255,255,0.06);border-radius:10px;height:40px;margin-bottom:4px;overflow:hidden">'
-  html+='<div style="position:absolute;top:0;left:0;height:100%;width:'+pctOfTarget+'%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:10px"></div>'
-  // Mark where S4 curve lands
-  var s4CurvePct=Math.min(Math.round(projS4Curve/TARGET*100),100)
-  html+='<div style="position:absolute;top:0;left:'+s4CurvePct+'%;height:100%;width:2px;background:#FFD700;opacity:0.8"></div>'
-  html+='<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.6)">'
-  html+='$'+fmtM(s5.total_revenue)+' de $100M ('+pctOfTarget+'%)</div></div>'
-  html+='<div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,0.25);margin-bottom:16px">'
-  html+='<span>$0</span><span style="color:#FFD700">▲ Proy. real ~$'+fmtM(projS4Curve)+'</span><span>$100M</span></div>'
-
-  // TENDENCIA + WHAT NEEDS TO HAPPEN DAILY
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Tendencia y target diario</h3>'
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:10px">'
-  html+='<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px"><div style="font-size:9px;color:rgba(255,255,255,0.4)">Primeros '+first17.length+'d</div><div style="font-size:18px;font-weight:900;color:rgba(255,255,255,0.5)">$'+fmt(first17Daily)+'</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">/día</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,215,0,0.06);border-radius:8px;padding:12px"><div style="font-size:9px;color:#FFD700">Últimos 7d</div><div style="font-size:18px;font-weight:900;color:#FFD700">$'+fmt(last7Daily)+'</div><div style="font-size:8px;color:#FFD700">+'+trendPct+'% ▲</div></div>'
-  html+='<div style="text-align:center;background:rgba(255,215,0,0.08);border-radius:8px;padding:12px"><div style="font-size:9px;color:#FFD700">Para $64M (real)</div><div style="font-size:18px;font-weight:900;color:#FFD700">$'+fmt(Math.round(last7Daily*2.2))+'</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">curva S4 (2.2x)</div></div>'
-  html+='<div style="text-align:center;background:rgba(229,57,53,0.08);border-radius:8px;padding:12px"><div style="font-size:9px;color:#E53935">Para $100M</div><div style="font-size:18px;font-weight:900;color:#E53935">$'+fmt(needDaily)+'</div><div style="font-size:8px;color:#E53935">'+needMult+'x actual</div></div>'
-  html+='</div></div>'
-
-  // PALANCAS COMO EXPERIMENTOS (no como revenue reservado)
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Palancas — como experimentos, no como revenue contabilizado</h3>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px">Cada palanca es un test con gate. El revenue solo se suma al plan cuando el gate pasa.</p>'
-  html+='<table><thead><tr><th>Palanca</th><th class="r">Potencial</th><th class="r">Costo</th><th>Gate</th><th>Estado</th></tr></thead><tbody>'
-  html+='<tr><td class="b" style="color:#10B981">Carrito abandonado</td><td class="r" style="color:#10B981;font-weight:800">Mayor ROI</td><td class="r" style="color:#10B981">~$0</td><td>Implementar secuencia ManyChat, medir recuperación real</td><td style="color:#EF4444;font-weight:700">❌ Sin construir</td></tr>'
-  html+='<tr><td class="b" style="color:#10B981">Dormidos ('+fmt(ret.dormant)+' personas)</td><td class="r">$8-17M</td><td class="r" style="color:#10B981">$0</td><td>Test 500 primero → medir reactivación 48h → escalar si >5%</td><td style="color:#F59E0B;font-weight:700">⏳ Por testear</td></tr>'
-  html+='<tr><td class="b" style="color:#FFD700">Ticket $2.500</td><td class="r">+$24.6M</td><td class="r" style="color:#10B981">$0</td><td>Ya activo. Mantener si ticket prom no baja de $6K</td><td style="color:#10B981;font-weight:700">✅ Activo</td></tr>'
-  html+='<tr><td class="b" style="color:#3B82F6">Meta ×2</td><td class="r">+$11-22M</td><td class="r" style="color:#EF4444">$13.5M</td><td>Solo si ROAS >1.5x después de escalar 50% primero</td><td style="color:#F59E0B;font-weight:700">⏳ Gate pendiente</td></tr>'
-  html+='<tr style="background:rgba(255,255,255,0.02)"><td class="b">Explosión natural (últimas 2 sem)</td><td class="r">40-60% del total</td><td class="r">$0</td><td>Histórico S3: 60%, S4: 52%. Sucede orgánicamente.</td><td style="color:rgba(255,255,255,0.4)">Semana 7-19 jul</td></tr>'
-  html+='</tbody></table>'
-  html+='<div class="alert" style="margin-top:8px"><h4>Orden correcto: primero lo gratis, después lo pagado</h4><p>Carrito abandonado + dormidos (costo $0, mayor ROI) se activan esta semana. Meta ×2 solo se escala si el ROAS aguanta después de subir 50%. El revenue de cada palanca se contabiliza cuando el gate pasa, no antes.</p></div>'
-  html+='</div>'
-
-  // INVERSIÓN COMPARATIVA — la pieza que faltaba
-  html+='<div class="cd" style="margin-bottom:16px;border-color:rgba(139,92,246,0.3)"><h3 style="color:#A78BFA">Comparativa con inversión — al '+pctAvance+'% de avance</h3>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:10px">S5 invierte 44% de lo que S3 gastaba al mismo punto. El ROAS de S5 es mejor que S3 y S4 a esta altura.</p>'
-
-  // Compute spend at same % for S3/S4 (proportional)
-  var s3SpendAtPct=Math.round(s3.fb.spend*s5.days/s3.days)
-  var s4SpendAtPct=Math.round(s4.fb.spend*s5.days/s4.days)
-  var s5Spend=s5.fb.spend
-  var s5DailySpend=Math.round(s5Spend/s5.days)
-
-  html+='<table><thead><tr><th>Al '+pctAvance+'% de avance</th><th class="r">S3</th><th class="r">S4</th><th class="r" style="color:#FFD700">S5</th></tr></thead><tbody>'
-  html+='<tr><td class="b">Revenue</td><td class="r">'+fmtM(ordersAtPct(s3,pctAvance)>0?revenueAtPct(s3,pctAvance):0)+'</td><td class="r">'+fmtM(revenueAtPct(s4,pctAvance))+'</td><td class="r" style="color:#FFD700;font-weight:800">'+fmtM(s5.total_revenue)+'</td></tr>'
-  html+='<tr><td class="b">Inversión Meta</td><td class="r" style="color:#EF4444">$'+fmt(s3SpendAtPct)+'</td><td class="r">$'+fmt(s4SpendAtPct)+'</td><td class="r" style="color:#10B981">$'+fmt(s5Spend)+'</td></tr>'
-  html+='<tr><td class="b">ROAS al punto</td><td class="r">'+((revenueAtPct(s3,pctAvance)||1)/s3SpendAtPct).toFixed(2)+'x</td><td class="r">'+(revenueAtPct(s4,pctAvance)/s4SpendAtPct).toFixed(2)+'x</td><td class="r" style="color:#10B981;font-weight:800">'+(s5.total_revenue/s5Spend).toFixed(2)+'x</td></tr>'
-  html+='<tr><td class="b">Inv. Meta/día</td><td class="r">$'+fmt(Math.round(s3.fb.spend/s3.days))+'</td><td class="r">$'+fmt(Math.round(s4.fb.spend/s4.days))+'</td><td class="r">$'+fmt(s5DailySpend)+'</td></tr>'
-  html+='</tbody></table>'
-
-  // What S3/S4 did from here to end
-  html+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:800;color:#A78BFA;margin-bottom:8px">Desde el '+pctAvance+'% hasta el cierre:</div></div>'
-  html+='<table><thead><tr><th>Segunda mitad</th><th class="r">S3</th><th class="r">S4</th><th class="r">Si S5 sigue ritmo</th></tr></thead><tbody>'
-
-  // S3 second half
-  var s3RemSpend=s3.fb.spend-s3SpendAtPct
-  var s3RemRev=s3.total_revenue-revenueAtPct(s3,pctAvance)
-  var s3RemDays=s3.days-Math.round(s3.days*pctAvance/100)
-  var s4RemSpend=s4.fb.spend-s4SpendAtPct
-  var s4RemRev=s4.total_revenue-revenueAtPct(s4,pctAvance)
-  var s4RemDays=s4.days-Math.round(s4.days*pctAvance/100)
-  var s3RemRoas=s3RemSpend>0?(s3RemRev/s3RemSpend):0
-  var s4RemRoas=s4RemSpend>0?(s4RemRev/s4RemSpend):0
-
-  // S5 projections if it follows S3 or S4 investment from here
-  var s5IfS3=s5.total_revenue+Math.round(s3RemSpend/s3RemDays)*diasRestantes*s3RemRoas
-  var s5IfS4=s5.total_revenue+Math.round(s4RemSpend/s4RemDays)*diasRestantes*s4RemRoas
-
-  html+='<tr><td class="b">Revenue restante</td><td class="r">'+fmtM(s3RemRev)+'</td><td class="r">'+fmtM(s4RemRev)+'</td><td class="r">—</td></tr>'
-  html+='<tr><td class="b">Inversión restante</td><td class="r">$'+fmt(s3RemSpend)+'</td><td class="r">$'+fmt(s4RemSpend)+'</td><td class="r">—</td></tr>'
-  html+='<tr><td class="b">Inv. Meta/día restante</td><td class="r" style="color:#EF4444">$'+fmt(Math.round(s3RemSpend/s3RemDays))+'</td><td class="r">$'+fmt(Math.round(s4RemSpend/s4RemDays))+'</td><td class="r">$'+fmt(s5DailySpend)+' (actual)</td></tr>'
-  html+='<tr><td class="b">ROAS segunda mitad</td><td class="r" style="color:#10B981;font-weight:800">'+s3RemRoas.toFixed(2)+'x</td><td class="r" style="color:#10B981;font-weight:800">'+s4RemRoas.toFixed(2)+'x</td><td class="r">'+(s5.total_revenue/s5Spend).toFixed(2)+'x (actual)</td></tr>'
-  html+='<tr style="background:rgba(139,92,246,0.06)"><td class="b" style="color:#A78BFA">Si S5 invierte igual</td><td class="r" style="font-weight:900;color:#A78BFA;font-size:14px">'+fmtM(Math.round(s5IfS3))+'</td><td class="r" style="font-weight:900;color:#A78BFA;font-size:14px">'+fmtM(Math.round(s5IfS4))+'</td><td class="r">—</td></tr>'
-  html+='</tbody></table>'
-
-  html+='<div class="insight" style="margin-top:8px"><h4>La segunda mitad tiene ROAS muy superior — históricamente 3x</h4>'
-  html+='<p>S3 tuvo ROAS '+s3RemRoas.toFixed(1)+'x en su segunda mitad. S4 tuvo '+s4RemRoas.toFixed(1)+'x. Esto es porque la audiencia ya conoce el sorteo, el FOMO sube, la conversión mejora. '
-  html+='<strong>Si S5 invierte al ritmo de S3 ($'+fmt(Math.round(s3RemSpend/s3RemDays))+'/día) y el ROAS de segunda mitad se comporta como históricamente, los $100M son alcanzables.</strong> '
-  html+='Si invierte al ritmo de S4, el rango es $75-85M. La inversión es la variable de decisión.</p></div>'
-  html+='</div>'
-
-  // REFERENCIA: últimas 2 semanas
-  html+='<div class="cd" style="margin-bottom:16px"><h3>Explosión últimas 2 semanas — dato histórico</h3>'
-  html+='<div class="g2" style="margin-top:8px">'
-  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S3 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$67.4M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$4.8M/día · 60% del total</div></div>'
-  html+='<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4)">S4 últimos 14 días</div><div style="font-size:20px;font-weight:900;color:#FFD700">$38.1M</div><div style="font-size:9px;color:rgba(255,255,255,0.3)">$2.7M/día · 52% del total</div></div>'
-  html+='</div></div>'
-
-  // TIMELINE
-  html+='<div class="cd" style="margin-bottom:12px"><h3>Prioridades esta semana</h3>'
-  html+='<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.5);line-height:2.2">'
-  html+='<strong style="color:#E53935">1.</strong> Construir secuencia carrito abandonado (ManyChat 15min/1h/día siguiente) — <strong style="color:#10B981">mayor ROI, costo $0</strong><br>'
-  html+='<strong style="color:#E53935">2.</strong> Test dormidos: enviar a 500 personas vía WA+email, medir reactivación a 48h<br>'
-  html+='<strong style="color:#E53935">3.</strong> Mantener ticket $2.500 activo, monitorear que ticket promedio no baje de $6K<br>'
-  html+='<strong style="color:#E53935">4.</strong> Subir Meta 50% (no 100%), medir ROAS a 5 días antes de escalar más<br>'
-  html+='<strong style="color:rgba(255,255,255,0.3)">5.</strong> Semana 2+: escalar según resultados de los gates'
-  html+='</div></div>'
-
-  html+='</div>'
-
-  // Fuentes de tráfico
-  html+='<div class="s"><div class="st">Fuentes de tráfico S5</div><div class="g2"><div>'+srcBars+'</div>'
-  html+='<div class="cd"><h3>Distribución</h3>'
-  Object.entries(s5.sources).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){
-    html+='<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.03)"><span>'+e[0]+'</span><span style="font-weight:700">'+fmt(e[1])+' ('+Math.round(e[1]/srcTotal*100)+'%)</span></div>'
-  })
-  html+='</div></div></div>'
-
-  // Nuevos vs Recurrentes
-  html+='<div class="s"><div class="st">Nuevos vs Recurrentes — S5</div><div class="g3">'
-  html+='<div class="cd"><h3>Compradores nuevos</h3><div style="font-size:24px;font-weight:900;color:#3B82F6">'+fmt(ret.s5_new_buyers)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">Revenue: '+fmtM(ret.s5_new_rev)+' · Ticket: $'+fmt(ret.s5_new_ticket)+'</div></div>'
-  html+='<div class="cd"><h3>Recurrentes (ya compraron antes)</h3><div style="font-size:24px;font-weight:900;color:#10B981">'+fmt(s5.unique_buyers-ret.s5_new_buyers)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">Revenue: '+fmtM(ret.s5_ret_rev)+' · Ticket: $'+fmt(ret.s5_ret_ticket)+'</div></div>'
-  // Retención: denominador = compradores del sorteo ANTERIOR
-  var retS3toS4Real=Math.round(ret.s3_to_s4.count*100/s3.unique_buyers)
-  var retS4toS5Real=Math.round(ret.s4_to_s5.count*100/s4.unique_buyers)
-  html+='<div class="cd"><h3>Retención cross-sorteo</h3><div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:2">S3→S4: '+retS3toS4Real+'% ('+fmt(ret.s3_to_s4.count)+' de '+fmt(s3.unique_buyers)+')<br>S4→S5: '+retS4toS5Real+'% ('+fmt(ret.s4_to_s5.count)+' de '+fmt(s4.unique_buyers)+')<br>Los 3 sorteos: '+fmt(ret.all_three)+'</div></div>'
-  html+='</div>'
-
-  // Oportunidad dormidos
-  html+='<div class="opp"><h4>Oportunidad: '+fmt(ret.dormant)+' compradores dormidos</h4><p>Compraron en S3 o S4 pero no en S5. Ya confían, ya pagaron. Una campaña de email/WhatsApp con oferta exclusiva puede activar una fracción significativa sin tocar el presupuesto de ads.</p></div>'
-  html+='</div>'
-
-  // Eficiencia publicitaria
-  html+='<div class="s"><div class="st">Eficiencia publicitaria</div>'
-  html+='<table><thead><tr><th>Métrica</th><th class="r">S3</th><th class="r">S4</th><th class="r">S5 (actual)</th></tr></thead><tbody>'
-  html+='<tr><td class="b">Órdenes</td><td class="r">'+fmt(s3.total_orders)+'</td><td class="r">'+fmt(s4.total_orders)+'</td><td class="r gd">'+fmt(s5.total_orders)+'</td></tr>'
-  html+='<tr><td class="b">Revenue</td><td class="r">'+fmtM(s3.total_revenue)+'</td><td class="r">'+fmtM(s4.total_revenue)+'</td><td class="r gd">'+fmtM(s5.total_revenue)+'</td></tr>'
-  html+='<tr><td class="b">Inversión Meta</td><td class="r">'+fmtM(s3.fb.spend)+'</td><td class="r">'+fmtM(s4.fb.spend)+'</td><td class="r">'+fmtM(s5.fb.spend)+'</td></tr>'
-  html+='<tr><td class="b">ROAS</td><td class="r">'+s3.fb.roas+'x</td><td class="r">'+s4.fb.roas+'x</td><td class="r gd">'+s5.fb.roas+'x</td></tr>'
-  html+='<tr><td class="b">CPA por orden</td><td class="r">$'+fmt(s3.fb.cpa_per_order)+'</td><td class="r">$'+fmt(s4.fb.cpa_per_order)+'</td><td class="r">$'+fmt(s5.fb.cpa_per_order)+'</td></tr>'
-  html+='<tr><td class="b">Inv. diaria</td><td class="r">'+fmtK(Math.round(s3.fb.spend/s3.days))+'</td><td class="r">'+fmtK(Math.round(s4.fb.spend/s4.days))+'</td><td class="r gd">'+fmtK(invDaily)+'</td></tr>'
-  html+='<tr><td class="b">Compradores únicos</td><td class="r">'+fmt(s3.unique_buyers)+'</td><td class="r">'+fmt(s4.unique_buyers)+'</td><td class="r">'+fmt(s5.unique_buyers)+'</td></tr>'
-  html+='<tr><td class="b">Ticket promedio</td><td class="r">$'+fmt(s3.avg_ticket)+'</td><td class="r">$'+fmt(s4.avg_ticket)+'</td><td class="r">$'+fmt(s5.avg_ticket)+'</td></tr>'
-  html+='<tr><td class="b">% Recurrentes</td><td class="r">'+s3.repeat_pct+'%</td><td class="r">'+s4.repeat_pct+'%</td><td class="r">'+s5.repeat_pct+'%</td></tr>'
-  html+='<tr><td class="b">Días activos</td><td class="r">'+s3.days+'</td><td class="r">'+s4.days+'</td><td class="r gd">'+s5.days+' (en curso)</td></tr>'
-  html+='</tbody></table>'
-
-  // Insight inversión
-  html+='<div class="alert"><h4>Nota sobre datos de inversión</h4><p>Los datos de inversión Meta provienen de Reportei (conectado a Meta Ads). Si hay diferencias con el panel de Meta directo, pueden deberse a delays de sincronización o atribución diferente. Para máxima precisión, comparar con el Business Manager de Meta.</p></div>'
-  html+='</div>'
-
-  // Perfil comprador
-  html+='<div class="s"><div class="st">Perfil del comprador S5</div><div class="g2">'
-  html+='<div class="cd"><h3>Métodos de pago</h3>'
-  Object.entries(s5.payments).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){
-    html+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.03)"><span>'+e[0]+'</span><span style="font-weight:700">'+fmt(e[1])+'</span></div>'
-  })
-  html+='</div>'
-  html+='<div class="cd"><h3>Variantes más vendidas</h3>'
-  Object.entries(s5.variants).sort(function(a,b){return b[1]-a[1]}).slice(0,8).forEach(function(e){
-    html+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.03)"><span>'+e[0].substring(0,40)+'</span><span style="font-weight:700">'+fmt(e[1])+'</span></div>'
-  })
-  html+='</div></div></div>'
-
-  // Cohortes de recompra
-  if (d.cohortes) {
-    var ch = d.cohortes
-    html+='<div class="s"><div class="st">Cohortes de recompra — ¿Quién vuelve a comprar?</div>'
-    html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">Llave: email. Cohorte definida por la primera compra del cliente. Recompra = compra posterior con código de concurso (flash o WhatsApp).</p>'
-
-    html+='<table><thead><tr><th>Cohorte</th><th class="r">Compradores</th><th class="r">Recompra gral.</th><th class="r">Con flash</th><th class="r">Con WA</th><th class="r">Días a 2da compra</th><th class="r">Ticket 1ra</th><th class="r">Ticket recompra</th></tr></thead><tbody>'
-
-    var cohortOrder = ['A', 'B', 'AB', 'C']
-    var cohortColors = { A: '#F59E0B', B: '#10B981', AB: '#8B5CF6', C: 'rgba(255,255,255,0.5)' }
-    cohortOrder.forEach(function(key) {
-      var c = ch[key]
-      if (!c) return
-      var color = cohortColors[key] || '#fff'
-      html+='<tr>'
-      html+='<td class="b" style="color:'+color+'">'+key+') '+c.name+'</td>'
-      html+='<td class="r">'+fmt(c.total_buyers)+'</td>'
-      html+='<td class="r" style="color:'+color+';font-weight:700">'+c.return_rate_any+'% ('+c.returners_any+')</td>'
-      html+='<td class="r">'+c.return_rate_flash+'% ('+c.returners_flash+')</td>'
-      html+='<td class="r">'+c.return_rate_wa+'% ('+c.returners_wa+')</td>'
-      html+='<td class="r">'+(c.avg_days_to_return || '—')+' días</td>'
-      html+='<td class="r">$'+fmt(c.avg_first_ticket)+'</td>'
-      html+='<td class="r">'+(c.avg_return_ticket ? '$'+fmt(c.avg_return_ticket) : '—')+'</td>'
-      html+='</tr>'
-    })
-    html+='</tbody></table>'
-
-    // Insights
-    var cA = ch.A, cC = ch.C, cAB = ch.AB
-    if (cA && cC) {
-      if (cA.return_rate_any < cC.return_rate_any / 2) {
-        html+='<div class="alert"><h4>Alerta: el comprador de $2.500 casi no vuelve ('+cA.return_rate_any+'% vs '+cC.return_rate_any+'% línea base)</h4>'
-        html+='<p>De '+cA.total_buyers+' compradores que entraron por precio bajo, solo '+cA.returners_any+' volvieron a comprar. '
-        html+='La línea base (≥$5.000 sin cupón) tiene '+cC.return_rate_any+'% de recompra. '
-        html+='<strong>Dato para la decisión: el $2.500 atrae volumen pero no genera motor de recompra.</strong> '
-        html+='Si el objetivo es recompra, el canal WhatsApp (cupones de concurso) funciona mejor como palanca.</p></div>'
-      } else {
-        html+='<div class="opp"><h4>El comprador de $2.500 sí vuelve ('+cA.return_rate_any+'%)</h4>'
-        html+='<p>La tasa de retorno es comparable a la línea base ('+cC.return_rate_any+'%). El precio bajo funciona como puerta de entrada.</p></div>'
-      }
-    }
-
-    // Cohorte "other" (concursos flash) — si tiene alta recompra
-    if (ch.other && ch.other.return_rate_any > 30) {
-      html+='<div class="opp"><h4>Los compradores que llegan por concurso flash tienen '+ch.other.return_rate_any+'% de recompra</h4>'
-      html+='<p>'+fmt(ch.other.total_buyers)+' personas entraron con cupón de concurso. De ellas, '+ch.other.returners_any+' volvieron a comprar ('+ch.other.return_rate_any+'%). '
-      html+='Revenue por recompra: $'+fmt(Math.round(ch.other.return_rev/1000))+'K. '
-      html+='<strong>Los concursos flash son el motor de retención más fuerte.</strong></p></div>'
-    }
-
-    html+='</div>'
-  }
-
-  // ============================================================
-  // TABLERO DE EMBUDOS (Arquitectura PDF)
-  // ============================================================
-  var srcTotal = Object.values(s5.sources).reduce(function(a,b){return a+b},0)
-  var directPct = Math.round(s5.sources['(direct)'] / srcTotal * 100)
-  var metaPct = Math.round((s5.sources['Instagram'] + s5.sources['Facebook']) / srcTotal * 100)
-  var googlePct = Math.round((s5.sources['Google'] || 0) / srcTotal * 100)
-  var revPropio = Math.round(s5.sources['(direct)'] / srcTotal * s5.total_revenue)
-  var revMeta = Math.round(((s5.sources['Instagram']||0) + (s5.sources['Facebook']||0)) / srcTotal * s5.total_revenue)
-
-  html+='<div class="s"><div class="st">Tablero de embudos — Arquitectura de conversión</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">Métricas clave del modelo flywheel. Meta: mover el ratio propio/Meta de '+directPct+'/'+metaPct+' a 45/55 y luego 60/40.</p>'
-
-  // KPI embudo: % revenue propio vs meta
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">'
-  html+='<div class="k"><div class="kv" style="color:'+(directPct>=45?'#10B981':'#F59E0B')+'">'+directPct+'%</div><div class="kl">Revenue canal propio</div></div>'
-  html+='<div class="k"><div class="kv" style="color:'+(metaPct<=55?'#10B981':'#EF4444')+'">'+metaPct+'%</div><div class="kl">Revenue Meta Ads</div></div>'
-  html+='<div class="k"><div class="kv" style="color:'+(s5.fb.roas>=4?'#10B981':s5.fb.roas>=2?'#F59E0B':'#EF4444')+'">'+s5.fb.roas+'x</div><div class="kl">ROAS (meta 4x)</div></div>'
-  html+='<div class="k"><div class="kv" style="color:'+(ret.s4_to_s5.pct>=50?'#10B981':'#F59E0B')+'">'+ret.s4_to_s5.pct+'%</div><div class="kl">Retención S4→S5 (meta 55%)</div></div>'
-  html+='</div>'
-
-  // Tabla métricas por embudo
-  html+='<table><thead><tr><th>Embudo</th><th>KPI principal</th><th class="r">Actual</th><th class="r">Meta N°5</th><th class="r">Estado</th></tr></thead><tbody>'
-
-  var embudoMetrics = [
-    ['0 Instrumentación', '% Purchase deduplicados', '—', '98%+', '⚠️ Pendiente auditar'],
-    ['1 Adquisición', 'CPA por compra', '$'+fmt(s5.fb.cpa_per_order), 'Bajar', s5.fb.cpa_per_order < 5000 ? '✅' : '⚠️'],
-    ['1 Web', 'Conversión web', '~'+Math.round(s5.total_orders / (s5.fb.impressions || s5.fb.reach || 1) * 100)+'%', '4-6%', '⚠️'],
-    ['2 Nurture', '% revenue audiencia propia', directPct+'%', '45%', directPct >= 45 ? '✅ Cumple' : '⚠️ Falta '+(45-directPct)+'pts'],
-    ['3 Carrito', '% carritos recuperados', '~0%', '15-25%', '❌ Sin secuencia'],
-    ['4 Live', 'Pico 20:00 vs resto', fmt(s5.by_hour['20']||0)+' vs '+fmt(Math.round(s5.total_orders/24))+' prom', 'Maximizar', (s5.by_hour['20']||0) > s5.total_orders/24*2 ? '✅ ~4x prom' : '⚠️'],
-    ['5 Retención', 'Recompra sorteo a sorteo', ret.s4_to_s5.pct+'%', '55-60%', ret.s4_to_s5.pct >= 50 ? '✅' : '⚠️ Falta '+(55-ret.s4_to_s5.pct)+'pts'],
-    ['Global', 'ROAS', s5.fb.roas+'x', '4x+', s5.fb.roas >= 4 ? '✅' : s5.fb.roas >= 2 ? '⚠️' : '❌'],
-    ['Global', '% revenue propio vs Meta', directPct+'/'+metaPct, '45/55', directPct >= 45 ? '✅' : '⚠️']
-  ]
-  embudoMetrics.forEach(function(row) {
-    var statusColor = row[4].startsWith('✅') ? '#10B981' : row[4].startsWith('❌') ? '#EF4444' : '#F59E0B'
-    html+='<tr><td class="b">'+row[0]+'</td><td>'+row[1]+'</td><td class="r">'+row[2]+'</td><td class="r" style="color:rgba(255,255,255,0.3)">'+row[3]+'</td><td class="r" style="color:'+statusColor+'">'+row[4]+'</td></tr>'
-  })
-  html+='</tbody></table>'
-
-  // Ventas por hora — gráfico de barras con marcadores de eventos
-  html+='<div class="st" style="margin-top:16px">Ventas por hora — Impacto del Live y Zoom</div>'
-  html+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin:-8px 0 12px;">El pico de las 19-20h confirma que el live es publicidad y el Zoom es conversión. Early Bird a las 18:00 suaviza la curva.</p>'
-  var maxHour = Math.max.apply(null, Object.values(s5.by_hour))
-  html+='<div style="display:flex;align-items:end;gap:2px;height:180px;margin:12px 0">'
-  for (var h = 0; h < 24; h++) {
-    var val = s5.by_hour[String(h)] || 0
-    var pctH = val > 0 ? Math.max(Math.round(val / maxHour * 100), 6) : 1
-    var color = 'rgba(255,215,0,0.4)'
-    var label = ''
-    if (h === 18) { color = '#F59E0B'; label = 'Early Bird' }
-    if (h === 19 || h === 20) { color = '#E53935'; label = h===20?'LIVE':'Pico' }
-    if (h === 21 || h === 22) { color = '#10B981'; label = h===22?'Zoom':'' }
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
-    if (val > 0) html+='<div style="font-size:7px;color:rgba(255,255,255,'+(val>maxHour*0.3?'0.7':'0.3')+')">'+val+'</div>'
-    html+='<div style="width:100%;height:'+pctH+'%;background:'+color+';border-radius:2px 2px 0 0;min-height:2px"></div>'
-    html+='<div style="font-size:7px;color:rgba(255,255,255,'+(label?'0.8':'0.25')+')">'+h+'</div>'
-    if (label) html+='<div style="font-size:6px;color:'+color+';font-weight:700">'+label+'</div>'
-    html+='</div>'
-  }
-  html+='</div>'
-
-  // Insight Early Bird
-  var pre18 = 0, post18 = 0, live = (s5.by_hour['19']||0) + (s5.by_hour['20']||0)
-  for (var hh = 0; hh < 18; hh++) pre18 += s5.by_hour[String(hh)] || 0
-  for (var hh = 18; hh < 24; hh++) post18 += s5.by_hour[String(hh)] || 0
-  html+='<div class="g2">'
-  html+='<div class="insight"><h4>El 18:00-23:59 concentra el '+Math.round(post18/s5.total_orders*100)+'% de las ventas</h4>'
-  html+='<p>'+fmt(post18)+' de '+fmt(s5.total_orders)+' órdenes se hacen después de las 18:00. El live de las 20:00 genera '+fmt(live)+' órdenes ('+Math.round(live/s5.total_orders*100)+'% del total). <strong>El PDF propone Early Bird a las 18:00 con precio que sube a las 20:00 para aplanar el pico y capturar abandono.</strong></p></div>'
-  html+='<div class="alert"><h4>Acciones pendientes de implementar</h4>'
-  html+='<p><strong>1. Recuperación carrito (Embudo 3):</strong> Secuencia ManyChat 15min/1h/19:30/día siguiente. Ataca el 40-49% de abandono. Mayor ROI de todos.<br>'
-  html+='<strong>2. Deduplicación Purchase/InitiateCheckout:</strong> Auditar Pixel + GA4 en CartFlows. Sin esto se optimiza a ciegas.<br>'
-  html+='<strong>3. Early Bird 18:00:</strong> Precio que sube a las 20:00. Aplana pico, adelanta caja, da deadline al carrito.<br>'
-  html+='<strong>4. Ruta A → ChannelJoin:</strong> Ads fríos que lleven al Canal WhatsApp, no a la web. Baja dependencia de Meta.<br>'
-  html+='<strong>5. UGC del Zoom:</strong> Capturar reacción de ganadores. Creative fresco = CPA más bajo.</p></div>'
-  html+='</div>'
-
-  // Revenue propio vs Meta — evolución
-  html+='<div class="st" style="margin-top:16px">Composición de revenue: canal propio vs Meta</div>'
-  html+='<div style="display:flex;height:32px;border-radius:8px;overflow:hidden;margin:8px 0">'
-  html+='<div style="width:'+directPct+'%;background:#FFD700;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#0A0A0F">Propio '+directPct+'%</div>'
-  html+='<div style="width:'+metaPct+'%;background:#E53935;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">Meta '+metaPct+'%</div>'
-  html+='<div style="width:'+googlePct+'%;background:#34A853;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">Google '+googlePct+'%</div>'
-  html+='</div>'
-  html+='<div class="g3">'
-  html+='<div class="cd"><h3>Canal propio (directo)</h3><div style="font-size:20px;font-weight:900;color:#FFD700">'+fmtM(revPropio)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">'+fmt(s5.sources['(direct)'])+' órdenes · Costo: $0</div></div>'
-  html+='<div class="cd"><h3>Meta Ads (IG + FB)</h3><div style="font-size:20px;font-weight:900;color:#E53935">'+fmtM(revMeta)+'</div><div style="font-size:10px;color:rgba(255,255,255,0.4)">'+fmt((s5.sources['Instagram']||0)+(s5.sources['Facebook']||0))+' órdenes · Inversión: '+fmtM(s5.fb.spend)+'</div></div>'
-  html+='<div class="cd"><h3>Clave del flywheel</h3><div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.8">Cada peso que hoy le pagas a Meta por un cliente que YA te compró, muévelo a WhatsApp. El Canal tiene '+fmt(6000)+' suscriptores — es margen puro. Meta N°5: llegar a 45/55.</div></div>'
-  html+='</div>'
-  html+='</div>'
-
-  document.getElementById('dashboard').innerHTML=html
+function sparkline(dailyData,key,w,h,color){
+  var allDays=Object.keys(dailyData).sort().slice(-14);
+  if(allDays.length<2) return '';
+  var vals=allDays.map(function(d){return dailyData[d][key]||0});
+  var max=Math.max.apply(null,vals)||1;
+  var pts=vals.map(function(v,i){
+    return Math.round(i/(vals.length-1)*w)+','+Math.round(h-v/max*(h-4));
+  });
+  return '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:'+h+'px;display:block"><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round"/></svg>';
 }
 
-// Auto-refresh cada 10 minutos
-setInterval(function(){
-  fetch('data.json?v='+Date.now()).then(function(r){return r.json()}).then(render).catch(function(){})
-},10*60*1000)
+var SPANS={s3:{start:'2026-02-16',end:'2026-04-13'},s4:{start:'2026-04-12',end:'2026-05-27'},s5:{start:'2026-05-24',end:'2026-07-19'}};
+
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+
+/* ── fetch ── */
+fetch('data.json?v='+Date.now()).then(function(r){return r.json()}).then(render).catch(function(e){
+  document.getElementById('dashboard').innerHTML='<p style="color:#EF4444;text-align:center;padding:40px">Error: '+e.message+'</p>';
+});
+
+/* ── main render ── */
+function render(d){
+  var s5=d.sorteos.s5, s4=d.sorteos.s4, s3=d.sorteos.s3, ret=d.retention, m=d.meta;
+  var u=new Date(d.updated);
+  var S5_START=new Date('2026-05-24'), S5_END=new Date('2026-07-19');
+  var totalDaysS5=daysBetween('2026-05-24','2026-07-19');
+  var diasTranscurridos=Math.min(Math.max(Math.round((new Date()-S5_START)/86400000),0),totalDaysS5);
+  var diasRestantes=totalDaysS5-diasTranscurridos;
+
+  /* header */
+  document.getElementById('hd-sub').innerHTML='Análisis multi-sorteo · '+fmt(m.total_orders_analyzed)+' órdenes · '+fmt(m.total_buyers)+' compradores · Actualizado '+u.toLocaleString('es-CL');
+  document.getElementById('hd-period').innerHTML='Sorteo 5 activo · Día '+s5.days+' de ~'+totalDaysS5+' · Faltan '+diasRestantes+' días · Cierre 19 julio 2026';
+  document.getElementById('foot').textContent='Dashboard BI · Muller & Pérez · '+fmt(m.total_orders_analyzed)+' órdenes · Actualizado '+u.toLocaleString('es-CL')+' · Auto-refresh 10 min';
+
+  var html='';
+
+  /* ═══════════════════════════════════════════
+     1. HERO KPIs (6 cards with sparklines)
+     ═══════════════════════════════════════════ */
+  var roas=s5.fb?s5.fb.roas+'x':'—';
+  var cpa=s5.fb?fmtK(s5.fb.cpa_per_order):'—';
+  var kpis=[
+    {v:fmtM(s5.total_revenue), l:'Revenue S5', spark:sparkline(s5.by_day,'rev',120,28,'#FFD700')},
+    {v:fmt(s5.total_orders), l:'Órdenes S5', spark:sparkline(s5.by_day,'orders',120,28,'#E53935')},
+    {v:fmtK(s5.avg_ticket), l:'Ticket Promedio', spark:''},
+    {v:roas, l:'ROAS S5', spark:''},
+    {v:cpa, l:'CPA / Orden', spark:''},
+    {v:diasRestantes+' días', l:'Días restantes', spark:''}
+  ];
+  html+='<div class="kg">';
+  kpis.forEach(function(kpi){
+    html+='<div class="k"><div class="kv">'+kpi.v+'</div><div class="kl">'+kpi.l+'</div>';
+    if(kpi.spark) html+='<div class="spark">'+kpi.spark+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     2. REVENUE/DAY CURVE (SVG chart)
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Revenue por día de sorteo — S3 vs S4 vs S5</div>';
+  html+=buildRevenueChart(s3,s4,s5);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     3. CUPONES Y DESCUENTOS — Timeline completa S5
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Cupones y descuentos — Timeline completa S5</div>';
+  html+=buildCouponSection(s5);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     4. CAMPAÑAS META
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Campañas Meta</div>';
+  html+=buildCampaignsTable(s5);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     5. ANUNCIOS META
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Top 10 Anuncios Meta</div>';
+  html+=buildAdsTable(s5);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     6. STICKER PACKS
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Sticker Packs — Distribución</div>';
+  html+=buildPacksSection(s5,s4,s3);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     7. SOURCES CON REVENUE
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Fuentes de Tráfico con Revenue</div>';
+  html+=buildSourcesSection(s5,s4,s3);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     8. RECOMPRA
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Análisis de Recompra</div>';
+  html+=buildRetentionSection(s5,ret);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     9. TRADE-OFF DURACIÓN
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Trade-off Duración — 45 vs 30 días</div>';
+  html+=buildDurationSection(s5,s4,s3,d);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     10. WHATSAPP + ACTIONS
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">WhatsApp + Actions (Meta)</div>';
+  html+=buildActionsSection(s5,s4,s3);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     11. VENTAS PERDIDAS (PENDING + FAILED)
+     ═══════════════════════════════════════════ */
+  if(d.lost_sales){
+    html+='<div class="s"><div class="st" style="color:#EF4444">Ventas Perdidas — Órdenes sin pagar</div>';
+    html+=buildLostSalesSection(d.lost_sales);
+    html+='</div>';
+  }
+
+  document.getElementById('dashboard').innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION BUILDERS
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 2. Revenue/Day Chart — S3 vs S4 vs S5 by sorteo day ── */
+function buildRevenueChart(s3,s4,s5){
+  function getDailyData(sorteo){
+    var days=Object.keys(sorteo.by_day).sort();
+    return days.map(function(d){return {date:d, rev:sorteo.by_day[d].rev||0, orders:sorteo.by_day[d].orders||0}});
+  }
+  var d3=getDailyData(s3), d4=getDailyData(s4), d5=getDailyData(s5);
+  var maxDays=Math.max(d3.length,d4.length,d5.length);
+  if(maxDays<2) return '<p class="fallback">Datos insuficientes para graficar</p>';
+
+  var allRevs=d3.map(function(d){return d.rev}).concat(d4.map(function(d){return d.rev})).concat(d5.map(function(d){return d.rev}));
+  var maxVal=Math.max.apply(null,allRevs)||1;
+
+  var W=1140, H=340, padL=65, padR=110, padT=25, padB=60;
+  var chartW=W-padL-padR, chartH=H-padT-padB;
+  var yMax=Math.ceil(maxVal/500000)*500000;
+  if(yMax<maxVal) yMax=maxVal*1.1;
+
+  function xP(i){return padL+i/(maxDays-1)*chartW}
+  function yP(v){return padT+chartH-v/yMax*chartH}
+
+  var svg='<div class="chart-wrap"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-height:280px">';
+
+  /* y gridlines */
+  for(var t=0;t<=5;t++){
+    var yv=yMax/5*t;var yy=yP(yv);
+    svg+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="rgba(255,255,255,0.06)"/>';
+    svg+='<text x="'+(padL-8)+'" y="'+(yy+3)+'" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9" font-family="Montserrat">'+fmtK(yv)+'</text>';
+  }
+
+  /* series */
+  var series=[
+    {data:d3, color:'rgba(255,255,255,0.3)', width:1.5, name:'S3', sub:s3.name+' — '+d3.length+' días — '+fmtM(s3.total_revenue)},
+    {data:d4, color:'#E53935', width:1.5, name:'S4', sub:s4.name+' — '+d4.length+' días — '+fmtM(s4.total_revenue)},
+    {data:d5, color:'#FFD700', width:2.5, name:'S5', sub:s5.name+' — '+d5.length+' días — '+fmtM(s5.total_revenue)}
+  ];
+
+  series.forEach(function(s){
+    if(s.data.length<2) return;
+    var pts=s.data.map(function(d,i){return Math.round(xP(i))+','+Math.round(yP(d.rev))});
+    svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="'+s.width+'" stroke-linecap="round" stroke-linejoin="round"/>';
+    /* end label */
+    var li=s.data.length-1;
+    svg+='<text x="'+Math.round(xP(li)+6)+'" y="'+Math.round(yP(s.data[li].rev)+4)+'" fill="'+s.color+'" font-size="10" font-family="Montserrat" font-weight="800">'+s.name+'</text>';
+  });
+
+  /* S5 area fill */
+  if(d5.length>1){
+    var pts5=d5.map(function(d,i){return Math.round(xP(i))+','+Math.round(yP(d.rev))});
+    svg+='<polygon points="'+Math.round(xP(0))+','+Math.round(yP(0))+' '+pts5.join(' ')+' '+Math.round(xP(d5.length-1))+','+Math.round(yP(0))+'" fill="url(#goldGrad)" opacity="0.08"/>';
+    svg+='<defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></linearGradient></defs>';
+  }
+
+  /* day 18 marker */
+  if(d5.length>=18){
+    var mx=xP(17);
+    svg+='<line x1="'+Math.round(mx)+'" y1="'+padT+'" x2="'+Math.round(mx)+'" y2="'+(H-padB)+'" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,3"/>';
+    svg+='<text x="'+Math.round(mx)+'" y="'+(padT-4)+'" text-anchor="middle" fill="#10B981" font-size="9" font-family="Montserrat" font-weight="700">Día 18 ('+d5[17].date.substring(5)+')</text>';
+  }
+
+  /* x-axis: día del sorteo + fecha S5 debajo */
+  for(var i=0;i<maxDays;i+=7){
+    var xx=Math.round(xP(i));
+    svg+='<text x="'+xx+'" y="'+(H-padB+14)+'" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8" font-family="Montserrat" font-weight="600">Día '+(i+1)+'</text>';
+    if(i<d5.length){
+      svg+='<text x="'+xx+'" y="'+(H-padB+26)+'" text-anchor="middle" fill="rgba(255,215,0,0.3)" font-size="7" font-family="Montserrat">'+d5[i].date.substring(5)+'</text>';
+    }
+  }
+
+  /* legend bar at bottom */
+  var lgY=H-8;
+  series.forEach(function(s,idx){
+    var lx=padL+idx*320;
+    svg+='<line x1="'+lx+'" y1="'+lgY+'" x2="'+(lx+20)+'" y2="'+lgY+'" stroke="'+s.color+'" stroke-width="2"/>';
+    svg+='<text x="'+(lx+25)+'" y="'+(lgY+3)+'" fill="'+s.color+'" font-size="8" font-family="Montserrat">'+s.sub+'</text>';
+  });
+
+  svg+='</svg></div>';
+  return svg;
+}
+
+/* ── 3. Coupon Section ── */
+function buildCouponSection(s5){
+  var h='';
+  if(!s5.by_coupon_day){return '<p class="fallback">Datos de cupones no disponibles. Ejecuta el pipeline actualizado.</p>'}
+
+  var allDays=Object.keys(s5.by_coupon_day).sort();
+  if(allDays.length===0) return '<p class="fallback">Sin datos de cupones</p>';
+
+  /* ── Totals for insight ── */
+  var totalWith=0,totalWithout=0,revWith=0,revWithout=0,totalDiscount=0;
+  allDays.forEach(function(day){
+    var cd=s5.by_coupon_day[day];
+    var w=cd.with_coupon||{orders:0,rev:0};
+    var wo=cd.without_coupon||{orders:0,rev:0};
+    totalWith+=w.orders; revWith+=w.rev;
+    totalWithout+=wo.orders; revWithout+=wo.rev;
+  });
+  var tickWith=totalWith>0?Math.round(revWith/totalWith):0;
+  var tickWithout=totalWithout>0?Math.round(revWithout/totalWithout):0;
+
+  /* ── KPI cards ── */
+  h+='<div class="kg" style="grid-template-columns:repeat(5,1fr)">';
+  h+='<div class="k"><div class="kv" style="font-size:18px">'+fmt(totalWith+totalWithout)+'</div><div class="kl">Órdenes totales S5</div></div>';
+  h+='<div class="k"><div class="kv" style="font-size:18px">'+pct(totalWith,totalWith+totalWithout)+'%</div><div class="kl">Con cupón</div></div>';
+  h+='<div class="k"><div class="kv" style="font-size:18px">'+fmtK(tickWith)+'</div><div class="kl">Ticket con cupón</div></div>';
+  h+='<div class="k"><div class="kv" style="font-size:18px">'+fmtK(tickWithout)+'</div><div class="kl">Ticket sin cupón</div></div>';
+  var totalDiscountAll=0;
+  if(s5.coupon_summary){Object.values(s5.coupon_summary).forEach(function(c){totalDiscountAll+=c.discount||0})}
+  h+='<div class="k"><div class="kv" style="font-size:18px;color:#EF4444">'+fmtK(totalDiscountAll)+'</div><div class="kl">Total descontado</div></div>';
+  h+='</div>';
+
+  /* ── SVG: stacked bar chart, orders con/sin cupón por día ── */
+  var maxOrd=0;
+  allDays.forEach(function(day){
+    var cd=s5.by_coupon_day[day];
+    var t=(cd.with_coupon?cd.with_coupon.orders:0)+(cd.without_coupon?cd.without_coupon.orders:0);
+    if(t>maxOrd) maxOrd=t;
+  });
+
+  var W=1140,H=180,padL=45,padR=10,padT=10,padB=40;
+  var chartW=W-padL-padR,chartH=H-padT-padB;
+  var barW=Math.max(Math.floor(chartW/allDays.length)-2,4);
+
+  h+='<div class="cd" style="margin-top:8px;padding:12px"><h3 style="color:#FFD700;font-size:11px;margin-bottom:6px">Órdenes/día: sin cupón (dorado) + con cupón (rojo)</h3>';
+  h+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-height:140px">';
+
+  /* y grid */
+  for(var t=0;t<=3;t++){
+    var yv=Math.round(maxOrd/3*t);
+    var yy=padT+chartH-yv/maxOrd*chartH;
+    h+='<line x1="'+padL+'" y1="'+Math.round(yy)+'" x2="'+(W-padR)+'" y2="'+Math.round(yy)+'" stroke="rgba(255,255,255,0.06)"/>';
+    h+='<text x="'+(padL-4)+'" y="'+Math.round(yy+3)+'" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="8" font-family="Montserrat">'+yv+'</text>';
+  }
+
+  allDays.forEach(function(day,i){
+    var cd=s5.by_coupon_day[day];
+    var wO=(cd.with_coupon?cd.with_coupon.orders:0);
+    var woO=(cd.without_coupon?cd.without_coupon.orders:0);
+    var total=wO+woO;
+    var xB=padL+i*(chartW/allDays.length)+1;
+    var hWo=maxOrd>0?woO/maxOrd*chartH:0;
+    var hW=maxOrd>0?wO/maxOrd*chartH:0;
+    /* sin cupón = gold (bottom) */
+    h+='<rect x="'+Math.round(xB)+'" y="'+Math.round(padT+chartH-hWo-hW)+'" width="'+barW+'" height="'+Math.round(hWo)+'" fill="#FFD700" rx="1"/>';
+    /* con cupón = red (top) */
+    h+='<rect x="'+Math.round(xB)+'" y="'+Math.round(padT+chartH-hW)+'" width="'+barW+'" height="'+Math.round(hW)+'" fill="#E53935" rx="1" opacity="0.8"/>';
+
+    /* x labels every 5 days */
+    if(i%5===0||i===allDays.length-1){
+      h+='<text x="'+Math.round(xB+barW/2)+'" y="'+(H-padB+12)+'" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="7" font-family="Montserrat">'+day.substring(5)+'</text>';
+      h+='<text x="'+Math.round(xB+barW/2)+'" y="'+(H-padB+22)+'" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="7" font-family="Montserrat">d'+(i+1)+'</text>';
+    }
+  });
+  h+='</svg></div>';
+
+  /* ── Coupon summary table (grouped) ── */
+  if(s5.coupon_summary){
+    var entries=Object.entries(s5.coupon_summary).sort(function(a,b){return b[1].orders-a[1].orders});
+    if(entries.length>0){
+      /* Group coupons by type */
+      var groups={wa:{label:'WhatsApp (w*)',orders:0,rev:0,disc:0,codes:[]},flash:{label:'Flash / fecha',orders:0,rev:0,disc:0,codes:[]},preventa:{label:'Preventa',orders:0,rev:0,disc:0,codes:[]},other:{label:'Otros',orders:0,rev:0,disc:0,codes:[]}};
+      entries.forEach(function(e){
+        var code=e[0],d=e[1];
+        if(code==='preventa'){groups.preventa.orders+=d.orders;groups.preventa.rev+=d.revenue;groups.preventa.disc+=d.discount;groups.preventa.codes.push(code)}
+        else if(/^w\d/.test(code)){groups.wa.orders+=d.orders;groups.wa.rev+=d.revenue;groups.wa.disc+=d.discount;groups.wa.codes.push(code)}
+        else if(/^(flash|junio|mayo|\djunio|m\d|super|sincensura|final|\d+junio)/.test(code)){groups.flash.orders+=d.orders;groups.flash.rev+=d.revenue;groups.flash.disc+=d.discount;groups.flash.codes.push(code)}
+        else{groups.other.orders+=d.orders;groups.other.rev+=d.revenue;groups.other.disc+=d.discount;groups.other.codes.push(code)}
+      });
+
+      h+='<div class="g2" style="margin-top:8px">';
+      h+='<div class="cd"><h3 style="color:#FFD700;font-size:11px;margin-bottom:6px">Cupones agrupados por tipo</h3>';
+      h+='<table><thead><tr><th>Tipo</th><th class="r">Órdenes</th><th class="r">Revenue</th><th class="r">Descuento</th><th class="r">Ticket</th><th class="r">Códigos</th></tr></thead><tbody>';
+      ['preventa','wa','flash','other'].forEach(function(gk){
+        var g=groups[gk];
+        if(g.orders===0) return;
+        var tick=g.orders>0?Math.round(g.rev/g.orders):0;
+        h+='<tr><td class="b">'+g.label+'</td><td class="r">'+fmt(g.orders)+'</td><td class="r">'+fmtK(g.rev)+'</td><td class="r" style="color:#EF4444">'+fmtK(g.disc)+'</td><td class="r">'+fmtK(tick)+'</td><td class="r" style="font-size:7px;color:rgba(255,255,255,0.3)">'+g.codes.length+'</td></tr>';
+      });
+      h+='</tbody></table></div>';
+
+      /* Top 10 individual coupons */
+      h+='<div class="cd"><h3 style="color:#FFD700;font-size:11px;margin-bottom:6px">Top 10 cupones por uso</h3>';
+      h+='<table><thead><tr><th>Código</th><th class="r">Órdenes</th><th class="r">Revenue</th><th class="r">Descuento</th></tr></thead><tbody>';
+      entries.slice(0,10).forEach(function(e){
+        var cs=e[1];
+        h+='<tr><td class="b">'+e[0]+'</td><td class="r">'+fmt(cs.orders)+'</td><td class="r">'+fmtK(cs.revenue)+'</td><td class="r" style="color:#EF4444">'+fmtK(cs.discount)+'</td></tr>';
+      });
+      h+='</tbody></table></div>';
+      h+='</div>';
+    }
+  }
+
+  /* ── Insight ── */
+  var tickDiff=tickWithout>0?Math.round((tickWith-tickWithout)/tickWithout*100):0;
+  if(tickDiff<-10){
+    h+='<div class="alert" style="margin-top:8px"><h4>Los cupones bajan el ticket '+Math.abs(tickDiff)+'%</h4><p>Ticket con cupón: '+fmtK(tickWith)+' vs sin cupón: '+fmtK(tickWithout)+'. '+pct(totalWith,totalWith+totalWithout)+'% de las ventas usan cupón. Descuento total otorgado: <strong style="color:#fff">'+fmtK(totalDiscountAll)+'</strong>. El volumen que generan ('+fmt(totalWith)+' órdenes) compensa parcialmente, pero hay que evaluar si los cupones están canibalizando ventas que habrían ocurrido sin descuento.</p></div>';
+  } else {
+    h+='<div class="opp" style="margin-top:8px"><h4>Cupones generan volumen sin destruir ticket</h4><p>Ticket con cupón: '+fmtK(tickWith)+' vs sin cupón: '+fmtK(tickWithout)+' (diferencia '+tickDiff+'%). '+fmt(totalWith)+' órdenes con cupón ('+pct(totalWith,totalWith+totalWithout)+'% del total). Descuento total: '+fmtK(totalDiscountAll)+'.</p></div>';
+  }
+
+  return h;
+}
+
+/* ── 4. Campaigns Table ── */
+function buildCampaignsTable(s5){
+  if(!s5.fb_tables||!s5.fb_tables.campaigns||s5.fb_tables.campaigns.length===0){
+    return '<p class="fallback">Datos de campañas no disponibles</p>';
+  }
+  var camps=s5.fb_tables.campaigns.slice().sort(function(a,b){return (parseFloat(b.spend)||0)-(parseFloat(a.spend)||0)});
+  var maxSpend=parseFloat(camps[0].spend)||1;
+
+  var h='<table><thead><tr><th>Campaña</th><th class="r">Spend</th><th class="r">Reach</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">WA Starts</th><th class="r">Leads</th></tr></thead><tbody>';
+  camps.forEach(function(c){
+    var spend=parseFloat(c.spend)||0;
+    var barW=Math.round(spend/maxSpend*100);
+    var name=c.campaign_name||c.name||c['Campaign name']||'Sin nombre';
+    var reach=c.reach||c.Reach||0;
+    var clicks=c.clicks||c['Link clicks']||c.Clicks||0;
+    var ctr=c.ctr||c.CTR||'—';
+    var wa=c.wa_starts||c['WhatsApp message starts']||c['Messaging conversations started']||'—';
+    var leads=c.leads||c.Leads||'—';
+    h+='<tr><td class="b" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</td>';
+    h+='<td class="r"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px"><span>$'+fmt(Math.round(spend))+'</span><div style="width:60px;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:4px"></div></div></div></td>';
+    h+='<td class="r">'+fmt(parseInt(reach)||0)+'</td>';
+    h+='<td class="r">'+fmt(parseInt(clicks)||0)+'</td>';
+    h+='<td class="r">'+ctr+'</td>';
+    h+='<td class="r">'+wa+'</td>';
+    h+='<td class="r">'+leads+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  return h;
+}
+
+/* ── 5. Ads Table ── */
+function buildAdsTable(s5){
+  if(!s5.fb_tables||!s5.fb_tables.ads||s5.fb_tables.ads.length===0){
+    return '<p class="fallback">Datos de anuncios no disponibles</p>';
+  }
+  var ads=s5.fb_tables.ads.slice().sort(function(a,b){return (parseFloat(b.spend)||0)-(parseFloat(a.spend)||0)}).slice(0,10);
+
+  /* average CTR */
+  var totalCtr=0, ctrCount=0;
+  ads.forEach(function(a){var c=parseFloat(a.ctr||a.CTR);if(!isNaN(c)){totalCtr+=c;ctrCount++}});
+  var avgCtr=ctrCount>0?totalCtr/ctrCount:0;
+
+  var h='<table><thead><tr><th>Anuncio</th><th class="r">Spend</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">WA Starts</th></tr></thead><tbody>';
+  ads.forEach(function(a){
+    var name=a.ad_name||a.name||a['Ad name']||'Sin nombre';
+    var spend=parseFloat(a.spend)||0;
+    var clicks=a.clicks||a['Link clicks']||a.Clicks||0;
+    var ctrVal=parseFloat(a.ctr||a.CTR)||0;
+    var wa=a.wa_starts||a['WhatsApp message starts']||'—';
+    var rowClass=ctrVal>avgCtr?'row-green':'row-red';
+    h+='<tr class="'+rowClass+'"><td class="b" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</td>';
+    h+='<td class="r">$'+fmt(Math.round(spend))+'</td>';
+    h+='<td class="r">'+fmt(parseInt(clicks)||0)+'</td>';
+    h+='<td class="r">'+(ctrVal?ctrVal.toFixed(2)+'%':'—')+'</td>';
+    h+='<td class="r">'+wa+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="insight"><h4>CTR promedio: '+(avgCtr?avgCtr.toFixed(2)+'%':'—')+'</h4><p>Verde = CTR sobre promedio. Rojo = CTR bajo promedio. Considera pausar anuncios rojos con spend alto.</p></div>';
+  return h;
+}
+
+/* ── 6. Sticker Packs ── */
+function buildPacksSection(s5,s4,s3){
+  var h='';
+  var sorteos=[{label:'S5',data:s5},{label:'S4',data:s4},{label:'S3',data:s3}];
+
+  sorteos.forEach(function(sorteo){
+    if(!sorteo.data||!sorteo.data.by_pack) return;
+    var packs=sorteo.data.by_pack;
+    var keys=Object.keys(packs).sort(function(a,b){return parseInt(a)-parseInt(b)});
+    var totalRev=0;
+    keys.forEach(function(k){totalRev+=packs[k].revenue||0});
+    if(totalRev===0) return;
+
+    h+='<h3 style="font-size:12px;font-weight:800;color:#FFD700;margin:12px 0 8px">'+sorteo.label+'</h3>';
+    h+='<table><thead><tr><th>Pack</th><th class="r">Qty vendido</th><th class="r">Revenue</th><th class="r">% Revenue</th><th class="r">Ticket prom.</th><th class="r">Rev/Sticker</th><th>Proporción</th></tr></thead><tbody>';
+    keys.forEach(function(k){
+      var p=packs[k];
+      var revPct=pct(p.revenue,totalRev);
+      var ticket=p.count>0?Math.round(p.revenue/p.count):0;
+      var revPerSticker=p.stickers>0?Math.round(p.revenue/p.stickers):0;
+      var barW=Math.max(revPct,2);
+      h+='<tr><td class="b">Pack '+k+'</td><td class="r">'+fmt(p.count)+'</td><td class="r">'+fmtK(p.revenue)+'</td><td class="r">'+revPct+'%</td><td class="r">'+fmtK(ticket)+'</td><td class="r">'+fmtK(revPerSticker)+'</td>';
+      h+='<td><div style="width:100%;height:14px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:linear-gradient(90deg,#E53935,#FFD700);border-radius:4px"></div></div></td></tr>';
+    });
+    h+='</tbody></table>';
+  });
+
+  return h;
+}
+
+/* ── 7. Sources with Revenue ── */
+function buildSourcesSection(s5,s4,s3){
+  var h='';
+  var srcColors={'(direct)':'#FFD700','Instagram':'#E1306C','Facebook':'#1877F2','Google':'#34A853','Otros':'#64748B'};
+  var sorteos=[{label:'S5',data:s5},{label:'S4',data:s4},{label:'S3',data:s3}];
+
+  sorteos.forEach(function(sorteo){
+    if(!sorteo.data||!sorteo.data.sources) return;
+    var sources=sorteo.data.sources;
+    var srcRev=sorteo.data.source_revenue||{};
+    var totalOrd=0,totalRev=0;
+    Object.keys(sources).forEach(function(k){totalOrd+=sources[k]||0});
+    Object.keys(srcRev).forEach(function(k){totalRev+=srcRev[k]||0});
+    if(totalOrd===0) return;
+
+    h+='<h3 style="font-size:12px;font-weight:800;color:#FFD700;margin:12px 0 8px">'+sorteo.label+'</h3>';
+
+    /* stacked bar */
+    h+='<div class="stacked-bar">';
+    Object.keys(srcRev).sort(function(a,b){return (srcRev[b]||0)-(srcRev[a]||0)}).forEach(function(k){
+      var w=pct(srcRev[k],totalRev);
+      if(w<1) return;
+      var col=srcColors[k]||'#64748B';
+      h+='<div class="stacked-seg" style="width:'+w+'%;background:'+col+'" title="'+k+': '+w+'%">'+w+'%</div>';
+    });
+    h+='</div>';
+    h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">';
+    Object.keys(srcRev).sort(function(a,b){return (srcRev[b]||0)-(srcRev[a]||0)}).forEach(function(k){
+      var col=srcColors[k]||'#64748B';
+      h+='<span style="font-size:9px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:'+col+';display:inline-block"></span>'+k+'</span>';
+    });
+    h+='</div>';
+
+    h+='<table><thead><tr><th>Fuente</th><th class="r">Órdenes</th><th class="r">Revenue</th><th class="r">% Revenue</th><th class="r">Ticket prom.</th></tr></thead><tbody>';
+    Object.keys(sources).sort(function(a,b){return (srcRev[b]||0)-(srcRev[a]||0)}).forEach(function(k){
+      var ord=sources[k]||0;
+      var rev=srcRev[k]||0;
+      var revP=pct(rev,totalRev);
+      var tick=ord>0?Math.round(rev/ord):0;
+      h+='<tr><td class="b">'+k+'</td><td class="r">'+fmt(ord)+'</td><td class="r">'+fmtK(rev)+'</td><td class="r">'+revP+'%</td><td class="r">'+fmtK(tick)+'</td></tr>';
+    });
+    h+='</tbody></table>';
+  });
+
+  return h;
+}
+
+/* ── 8. Retention / Recompra ── */
+function buildRetentionSection(s5,ret){
+  var h='';
+
+  /* Cards: new vs returning */
+  h+='<div class="g2" style="margin-bottom:16px">';
+
+  /* new buyers */
+  h+='<div class="cd"><h3>Compradores nuevos (S5)</h3>';
+  h+='<div class="kv" style="font-size:24px">'+fmt(ret.s5_new_buyers||0)+'</div>';
+  h+='<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.5)">Revenue: '+fmtM(ret.s5_new_rev||0)+'</div>';
+  h+='<div style="font-size:11px;color:rgba(255,255,255,0.5)">Ticket: '+fmtK(ret.s5_new_ticket||0)+'</div>';
+  h+='</div>';
+
+  /* returning buyers */
+  var retBuyers=(s5.unique_buyers||0)-(ret.s5_new_buyers||0);
+  h+='<div class="cd"><h3>Compradores recurrentes (S5)</h3>';
+  h+='<div class="kv" style="font-size:24px">'+fmt(retBuyers>0?retBuyers:0)+'</div>';
+  h+='<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.5)">Revenue: '+fmtM(ret.s5_ret_rev||0)+'</div>';
+  h+='<div style="font-size:11px;color:rgba(255,255,255,0.5)">Ticket: '+fmtK(ret.s5_ret_ticket||0)+'</div>';
+  h+='</div>';
+  h+='</div>';
+
+  /* cross-sorteo retention */
+  h+='<div class="g3" style="margin-bottom:16px">';
+  h+='<div class="cd"><h3>S3 a S4</h3><div class="kv" style="font-size:20px">'+fmt(ret.s3_to_s4?ret.s3_to_s4.count:0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">'+pct(ret.s3_to_s4?ret.s3_to_s4.count:0,ret.total_pool||1)+'% del pool</div></div>';
+  h+='<div class="cd"><h3>S4 a S5</h3><div class="kv" style="font-size:20px">'+fmt(ret.s4_to_s5?ret.s4_to_s5.count:0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">'+pct(ret.s4_to_s5?ret.s4_to_s5.count:0,ret.total_pool||1)+'% del pool</div></div>';
+  h+='<div class="cd"><h3>Los 3 sorteos</h3><div class="kv" style="font-size:20px">'+fmt(ret.all_three||0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">Super fans</div></div>';
+  h+='</div>';
+
+  /* frequency */
+  h+='<div class="g3">';
+  h+='<div class="cd"><h3>Compras/persona</h3><div class="kv" style="font-size:20px">'+(s5.purchases_per_person||0).toFixed(1)+'</div></div>';
+  h+='<div class="cd"><h3>% Repeat buyers</h3><div class="kv" style="font-size:20px">'+(s5.repeat_pct||0)+'%</div></div>';
+  h+='<div class="cd"><h3>Super repeat (3+)</h3><div class="kv" style="font-size:20px">'+fmt(s5.super_repeat||0)+'</div></div>';
+  h+='</div>';
+
+  /* dormant alert */
+  if(ret.dormant>0){
+    h+='<div class="alert"><h4>'+fmt(ret.dormant)+' compradores dormidos</h4><p>Compraron en S3 o S4 pero no han vuelto en S5. Pool total: '+fmt(ret.total_pool||0)+'. Oportunidad de reactivación con email/WhatsApp.</p></div>';
+  }
+
+  return h;
+}
+
+/* ── 9. Duration Trade-off ── */
+function buildDurationSection(s5,s4,s3,d){
+  var h='';
+
+  var totalDaysS3=daysBetween(SPANS.s3.start,SPANS.s3.end);
+  var totalDaysS4=daysBetween(SPANS.s4.start,SPANS.s4.end);
+  var totalDaysS5=daysBetween(SPANS.s5.start,SPANS.s5.end);
+
+  function getRevPerDay(sorteo){return sorteo.days>0?Math.round(sorteo.total_revenue/sorteo.days):0}
+  function getOrdPerDay(sorteo){return sorteo.days>0?(sorteo.total_orders/sorteo.days).toFixed(1):0}
+
+  /* first 7 / last 7 averages */
+  function avgRange(sorteo,startIdx,endIdx){
+    var dayKeys=Object.keys(sorteo.by_day).sort();
+    var slice=dayKeys.slice(startIdx,endIdx);
+    if(slice.length===0) return 0;
+    var sum=0;
+    slice.forEach(function(k){sum+=sorteo.by_day[k].rev||0});
+    return Math.round(sum/slice.length);
+  }
+
+  function halfRevenue(sorteo){
+    var dayKeys=Object.keys(sorteo.by_day).sort();
+    var mid=Math.floor(dayKeys.length/2);
+    var first=0,second=0;
+    dayKeys.forEach(function(k,i){
+      if(i<mid) first+=sorteo.by_day[k].rev||0;
+      else second+=sorteo.by_day[k].rev||0;
+    });
+    var total=first+second;
+    return {first:pct(first,total),second:pct(second,total)};
+  }
+
+  var s3first7=avgRange(s3,0,7), s3last7=avgRange(s3,-7);
+  var s4first7=avgRange(s4,0,7), s4last7=avgRange(s4,-7);
+  var s5first7=avgRange(s5,0,7), s5last7=avgRange(s5,-7);
+  var s5DayKeys=Object.keys(s5.by_day).sort();
+  if(s5DayKeys.length>=7) s5last7=avgRange(s5,s5DayKeys.length-7,s5DayKeys.length);
+
+  var s3half=halfRevenue(s3), s4half=halfRevenue(s4), s5half=halfRevenue(s5);
+  var s3decay=s3first7>0?Math.round((s3last7-s3first7)/s3first7*100):0;
+  var s4decay=s4first7>0?Math.round((s4last7-s4first7)/s4first7*100):0;
+  var s5decay=s5first7>0?Math.round((s5last7-s5first7)/s5first7*100):0;
+
+  h+='<table><thead><tr><th>Métrica</th><th class="r">S3 ('+totalDaysS3+' días)</th><th class="r">S4 ('+totalDaysS4+' días)</th><th class="r">S5 ('+totalDaysS5+' días, en curso)</th></tr></thead><tbody>';
+  h+='<tr><td class="b">Revenue/día</td><td class="r">'+fmtK(getRevPerDay(s3))+'</td><td class="r">'+fmtK(getRevPerDay(s4))+'</td><td class="r">'+fmtK(getRevPerDay(s5))+'</td></tr>';
+  h+='<tr><td class="b">Órdenes/día</td><td class="r">'+getOrdPerDay(s3)+'</td><td class="r">'+getOrdPerDay(s4)+'</td><td class="r">'+getOrdPerDay(s5)+'</td></tr>';
+  h+='<tr><td class="b">Prom. primeros 7 días</td><td class="r">'+fmtK(s3first7)+'</td><td class="r">'+fmtK(s4first7)+'</td><td class="r">'+fmtK(s5first7)+'</td></tr>';
+  h+='<tr><td class="b">Prom. últimos 7 días</td><td class="r">'+fmtK(s3last7)+'</td><td class="r">'+fmtK(s4last7)+'</td><td class="r">'+fmtK(s5last7)+'</td></tr>';
+  h+='<tr><td class="b">Decay rate</td><td class="r '+(s3decay<0?'dn':'up')+'">'+s3decay+'%</td><td class="r '+(s4decay<0?'dn':'up')+'">'+s4decay+'%</td><td class="r '+(s5decay<0?'dn':'up')+'">'+s5decay+'%</td></tr>';
+  h+='<tr><td class="b">% rev 1ra mitad</td><td class="r">'+s3half.first+'%</td><td class="r">'+s4half.first+'%</td><td class="r">'+s5half.first+'%</td></tr>';
+  h+='<tr><td class="b">% rev 2da mitad</td><td class="r">'+s3half.second+'%</td><td class="r">'+s4half.second+'%</td><td class="r">'+s5half.second+'%</td></tr>';
+  h+='</tbody></table>';
+
+  /* Cumulative revenue curves SVG */
+  h+=buildCumulativeCurves(s5,s4,s3);
+
+  return h;
+}
+
+function buildCumulativeCurves(s5,s4,s3){
+  var sorteos=[
+    {label:'S3',data:s3,color:'#64748B',totalDays:daysBetween(SPANS.s3.start,SPANS.s3.end)},
+    {label:'S4',data:s4,color:'#E53935',totalDays:daysBetween(SPANS.s4.start,SPANS.s4.end)},
+    {label:'S5',data:s5,color:'#FFD700',totalDays:daysBetween(SPANS.s5.start,SPANS.s5.end)}
+  ];
+
+  var W=1140,H=260,padL=60,padR=20,padT=20,padB=40;
+  var chartW=W-padL-padR,chartH=H-padT-padB;
+
+  /* compute cumulative revenue normalized to 0-100% duration */
+  var maxRev=0;
+  var curves=sorteos.map(function(s){
+    var dayKeys=Object.keys(s.data.by_day).sort();
+    var totalDays=s.totalDays;
+    var startDate=new Date(dayKeys[0]+'T12:00:00');
+    var cumRev=0;
+    var points=[];
+    dayKeys.forEach(function(dk){
+      cumRev+=s.data.by_day[dk].rev||0;
+      var dayNum=Math.round((new Date(dk+'T12:00:00')-startDate)/86400000);
+      var pctDuration=Math.min(dayNum/totalDays*100,100);
+      points.push({pct:pctDuration,rev:cumRev});
+    });
+    if(cumRev>maxRev) maxRev=cumRev;
+    return {label:s.label,color:s.color,points:points};
+  });
+
+  if(maxRev===0) return '';
+
+  function x(pctVal){return padL+pctVal/100*chartW}
+  function y(rev){return padT+chartH-rev/maxRev*chartH}
+
+  var svg='<div class="chart-wrap" style="margin-top:16px"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-height:200px">';
+
+  /* grid */
+  for(var t=0;t<=4;t++){
+    var yv=maxRev/4*t;
+    var yy=y(yv);
+    svg+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
+    svg+='<text x="'+(padL-8)+'" y="'+(yy+3)+'" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9" font-family="Montserrat">'+fmtM(yv)+'</text>';
+  }
+  /* x-axis */
+  for(var p=0;p<=100;p+=20){
+    svg+='<text x="'+Math.round(x(p))+'" y="'+(H-padB+16)+'" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9" font-family="Montserrat">'+p+'%</text>';
+  }
+
+  /* curves */
+  curves.forEach(function(curve){
+    if(curve.points.length<2) return;
+    var pts=curve.points.map(function(p){return Math.round(x(p.pct))+','+Math.round(y(p.rev))});
+    svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+curve.color+'" stroke-width="2" stroke-linecap="round"/>';
+    /* label at end */
+    var last=curve.points[curve.points.length-1];
+    svg+='<text x="'+(Math.round(x(last.pct))+6)+'" y="'+Math.round(y(last.rev))+'" fill="'+curve.color+'" font-size="10" font-family="Montserrat" font-weight="700">'+curve.label+'</text>';
+  });
+
+  svg+='</svg></div>';
+  return svg;
+}
+
+/* ── 10. WhatsApp + Actions ── */
+function buildActionsSection(s5,s4,s3){
+  var h='';
+  var sorteos=[{label:'S5',data:s5},{label:'S4',data:s4},{label:'S3',data:s3}];
+  var hasAny=false;
+
+  sorteos.forEach(function(sorteo){
+    if(!sorteo.data.fb_tables||!sorteo.data.fb_tables.actions||sorteo.data.fb_tables.actions.length===0) return;
+    hasAny=true;
+    var actions=sorteo.data.fb_tables.actions;
+
+    /* aggregate actions */
+    var totals={wa_starts:0,leads:0,link_clicks:0,video_views:0};
+    actions.forEach(function(a){
+      totals.wa_starts+=parseInt(a.wa_starts||a['WhatsApp message starts']||a['Messaging conversations started']||0)||0;
+      totals.leads+=parseInt(a.leads||a.Leads||0)||0;
+      totals.link_clicks+=parseInt(a.link_clicks||a['Link clicks']||a['Link Clicks']||0)||0;
+      totals.video_views+=parseInt(a.video_views||a['Video views']||a['3-second video plays']||0)||0;
+    });
+
+    h+='<h3 style="font-size:12px;font-weight:800;color:#FFD700;margin:12px 0 8px">'+sorteo.label+'</h3>';
+    h+='<div class="kg" style="grid-template-columns:repeat(4,1fr)">';
+    h+='<div class="k"><div class="kv" style="font-size:18px">'+fmt(totals.wa_starts)+'</div><div class="kl">WA Starts</div></div>';
+    h+='<div class="k"><div class="kv" style="font-size:18px">'+fmt(totals.leads)+'</div><div class="kl">Leads</div></div>';
+    h+='<div class="k"><div class="kv" style="font-size:18px">'+fmt(totals.link_clicks)+'</div><div class="kl">Link Clicks</div></div>';
+    h+='<div class="k"><div class="kv" style="font-size:18px">'+fmt(totals.video_views)+'</div><div class="kl">Video Views</div></div>';
+    h+='</div>';
+  });
+
+  if(!hasAny){
+    h+='<p class="fallback">Datos de actions no disponibles. Se mostrarán cuando se carguen desde Reportei.</p>';
+  }
+
+  return h;
+}
+
+/* ── 11. Ventas Perdidas ── */
+function buildLostSalesSection(lostSales){
+  if(!lostSales||lostSales.total_count===0) return '<p class="fallback">Sin datos de ventas perdidas.</p>';
+  var h='';
+  var p=lostSales.pending, f=lostSales.failed;
+
+  h+='<div class="kg" style="grid-template-columns:repeat(4,1fr)">';
+  h+='<div class="k"><div class="kv" style="color:#EF4444;font-size:22px">'+fmt(lostSales.total_count)+'</div><div class="kl">Órdenes no pagadas</div></div>';
+  h+='<div class="k"><div class="kv" style="color:#EF4444;font-size:22px">'+fmtM(lostSales.total_revenue)+'</div><div class="kl">Revenue estimado perdido</div></div>';
+  h+='<div class="k"><div class="kv" style="color:#F59E0B;font-size:22px">'+fmt(p.count)+'</div><div class="kl">Pending (abandonaron)</div></div>';
+  h+='<div class="k"><div class="kv" style="color:#F59E0B;font-size:22px">'+fmt(f.count)+'</div><div class="kl">Failed (pago rechazado)</div></div>';
+  h+='</div>';
+
+  // Payment method breakdown
+  var allPm={};
+  [p,f].forEach(function(s){
+    if(!s.by_payment) return;
+    Object.keys(s.by_payment).forEach(function(k){ allPm[k]=(allPm[k]||0)+s.by_payment[k]; });
+  });
+  var pmEntries=Object.entries(allPm).sort(function(a,b){return b[1]-a[1];});
+  var pmTotal=pmEntries.reduce(function(s,e){return s+e[1];},0)||1;
+
+  h+='<div class="g2" style="margin-top:10px">';
+  h+='<div class="cd">';
+  h+='<h3 style="color:#FFD700;font-size:12px;margin-bottom:8px">Método de pago (órdenes perdidas)</h3>';
+  h+='<table><thead><tr><th>Método</th><th class="r">Órdenes</th><th class="r">%</th></tr></thead><tbody>';
+  pmEntries.forEach(function(e){
+    h+='<tr><td>'+e[0]+'</td><td class="r">'+fmt(e[1])+'</td><td class="r">'+pct(e[1],pmTotal)+'%</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  h+='<div class="cd">';
+  h+='<h3 style="color:#FFD700;font-size:12px;margin-bottom:8px">Desglose</h3>';
+  h+='<table><thead><tr><th>Estado</th><th class="r">Órdenes</th><th class="r">Revenue est.</th><th class="r">Ticket prom.</th></tr></thead><tbody>';
+  h+='<tr><td class="b">Pending</td><td class="r">'+fmt(p.count)+'</td><td class="r">'+fmtM(p.revenue)+'</td><td class="r">'+fmtK(p.avg_ticket||0)+'</td></tr>';
+  h+='<tr><td class="b">Failed</td><td class="r">'+fmt(f.count)+'</td><td class="r">'+fmtM(f.revenue)+'</td><td class="r">'+fmtK(f.avg_ticket||0)+'</td></tr>';
+  h+='<tr style="background:rgba(239,68,68,0.1)"><td class="b" style="color:#EF4444">Total</td><td class="r b" style="color:#EF4444">'+fmt(lostSales.total_count)+'</td><td class="r b" style="color:#EF4444">'+fmtM(lostSales.total_revenue)+'</td><td class="r">&mdash;</td></tr>';
+  h+='</tbody></table>';
+
+  // Context vs completed
+  h+='<div class="alert" style="margin-top:8px"><h4>Contexto</h4><p>Estas '+fmt(lostSales.total_count)+' órdenes no pagadas representan <strong style="color:#fff">'+fmtM(lostSales.total_revenue)+'</strong> en revenue potencial. Recuperar el 10% con un email de recordatorio con botón de pago significaría <strong style="color:#fff">'+fmtM(Math.round(lostSales.total_revenue*0.1))+'</strong> adicionales.</p></div>';
+  h+='</div></div>';
+
+  return h;
+}
+
+/* ── auto-refresh ── */
+setTimeout(function(){location.reload()},600000);
 </script>
 </body>
 </html>

@@ -50,6 +50,11 @@ async function getAllOrders(productId) {
             if (m.key === 'stickers') last.stickers = parseInt(m.value) * li.quantity;
           }
         }
+        // Coupon data
+        const coupons = (o.coupon_lines || []).map(c => c.code.toLowerCase().trim());
+        last.coupons = coupons;
+        last.has_coupon = coupons.length > 0;
+        last.discount = parseFloat(o.discount_total || 0);
       }
       if (page % 20 === 0) console.log(`    page ${page} — ${all.length}/${total}`);
       page++;
@@ -77,16 +82,41 @@ async function getReporteiMetric(ref, metrics, type, start, end) {
   } catch { return 0; }
 }
 
+async function getReporteiTable(ref, start, end) {
+  await new Promise(r => setTimeout(r, 3000));
+  try {
+    const res = await fetch('https://app.reportei.com/api/v2/metrics/get-data', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + REPORTEI_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        start, end, integration_id: FB_INT_ID,
+        metrics: [{ id: 'q1', reference_key: ref, component: 'datatable_v1', metrics: [], type: [] }]
+      })
+    });
+    const d = await res.json();
+    return d?.data?.q1?.rows || [];
+  } catch(e) { console.log('  Reportei table error:', ref, e.message); return []; }
+}
+
+function extractPackSize(name) {
+  const m = name.match(/ - (\d+)$/);
+  return m ? parseInt(m[1]) : 1;
+}
+
 function analyzeSorteo(orders, name) {
   const days = [...new Set(orders.map(o => o.date))].sort();
   const emails = {};
   const sources = {};
+  const sourceRevenue = {};
   const weeklyData = {};
   const dailyData = {};
   const hourData = {};
   const dowData = {};
   const payments = {};
   const variants = {};
+  const byPack = {};
+  const couponDaily = {};
+  const couponSummary = {};
   let totalRev = 0, totalStickers = 0;
 
   const dowNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -123,6 +153,7 @@ function analyzeSorteo(orders, name) {
     // Source
     const src = o.source || '(direct)';
     sources[src] = (sources[src] || 0) + 1;
+    sourceRevenue[src] = (sourceRevenue[src] || 0) + o.total;
 
     // Hour
     hourData[o.hour] = (hourData[o.hour] || 0) + 1;
@@ -135,8 +166,40 @@ function analyzeSorteo(orders, name) {
     const pm = o.payment || 'Otro';
     payments[pm] = (payments[pm] || 0) + 1;
 
-    // Variant
-    if (o.variant) variants[o.variant] = (variants[o.variant] || 0) + 1;
+    // Variant (with revenue and stickers)
+    if (o.variant) {
+      if (!variants[o.variant]) variants[o.variant] = { count: 0, revenue: 0, stickers: 0 };
+      variants[o.variant].count++;
+      variants[o.variant].revenue += o.total;
+      variants[o.variant].stickers += o.stickers;
+
+      // by_pack
+      const packSize = extractPackSize(o.variant);
+      if (!byPack[packSize]) byPack[packSize] = { count: 0, revenue: 0, stickers: 0 };
+      byPack[packSize].count++;
+      byPack[packSize].revenue += o.total;
+      byPack[packSize].stickers += o.stickers;
+    }
+
+    // Coupon daily tracking
+    if (!couponDaily[o.date]) couponDaily[o.date] = { with_coupon: {orders:0, rev:0}, without_coupon: {orders:0, rev:0} };
+    if (o.has_coupon) {
+      couponDaily[o.date].with_coupon.orders++;
+      couponDaily[o.date].with_coupon.rev += o.total;
+    } else {
+      couponDaily[o.date].without_coupon.orders++;
+      couponDaily[o.date].without_coupon.rev += o.total;
+    }
+
+    // Coupon summary by code
+    if (o.coupons) {
+      for (const c of o.coupons) {
+        if (!couponSummary[c]) couponSummary[c] = { orders: 0, revenue: 0, discount: 0 };
+        couponSummary[c].orders++;
+        couponSummary[c].revenue += o.total;
+        couponSummary[c].discount += o.discount;
+      }
+    }
 
     // Device (only if exists)
   }
@@ -164,6 +227,17 @@ function analyzeSorteo(orders, name) {
   const accounted = Object.values(groupedSources).reduce((s, v) => s + v, 0);
   groupedSources['Otros'] = orders.length - accounted;
 
+  // Group source revenue
+  const groupedSourceRevenue = {
+    '(direct)': (sourceRevenue['(direct)'] || 0),
+    'Instagram': (sourceRevenue['ig'] || 0) + (sourceRevenue['l.instagram.com'] || 0),
+    'Facebook': (sourceRevenue['fb'] || 0) + (sourceRevenue['m.facebook.com'] || 0) + (sourceRevenue['l.facebook.com'] || 0) + (sourceRevenue['facebook.com'] || 0) + (sourceRevenue['lm.facebook.com'] || 0),
+    'Google': (sourceRevenue['google'] || 0) + (sourceRevenue['com.google.android.googlequicksearchbox'] || 0) + (sourceRevenue['com.google.android.gm'] || 0),
+    'Otros': 0
+  };
+  const accountedRev = Object.values(groupedSourceRevenue).reduce((s, v) => s + v, 0);
+  groupedSourceRevenue['Otros'] = totalRev - accountedRev;
+
   return {
     name,
     total_orders: orders.length,
@@ -183,8 +257,12 @@ function analyzeSorteo(orders, name) {
     by_hour: hourData,
     by_dow: dowData,
     sources: groupedSources,
+    source_revenue: groupedSourceRevenue,
     payments,
     variants,
+    by_pack: byPack,
+    by_coupon_day: couponDaily,
+    coupon_summary: couponSummary,
     emails_set: new Set(Object.keys(emails))
   };
 }
@@ -268,6 +346,57 @@ function analyzeSorteo(orders, name) {
     console.log(`  ${s.name}: $${Math.round(spend).toLocaleString()} spend, ROAS ${fbData[s.id].roas}x`);
   }
 
+  // Reportei: Facebook Ads tables by sorteo period
+  console.log('\nFetching Reportei tables...');
+  const fbTables = {};
+  for (const s of SORTEOS) {
+    const cacheFile = `cache-fb-tables-${s.id}.json`;
+    if (!s.active && fs.existsSync(cacheFile)) {
+      console.log(`  ${s.name}: tables from cache`);
+      fbTables[s.id] = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+    } else {
+      const end = s.end || new Date().toISOString().substring(0, 10);
+      console.log(`  ${s.name}: fetching tables from Reportei...`);
+      fbTables[s.id] = {
+        campaigns: await getReporteiTable('facebook_ads:campaigns', s.start, end),
+        ads: await getReporteiTable('facebook_ads:ads', s.start, end),
+        age: await getReporteiTable('facebook_ads:age', s.start, end),
+        actions: await getReporteiTable('facebook_ads:actions', s.start, end),
+      };
+      if (!s.active) {
+        fs.writeFileSync(cacheFile, JSON.stringify(fbTables[s.id]));
+        console.log(`  Cached to ${cacheFile}`);
+      }
+      console.log(`  ${s.name}: campaigns=${fbTables[s.id].campaigns.length}, ads=${fbTables[s.id].ads.length}`);
+    }
+  }
+
+  // Fetch lost sales (pending + failed orders) for active sorteo only
+  console.log('\nFetching lost sales (pending + failed)...');
+  const lostSales = { pending: { count: 0, revenue: 0, by_payment: {} }, failed: { count: 0, revenue: 0, by_payment: {} } };
+  for (const st of ['pending', 'failed']) {
+    try {
+      const { total } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=${st}&product=93696&per_page=1`);
+      lostSales[st].count = total;
+      // Sample first 100 to estimate revenue and payment breakdown
+      if (total > 0) {
+        const { data } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=${st}&product=93696&per_page=100&orderby=date&order=desc`);
+        let sampleRev = 0;
+        for (const o of data) {
+          sampleRev += parseFloat(o.total || 0);
+          const pm = o.payment_method_title || 'Otro';
+          lostSales[st].by_payment[pm] = (lostSales[st].by_payment[pm] || 0) + 1;
+        }
+        const avgOrderValue = sampleRev / data.length;
+        lostSales[st].revenue = Math.round(avgOrderValue * total);
+        lostSales[st].avg_ticket = Math.round(avgOrderValue);
+      }
+      console.log(`  ${st}: ${total} orders, ~$${Math.round(lostSales[st].revenue/1000)}K estimated`);
+    } catch (e) { console.log(`  ${st} error:`, e.message); }
+  }
+  lostSales.total_count = lostSales.pending.count + lostSales.failed.count;
+  lostSales.total_revenue = lostSales.pending.revenue + lostSales.failed.revenue;
+
   // Build final JSON (remove email sets - not serializable)
   for (const id of Object.keys(analyses)) {
     delete analyses[id].emails_set;
@@ -276,11 +405,12 @@ function analyzeSorteo(orders, name) {
   const output = {
     updated: new Date().toISOString(),
     sorteos: {
-      s3: { ...analyses[56683], fb: fbData[56683], product_id: 56683 },
-      s4: { ...analyses[78432], fb: fbData[78432], product_id: 78432 },
-      s5: { ...analyses[93696], fb: fbData[93696], product_id: 93696, active: true }
+      s3: { ...analyses[56683], fb: fbData[56683], fb_tables: fbTables[56683], product_id: 56683 },
+      s4: { ...analyses[78432], fb: fbData[78432], fb_tables: fbTables[78432], product_id: 78432 },
+      s5: { ...analyses[93696], fb: fbData[93696], fb_tables: fbTables[93696], product_id: 93696, active: true }
     },
     retention,
+    lost_sales: lostSales,
     meta: {
       total_orders_analyzed: Object.values(allOrders).reduce((s, o) => s + o.length, 0),
       total_buyers: allBuyers.size
