@@ -60,6 +60,10 @@ tbody tr:nth-child(even) td{background:rgba(255,255,255,0.015)}
 </head>
 <body>
 <div class="c">
+  <div style="display:flex;gap:8px;padding:12px 0;">
+    <a href="/" style="padding:6px 14px;background:rgba(229,57,53,0.15);color:#E53935;border:1px solid rgba(229,57,53,0.3);border-radius:6px;text-decoration:none;font-size:11px;font-weight:700;">Dashboard</a>
+    <a href="/plan.html" style="padding:6px 14px;background:rgba(255,215,0,0.1);color:#FFD700;border:1px solid rgba(255,215,0,0.2);border-radius:6px;text-decoration:none;font-size:11px;font-weight:700;">Plan Estratégico</a>
+  </div>
   <div class="hd">
     <div>
       <h1>Premios Increíbles — Inteligencia de Negocios</h1>
@@ -93,6 +97,17 @@ function sparkline(dailyData,key,w,h,color){
 }
 
 var SPANS={s3:{start:'2026-02-16',end:'2026-04-13'},s4:{start:'2026-04-12',end:'2026-05-27'},s5:{start:'2026-05-24',end:'2026-07-19'}};
+
+var S5_EVENTS=[
+  {day:18,label:'Stickers $2.500',color:'#10B981'},
+  {day:23,label:'Inicio Lives/Zoom',color:'#F59E0B'},
+  {day:24,label:'Timer en web',color:'#8B5CF6'},
+  {day:25,label:'Primer reel M&P',color:'#EC4899'},
+  {day:28,label:'Precio $3.000',color:'#EF4444'},
+  {day:31,label:'Reel campaña',color:'#EC4899'},
+  {day:37,label:'Reel continuidad',color:'#EC4899'},
+  {day:39,label:'Reel + contenido',color:'#EC4899'}
+];
 
 function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
 
@@ -130,6 +145,7 @@ function render(d){
     {v:cpa, l:'CPA / Orden', spark:''},
     {v:diasRestantes+' días', l:'Días restantes', spark:''}
   ];
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin:8px 0 4px">KPIs del sorteo activo. Datos de WooCommerce en vivo, actualizados cada 2 horas.</p>';
   html+='<div class="kg">';
   kpis.forEach(function(kpi){
     html+='<div class="k"><div class="kv">'+kpi.v+'</div><div class="kl">'+kpi.l+'</div>';
@@ -142,13 +158,23 @@ function render(d){
      2. REVENUE/DAY CURVE (SVG chart)
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Revenue por día de sorteo — S3 vs S4 vs S5</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Revenue diario por día del sorteo, comparando S3, S4 y S5 al mismo punto. Marcadores = hitos de campaña y orgánico.</p>';
   html+=buildRevenueChart(s3,s4,s5);
+  html+='</div>';
+
+  /* ═══════════════════════════════════════════
+     2b. VENTA DIARIA S5 (tabla detallada)
+     ═══════════════════════════════════════════ */
+  html+='<div class="s"><div class="st">Venta diaria S5</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Detalle día a día del Sorteo 5. Incluye hitos de campaña y orgánico en la columna Event.</p>';
+  html+=buildDailySalesTable(s5);
   html+='</div>';
 
   /* ═══════════════════════════════════════════
      3. CUPONES Y DESCUENTOS — Timeline completa S5
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Cupones y descuentos — Timeline completa S5</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Distribución de cupones por día. Datos de WooCommerce (coupon_lines por orden).</p>';
   html+=buildCouponSection(s5);
   html+='</div>';
 
@@ -156,6 +182,7 @@ function render(d){
      4. STICKER PACKS
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Sticker Packs — Distribución</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Distribución de packs vendidos. Cada slide de carrusel se cuenta como un sticker.</p>';
   html+=buildPacksSection(s5,s4,s3);
   html+='</div>';
 
@@ -163,6 +190,7 @@ function render(d){
      7. SOURCES CON REVENUE
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Fuentes de Tráfico con Revenue</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Fuente de tráfico por UTM source de WooCommerce (atribución último click).</p>';
   html+=buildSourcesSection(s5,s4,s3);
   html+='</div>';
 
@@ -170,6 +198,7 @@ function render(d){
      8. RECOMPRA
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Análisis de Recompra</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Análisis de compradores nuevos vs recurrentes entre sorteos, cruzado por email.</p>';
   html+=buildRetentionSection(s5,ret);
   html+='</div>';
 
@@ -177,6 +206,7 @@ function render(d){
      9. TRADE-OFF DURACIÓN
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">Trade-off Duración — 45 vs 30 días</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Comparativa de rendimiento por duración de sorteo. Curvas normalizadas al % de avance.</p>';
   html+=buildDurationSection(s5,s4,s3,d);
   html+='</div>';
 
@@ -184,6 +214,7 @@ function render(d){
      10. WHATSAPP + ACTIONS
      ═══════════════════════════════════════════ */
   html+='<div class="s"><div class="st">WhatsApp + Actions (Meta)</div>';
+  html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Acciones de conversión de Meta Ads: WhatsApp starts, leads, clicks y video views.</p>';
   html+=buildActionsSection(s5,s4,s3);
   html+='</div>';
 
@@ -192,6 +223,7 @@ function render(d){
      ═══════════════════════════════════════════ */
   if(d.lost_sales){
     html+='<div class="s"><div class="st" style="color:#EF4444">Ventas Perdidas — Órdenes sin pagar</div>';
+    html+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Órdenes pending + failed en WooCommerce. Estimación por muestreo de 100 órdenes.</p>';
     html+=buildLostSalesSection(d.lost_sales);
     html+='</div>';
   }
@@ -258,12 +290,14 @@ function buildRevenueChart(s3,s4,s5){
   svg+='<polygon points="'+Math.round(xP(0))+','+Math.round(yP(0))+' '+pts5.join(' ')+' '+Math.round(xP(d5.length-1))+','+Math.round(yP(0))+'" fill="url(#goldGrad)" opacity="0.08"/>';
   svg+='<defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></linearGradient></defs>';
 
-  /* day 18 marker */
-  if(xDays>=18){
-    var mx=xP(17);
-    svg+='<line x1="'+Math.round(mx)+'" y1="'+padT+'" x2="'+Math.round(mx)+'" y2="'+(H-padB)+'" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,3"/>';
-    svg+='<text x="'+Math.round(mx)+'" y="'+(padT-4)+'" text-anchor="middle" fill="#10B981" font-size="9" font-family="Montserrat" font-weight="700">Día 18 ('+d5[17].date.substring(5)+')</text>';
-  }
+  /* S5 event markers (uses global S5_EVENTS) */
+  S5_EVENTS.forEach(function(ev){
+    if(xDays>=ev.day){
+      var mx=xP(ev.day-1);
+      svg+='<line x1="'+Math.round(mx)+'" y1="'+padT+'" x2="'+Math.round(mx)+'" y2="'+(H-padB)+'" stroke="'+ev.color+'" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>';
+      svg+='<g transform="translate('+Math.round(mx)+','+Math.round(padT-2)+') rotate(-45)"><text x="0" y="0" fill="'+ev.color+'" font-size="7" font-family="Montserrat" font-weight="600" text-anchor="start">'+ev.label+'</text></g>';
+    }
+  });
 
   /* x-axis labels */
   for(var i=0;i<xDays;i+=5){
@@ -281,6 +315,45 @@ function buildRevenueChart(s3,s4,s5){
 
   svg+='</svg></div>';
   return svg;
+}
+
+/* ── 2b. Daily Sales Table S5 ── */
+function buildDailySalesTable(s5){
+  if(!s5.by_day) return '<p class="fallback">Datos diarios no disponibles</p>';
+  var dayKeys=Object.keys(s5.by_day).sort();
+  if(dayKeys.length===0) return '<p class="fallback">Sin datos diarios</p>';
+
+  /* Build event lookup by day number */
+  var eventByDay={};
+  S5_EVENTS.forEach(function(ev){eventByDay[ev.day]=ev});
+
+  var totalOrders=0,totalRev=0,totalStickers=0;
+  var rows=dayKeys.map(function(dk,i){
+    var dd=s5.by_day[dk];
+    var orders=dd.orders||0;
+    var rev=dd.rev||0;
+    var stickers=dd.stickers||0;
+    var dayNum=i+1;
+    var ticket=orders>0?Math.round(rev/orders):0;
+    totalOrders+=orders;totalRev+=rev;totalStickers+=stickers;
+    var ev=eventByDay[dayNum];
+    return {date:dk,dayNum:dayNum,orders:orders,rev:rev,stickers:stickers,ticket:ticket,ev:ev};
+  });
+
+  /* Sort descending by date */
+  rows.sort(function(a,b){return a.date>b.date?-1:1});
+
+  var h='<div style="max-height:500px;overflow-y:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.06)">';
+  h+='<table style="border:none;margin-bottom:0"><thead><tr><th>Fecha</th><th class="r">Día #</th><th class="r">Órdenes</th><th class="r">Revenue</th><th class="r">Stickers</th><th class="r">Ticket Prom</th><th>Event</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var evText=r.ev?'<span style="color:'+r.ev.color+';font-weight:700;font-size:10px">'+r.ev.label+'</span>':'';
+    h+='<tr><td class="b">'+r.date+'</td><td class="r">'+r.dayNum+'</td><td class="r">'+fmt(r.orders)+'</td><td class="r">'+fmtK(r.rev)+'</td><td class="r">'+fmt(r.stickers)+'</td><td class="r">'+fmtK(r.ticket)+'</td><td>'+evText+'</td></tr>';
+  });
+  /* Totals row */
+  var avgTicket=totalOrders>0?Math.round(totalRev/totalOrders):0;
+  h+='<tr style="background:rgba(255,215,0,0.08);font-weight:700"><td class="b" style="color:#FFD700">Total</td><td class="r">'+dayKeys.length+'d</td><td class="r b" style="color:#FFD700">'+fmt(totalOrders)+'</td><td class="r b" style="color:#FFD700">'+fmtK(totalRev)+'</td><td class="r b" style="color:#FFD700">'+fmt(totalStickers)+'</td><td class="r" style="color:#FFD700">'+fmtK(avgTicket)+'</td><td></td></tr>';
+  h+='</tbody></table></div>';
+  return h;
 }
 
 /* ── 3. Coupon Section ── */
