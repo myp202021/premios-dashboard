@@ -118,14 +118,15 @@ function sparkline(dailyData,key,w,h,color){
 var SPANS={s3:{start:'2026-02-16',end:'2026-04-13'},s4:{start:'2026-04-12',end:'2026-05-27'},s5:{start:'2026-05-24',end:'2026-07-19'}};
 
 var S5_EVENTS=[
-  {date:'2026-06-10',day:18,label:'Stickers $2.500',type:'pricing',color:'#10B981'},
-  {date:'2026-06-11',day:19,label:'Reel IG (900 views)',type:'organic',color:'#EC4899'},
-  {date:'2026-06-15',day:23,label:'Inicio Lives/Zoom',type:'organic',color:'#F59E0B'},
-  {date:'2026-06-16',day:24,label:'Timer en web',type:'web',color:'#8B5CF6'},
-  {date:'2026-06-17',day:25,label:'Reel M&P (4.585 views)',type:'organic',color:'#EC4899'},
-  {date:'2026-06-20',day:28,label:'Precio → $3.000',type:'pricing',color:'#EF4444'},
-  {date:'2026-06-23',day:31,label:'Reel $1K stickers (1.283 v)',type:'organic',color:'#EC4899'},
-  {date:'2026-06-29',day:37,label:'Reel viral (6.693 views)',type:'organic',color:'#EC4899'}
+  {date:'2026-05-27',day:4,label:'Post IG (455v)',type:'organic',color:'#EC4899'},
+  {date:'2026-06-10',day:18,label:'Stickers $2.500 + Post IG',type:'pricing',color:'#10B981'},
+  {date:'2026-06-12',day:20,label:'Post IG (900v)',type:'organic',color:'#EC4899'},
+  {date:'2026-06-15',day:23,label:'Inicio Lives (reportado)',type:'organic',color:'#F59E0B'},
+  {date:'2026-06-17',day:25,label:'Reel M&P 4.631v',type:'organic',color:'#EC4899'},
+  {date:'2026-06-20',day:28,label:'Precio $3.000 + Post IG',type:'pricing',color:'#EF4444'},
+  {date:'2026-06-23',day:31,label:'Reel $1K stickers 1.283v',type:'organic',color:'#EC4899'},
+  {date:'2026-06-30',day:38,label:'Reel viral 6.696v',type:'organic',color:'#EC4899'},
+  {date:'2026-07-02',day:40,label:'Reel hackers 2.763v',type:'organic',color:'#EC4899'}
 ];
 
 function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
@@ -188,7 +189,7 @@ function render(d){
   /* Pre/Post lives zone annotation */
   html+='<div style="display:flex;gap:0;margin-top:6px;border-radius:8px;overflow:hidden">';
   html+='<div class="zone-label" style="flex:22;background:rgba(239,68,68,0.08);color:rgba(239,68,68,0.6)">Pre-Lives (D1-D22) — Prom ~81 ord/día</div>';
-  html+='<div class="zone-label" style="flex:19;background:rgba(16,185,129,0.08);color:rgba(16,185,129,0.6)">Post-Lives (D23+) — Prom ~150 ord/día (+85%)</div>';
+  html+='<div class="zone-label" style="flex:19;background:rgba(16,185,129,0.08);color:rgba(16,185,129,0.6)">Post-Lives (D23+) — Prom ~166 ord/día (+104%)</div>';
   html+='</div>';
   html+='</div>';
 
@@ -948,36 +949,42 @@ function buildInfluenceAnalysis(s5,s4,s3){
 
   /* Lives impact */
   h+='<div class="analysis-card"><h3>Lives / Zoom</h3>';
-  h+='<div class="metric-row"><span class="metric-label">Pre-lives (D1-D22)</span><span class="metric-value">~81 órdenes/día</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Post-lives (D23+)</span><span class="metric-value">~150 órdenes/día</span><span class="metric-badge badge-green" style="margin-left:8px">+85%</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Efecto domingo</span><span class="metric-value">S4: 35% de órdenes en domingos (lives son dom. noche)</span></div>';
-  h+='<div class="verdict-box"><h4>VEREDICTO: Los lives son el motor principal de crecimiento</h4>';
-  h+='<p>La diferencia de +85% en órdenes diarias post-lives es el dato más claro del sorteo. El engagement en vivo genera urgencia y confianza que se traduce directamente en compras. Recomendación: lives mínimo 2x/semana, idealmente domingos.</p></div>';
+  h+='<div class="metric-row"><span class="metric-label">Pre 15 jun (D1-D22)</span><span class="metric-value">~81 órdenes/día</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Post 15 jun (D23+)</span><span class="metric-value">~166 órdenes/día</span><span class="metric-badge badge-green" style="margin-left:8px">+104%</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Caveat</span><span class="metric-value" style="font-size:10px;color:rgba(255,255,255,0.5)">No podemos confirmar que el 15 jun fue el primer live exacto (dato del cliente)</span></div>';
+  h+='<div class="verdict-box"><h4>VEREDICTO: Los lives son la señal más fuerte en los datos</h4>';
+  h+='<p>La diferencia de +104% en órdenes diarias post-lives es la correlación más fuerte del sorteo. El engagement en vivo genera urgencia y confianza. Caveat: la fecha exacta del primer live fue reportada por el cliente, no verificada en data. Aun así, la correlación es clara. Recomendación: lives mínimo 2x/semana.</p></div>';
   h+='</div>';
 
-  /* Reels impact */
-  h+='<div class="analysis-card"><h3>Reels e Instagram</h3>';
-  h+='<div class="metric-row"><span class="metric-label">Reel 17 jun (4.585 views)</span><span class="metric-value">+43% órdenes al día siguiente (124 vs 87)</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Reel 23 jun (1.283 views)</span><span class="metric-value">Impacto bajo: 88 órdenes (normal)</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Reel 29 jun (6.693 views)</span><span class="metric-value">281 órdenes al día siguiente</span><span class="metric-badge badge-green" style="margin-left:8px">+85% vs prom</span></div>';
-  h+='<div class="verdict-box"><h4>Los reels virales SI mueven la aguja</h4>';
-  h+='<p>Reels con +4K views correlacionan con picos de venta al día siguiente. Los reels promocionales (< 2K views) no tienen efecto significativo. El reel viral del 29 jun (6.693 views) precede el día récord de 281 órdenes. Contenido orgánico auténtico > contenido promocional.</p></div>';
+  /* Reels impact — CORRECTED with Apify data */
+  h+='<div class="analysis-card"><h3>Instagram (datos verificados Apify)</h3>';
+  h+='<div class="metric-row"><span class="metric-label">Frecuencia real</span><span class="metric-value">Solo 9 posts en 41 días (1 cada 4.6 días)</span><span class="metric-badge badge-red" style="margin-left:8px">NO es diario</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Días con post IG</span><span class="metric-value">169 órdenes/día promedio</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Días sin post IG</span><span class="metric-value">107 órdenes/día promedio</span><span class="metric-badge badge-green" style="margin-left:8px">+58% con post</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Reel viral 30 jun (6.696v)</span><span class="metric-value" style="font-size:10px">Mismo día que 284 órdenes — no lo causó, pudo amplificar</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Reel 2 jul (2.763v)</span><span class="metric-value" style="font-size:10px">Día récord 431 órdenes — probablemente el live, no el reel</span></div>';
+  h+='<div class="verdict-box"><h4>Correlación real pero NO causalidad</h4>';
+  h+='<p>Los posts tienden a coincidir con días de alta actividad (lives, eventos). Días con post IG tienen +58% más órdenes, pero no podemos afirmar que el post las genera. El reel "viral" de 6.696 views fue posteado el mismo día del pico, no el día antes. Conclusión: IG amplifica señales existentes pero los lives son el verdadero motor.</p></div>';
   h+='</div>';
 
   h+='</div>'; /* close g2 */
 
   h+='<div class="g2" style="margin-top:12px">';
 
-  /* Stickers baratos impact */
-  h+='<div class="analysis-card"><h3>Stickers baratos: volumen vs revenue</h3>';
+  /* Stickers baratos impact — FINANCIAL ANALYSIS */
+  h+='<div class="analysis-card"><h3>Stickers baratos: el veredicto financiero</h3>';
   h+='<div class="metric-row"><span class="metric-label">S3 ticket promedio</span><span class="metric-value">$9.964</span><span class="metric-badge badge-gold" style="margin-left:8px">referencia</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S4 ticket promedio</span><span class="metric-value">$7.650</span><span class="metric-badge badge-red" style="margin-left:8px">-23%</span></div>';
   h+='<div class="metric-row"><span class="metric-label">S5 ticket promedio</span><span class="metric-value">$7.176</span><span class="metric-badge badge-red" style="margin-left:8px">-28%</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S3 revenue total</span><span class="metric-value" style="color:#10B981">$111M</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S4 revenue total</span><span class="metric-value" style="color:#F59E0B">$72.7M</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S5 en curso</span><span class="metric-value" style="color:#E53935">~$50M proyectado</span></div>';
-  h+='<div class="verdict-box"><h4>Mas volumen, menos revenue total</h4>';
-  h+='<p>El sticker de $2.500 generó más volumen pero el ticket cayó 28% vs S3. Revenue neto es significativamente menor: S3 facturó $111M vs S5 que va en track de ~$50M. Los stickers baratos canibalizan el ticket sin compensar en volumen suficiente. Considerar volver a precios más altos o limitar opciones baratas.</p></div>';
+  h+='<div style="margin:12px 0;padding:14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px">';
+  h+='<h4 style="font-size:12px;font-weight:900;color:#EF4444;margin-bottom:8px">Comparación al mismo punto (día 41)</h4>';
+  h+='<div class="metric-row"><span class="metric-label">S3 al día 41</span><span class="metric-value" style="color:#10B981">~5.920 órdenes x $9.964 = ~$59M revenue</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">S5 al día 41</span><span class="metric-value" style="color:#EF4444">4.947 órdenes x $7.176 = $35.5M revenue</span></div>';
+  h+='<div class="metric-row"><span class="metric-label" style="color:#EF4444;font-weight:800">Diferencia</span><span class="metric-value" style="color:#EF4444;font-size:16px">-$23.5M MENOS al mismo punto</span></div>';
+  h+='</div>';
+  h+='<div class="metric-row"><span class="metric-label">Ticket cayó</span><span class="metric-value">-28%</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Órdenes no compensan</span><span class="metric-value" style="font-size:10px">Más volumen pero no el suficiente para cerrar la brecha de $23.5M</span></div>';
+  h+='<div class="verdict-box" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06)"><h4 style="color:#EF4444">VEREDICTO: los stickers baratos NO compensan en dinero</h4>';
+  h+='<p>Al mismo punto del sorteo (día 41), S5 tiene <strong style="color:#EF4444">$23.5M MENOS</strong> de revenue que S3. El ticket cayó 28% pero las órdenes no crecieron lo suficiente para compensar. Los stickers de $2.500 generan percepción de volumen pero destruyen revenue. Recomendación: volver a ticket alto o limitar las opciones baratas.</p></div>';
   h+='</div>';
 
   /* Direct traffic + other signals */
@@ -998,49 +1005,62 @@ function buildInfluenceAnalysis(s5,s4,s3){
   /* Summary verdict */
   h+='<div class="verdict-box" style="margin-top:12px;border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.08)"><h4 style="font-size:14px">Resumen ejecutivo: donde enfocar esfuerzos</h4>';
   h+='<p style="font-size:12px;line-height:2">';
-  h+='<strong style="color:#10B981">1. Lives (ALTO IMPACTO):</strong> +85% en órdenes diarias. Hacer mínimo 2x/semana.<br>';
-  h+='<strong style="color:#10B981">2. Reels virales (ALTO IMPACTO):</strong> Contenido auténtico con +4K views mueve ventas. Invertir en contenido orgánico.<br>';
+  h+='<strong style="color:#10B981">1. Lives (ALTO IMPACTO):</strong> +104% en órdenes diarias post-lives. Señal más fuerte en los datos. Mínimo 2x/semana.<br>';
+  h+='<strong style="color:#F59E0B">2. Instagram (MEDIO, NO CAUSAL):</strong> +58% en días con post, pero correlación no es causalidad. Posts coinciden con días de alta actividad. Amplifica, no genera.<br>';
   h+='<strong style="color:#F59E0B">3. Timer/urgencia (MEDIO):</strong> El timer + suba de precio genera picos. Usar estratégicamente.<br>';
-  h+='<strong style="color:#EF4444">4. Stickers baratos (CUIDADO):</strong> Más volumen pero -28% en ticket. Revenue total cae. Evaluar pricing.<br>';
+  h+='<strong style="color:#EF4444">4. Stickers baratos (NEGATIVO):</strong> -$23.5M menos revenue al día 41 vs S3. Ticket -28%, órdenes no compensan. Destruye revenue.<br>';
   h+='<strong style="color:#10B981">5. Brand awareness (LARGO PLAZO):</strong> Tráfico directo creciendo. Cada sorteo construye base.</p></div>';
 
   h+='</div>'; /* close section */
   return h;
 }
 
-/* ── Instagram Correlation Section ── */
+/* ── Instagram Correlation Section — VERIFIED APIFY DATA ── */
 function buildInstagramCorrelation(s5){
-  var h='<div class="s"><div class="st">Correlación Instagram — Impacto de publicaciones en ventas</div>';
-  h+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Posts de Instagram durante S5 y su correlación con órdenes del día siguiente. Datos de views/likes de IG, órdenes de WooCommerce.</p>';
+  var h='<div class="s"><div class="st">Correlación Instagram — 9 posts verificados (Apify)</div>';
+  h+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">TODOS los posts de Instagram durante S5, verificados con data de Apify. Solo 9 posts en 41 días (1 cada 4.6 días). Incluye órdenes del mismo día y día siguiente para evaluar causalidad.</p>';
 
-  /* Hardcoded IG data with correlation */
+  /* ALL 9 verified IG posts from Apify */
   var igPosts=[
-    {date:'2026-06-11',type:'Reel',desc:'"cómo participar"',views:900,likes:45,nextDayOrders:97,prevDayOrders:88,insight:'Bajo engagement, sin impacto'},
-    {date:'2026-06-17',type:'Reel',desc:'"participar fácil" (M&P)',views:4585,likes:209,nextDayOrders:124,prevDayOrders:87,insight:'Best performing, +43% next day'},
-    {date:'2026-06-23',type:'Reel',desc:'"$1K en stickers"',views:1283,likes:64,nextDayOrders:88,prevDayOrders:112,insight:'Promocional, bajo engagement'},
-    {date:'2026-06-29',type:'Reel',desc:'"no pueden creer"',views:6693,likes:383,nextDayOrders:284,prevDayOrders:187,insight:'VIRAL + urgencia = día récord'}
+    {date:'2026-05-27',day:4,type:'Post',desc:'Primer post S5',views:455,likes:22,comments:1,sameDayOrders:47,nextDayOrders:52,cause:'Coincidencia — inicio sorteo, bajo volumen'},
+    {date:'2026-06-10',day:18,type:'Post',desc:'Stickers $2.500 lanzamiento',views:612,likes:31,comments:3,sameDayOrders:95,nextDayOrders:88,cause:'Pricing change fue el driver, no el post'},
+    {date:'2026-06-12',day:20,type:'Reel',desc:'Cómo participar',views:900,likes:45,comments:2,sameDayOrders:97,nextDayOrders:85,cause:'Bajo engagement, sin impacto medible'},
+    {date:'2026-06-15',day:23,type:'Post',desc:'Inicio lives (reportado)',views:530,likes:28,comments:0,sameDayOrders:110,nextDayOrders:124,cause:'Lives empezaron, no el post'},
+    {date:'2026-06-17',day:25,type:'Reel',desc:'Participar fácil (M&P)',views:4631,likes:209,comments:12,sameDayOrders:87,nextDayOrders:124,cause:'Best reel, +43% next day — posible efecto real'},
+    {date:'2026-06-20',day:28,type:'Post',desc:'Precio sube a $3.000',views:780,likes:38,comments:5,sameDayOrders:145,nextDayOrders:130,cause:'Urgencia de precio, no el post'},
+    {date:'2026-06-23',day:31,type:'Reel',desc:'$1K en stickers',views:1283,likes:64,comments:4,sameDayOrders:112,nextDayOrders:88,cause:'Promocional, -21% next day'},
+    {date:'2026-06-30',day:38,type:'Reel',desc:'No pueden creer (viral)',views:6696,likes:383,comments:28,sameDayOrders:284,nextDayOrders:267,cause:'Mismo día que pico — amplificó, no causó'},
+    {date:'2026-07-02',day:40,type:'Reel',desc:'Hackers/seguridad',views:2763,likes:142,comments:9,sameDayOrders:431,nextDayOrders:0,cause:'Día récord por live event, reel coincidió'}
   ];
 
-  h+='<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Contenido</th><th class="r">Views</th><th class="r">Likes</th><th class="r">Ord. día sig.</th><th class="r">Cambio</th><th>Insight</th></tr></thead><tbody>';
+  h+='<table><thead><tr><th>Fecha</th><th>Día</th><th>Tipo</th><th>Contenido</th><th class="r">Views</th><th class="r">Likes</th><th class="r">Comm.</th><th class="r">Ord. mismo día</th><th class="r">Ord. día sig.</th><th class="r">% cambio sig.</th><th>Causalidad</th></tr></thead><tbody>';
   igPosts.forEach(function(p){
-    var chg=p.prevDayOrders>0?Math.round((p.nextDayOrders-p.prevDayOrders)/p.prevDayOrders*100):0;
+    var chg=p.sameDayOrders>0&&p.nextDayOrders>0?Math.round((p.nextDayOrders-p.sameDayOrders)/p.sameDayOrders*100):0;
     var chgClass=chg>15?'up':(chg<-10?'dn':'nt');
-    var rowClass=chg>15?'row-green':(chg<-10?'row-red':'');
+    var rowClass=p.views>4000?'row-green':(p.views<1000?'row-red':'');
     h+='<tr class="'+rowClass+'">';
     h+='<td class="b">'+p.date+'</td>';
+    h+='<td class="r">D'+p.day+'</td>';
     h+='<td><span style="background:rgba(225,48,108,0.15);color:#E1306C;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700">'+p.type+'</span></td>';
     h+='<td style="font-size:10px">'+p.desc+'</td>';
     h+='<td class="r b">'+fmt(p.views)+'</td>';
     h+='<td class="r">'+fmt(p.likes)+'</td>';
-    h+='<td class="r b">'+fmt(p.nextDayOrders)+'</td>';
-    h+='<td class="r"><span class="'+chgClass+'" style="font-weight:700">'+(chg>0?'+':'')+chg+'%</span></td>';
-    h+='<td style="font-size:9px;color:rgba(255,255,255,0.4)">'+p.insight+'</td>';
+    h+='<td class="r">'+p.comments+'</td>';
+    h+='<td class="r b">'+fmt(p.sameDayOrders)+'</td>';
+    h+='<td class="r">'+(p.nextDayOrders>0?fmt(p.nextDayOrders):'—')+'</td>';
+    h+='<td class="r">'+(p.nextDayOrders>0?'<span class="'+chgClass+'" style="font-weight:700">'+(chg>0?'+':'')+chg+'%</span>':'—')+'</td>';
+    h+='<td style="font-size:9px;color:rgba(255,255,255,0.4)">'+p.cause+'</td>';
     h+='</tr>';
   });
   h+='</tbody></table>';
 
-  h+='<div class="insight"><h4>Correlación views → ventas</h4>';
-  h+='<p>Solo reels con <strong style="color:#fff">+4.000 views</strong> muestran correlación con aumento de ventas. El contenido auténtico/sorprendente ("no pueden creer") supera al contenido promocional ("$1K en stickers"). La combinación de reel viral + urgencia de fin de sorteo generó el día récord (284 órdenes el 30 jun).</p></div>';
+  h+='<div style="display:flex;gap:12px;margin-top:10px">';
+  h+='<div class="insight" style="flex:1"><h4>Prom. órdenes/día con post IG: 169</h4>';
+  h+='<p>Días con post IG promedian 169 órdenes vs 107 sin post (+58%). Pero los posts se hacen en días de alta actividad (lives, eventos), así que la correlación no implica causalidad.</p></div>';
+  h+='<div class="alert" style="flex:1"><h4>Solo 1 reel con posible efecto causal</h4>';
+  h+='<p>De los 9 posts, solo el reel M&P del 17 jun (4.631 views) muestra un aumento al día siguiente (+43%) que no coincide con otro evento. El reel "viral" de 6.696v fue el mismo día del pico, no el día antes. El récord de 431 órdenes (2 jul) fue por el live, no por el reel.</p></div>';
+  h+='</div>';
+
   h+='</div>';
   return h;
 }
@@ -1061,14 +1081,19 @@ function buildDurationVerdict(){
   h+='<p>La primera mitad del sorteo construye audiencia y confianza. La segunda mitad es donde explota la venta por urgencia + FOMO + efecto acumulativo de contenido orgánico. Un sorteo de 30 días cortaría la explosión antes de que ocurra.</p></div>';
   h+='</div>';
 
-  h+='<div class="analysis-card"><h3>Cálculo de inversión: 45d vs 30d</h3>';
+  h+='<div class="analysis-card"><h3>ROI financiero por sorteo</h3>';
+  h+='<div style="margin-bottom:12px;padding:14px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);border-radius:10px">';
+  h+='<h4 style="font-size:12px;font-weight:900;color:#FFD700;margin-bottom:8px">Comparativa de retorno (revenue - ads)</h4>';
+  h+='<div class="metric-row"><span class="metric-label">S3 (57d, ticket alto)</span><span class="metric-value" style="color:#10B981">ROAS 2.1x | Net: $57.9M</span><span class="metric-badge badge-green" style="margin-left:8px">Mayor net revenue</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">S4 (46d, ticket medio)</span><span class="metric-value" style="color:#F59E0B">ROAS 2.3x | Net: $40.8M</span><span class="metric-badge badge-gold" style="margin-left:8px">Mejor ROAS</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">S5 (en curso, ticket bajo)</span><span class="metric-value" style="color:#EF4444">ROAS 1.5x | Net: $12.5M</span><span class="metric-badge badge-red" style="margin-left:8px">Peor resultado</span></div>';
+  h+='</div>';
   h+='<div class="metric-row"><span class="metric-label">Inversión diaria prom.</span><span class="metric-value">~$550K/día (Meta Ads)</span></div>';
   h+='<div class="metric-row"><span class="metric-label">30 días de inversión</span><span class="metric-value">~$16.5M</span></div>';
   h+='<div class="metric-row"><span class="metric-label">45 días de inversión</span><span class="metric-value">~$24.8M</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Costo extra (15 días)</span><span class="metric-value">~$8.3M adicionales</span></div>';
   h+='<div class="metric-row"><span class="metric-label">Revenue extra (15 días finales)</span><span class="metric-value" style="color:#10B981">$40-90M adicionales (basado en S3/S4)</span></div>';
-  h+='<div class="verdict-box"><h4>ROI de los 15 días extra: 5x a 10x</h4>';
-  h+='<p>Los últimos 15 días generan entre $40M y $90M en revenue adicional, con un costo extra de solo ~$8.3M en publicidad. El retorno marginal de extender de 30 a 45 días es de 5x a 10x la inversión extra. <strong style="color:#FFD700">Recomendación: mínimo 45 días.</strong></p></div>';
+  h+='<div class="verdict-box"><h4>S3 = ticket alto + duración larga = mejor resultado neto</h4>';
+  h+='<p>S3 con ticket de $9.964 y 57 días generó $57.9M netos (revenue - ads), el mejor resultado absoluto. S4 tuvo el mejor ROAS (2.3x) pero menos net revenue por ser más corto. S5 con stickers baratos va en camino a solo $12.5M netos. <strong style="color:#FFD700">Fórmula ganadora: ticket alto + mínimo 45 días + lives frecuentes.</strong></p></div>';
   h+='</div>';
 
   h+='</div>'; /* close g2 */
