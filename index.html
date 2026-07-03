@@ -958,33 +958,40 @@ function buildInfluenceAnalysis(s5,s4,s3){
 
   /* Reels impact — CORRECTED with Apify data */
   h+='<div class="analysis-card"><h3>Instagram (datos verificados Apify)</h3>';
-  h+='<div class="metric-row"><span class="metric-label">Frecuencia real</span><span class="metric-value">Solo 9 posts en 41 días (1 cada 4.6 días)</span><span class="metric-badge badge-red" style="margin-left:8px">NO es diario</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Posts verificados en feed</span><span class="metric-value">9 posts durante S5 (de 133 posts totales scrapeados)</span><span class="metric-badge badge-red" style="margin-left:8px">NO es diario</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Frecuencia publicación</span><span class="metric-value" style="font-size:10px">25 posts/mes en febrero vs 7/mes en junio — bajó significativamente en S5</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Limitación</span><span class="metric-value" style="font-size:10px;color:rgba(255,255,255,0.5)">Stories y lives no quedan en feed y no se pueden capturar con Apify</span></div>';
   h+='<div class="metric-row"><span class="metric-label">Días con post IG</span><span class="metric-value">169 órdenes/día promedio</span></div>';
   h+='<div class="metric-row"><span class="metric-label">Días sin post IG</span><span class="metric-value">107 órdenes/día promedio</span><span class="metric-badge badge-green" style="margin-left:8px">+58% con post</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Reel viral 30 jun (6.696v)</span><span class="metric-value" style="font-size:10px">Mismo día que 284 órdenes — no lo causó, pudo amplificar</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Reel 2 jul (2.763v)</span><span class="metric-value" style="font-size:10px">Día récord 431 órdenes — probablemente el live, no el reel</span></div>';
-  h+='<div class="verdict-box"><h4>Correlación real pero NO causalidad</h4>';
-  h+='<p>Los posts tienden a coincidir con días de alta actividad (lives, eventos). Días con post IG tienen +58% más órdenes, pero no podemos afirmar que el post las genera. El reel "viral" de 6.696 views fue posteado el mismo día del pico, no el día antes. Conclusión: IG amplifica señales existentes pero los lives son el verdadero motor.</p></div>';
+  h+='<div class="verdict-box"><h4>Correlación real pero incompleta</h4>';
+  h+='<p>Los posts tienden a coincidir con días de alta actividad (lives, eventos). Días con post IG tienen +58% más órdenes, pero no podemos afirmar que el post las genera. Para correlación completa necesitamos que PI confirme lista de lives y stories de junio. IG amplifica señales existentes pero los lives son el verdadero motor.</p></div>';
   h+='</div>';
 
   h+='</div>'; /* close g2 */
 
   h+='<div class="g2" style="margin-top:12px">';
 
-  /* Stickers baratos impact — FINANCIAL ANALYSIS */
-  h+='<div class="analysis-card"><h3>Stickers baratos: el veredicto financiero</h3>';
-  h+='<div class="metric-row"><span class="metric-label">S3 ticket promedio</span><span class="metric-value">$9.964</span><span class="metric-badge badge-gold" style="margin-left:8px">referencia</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S5 ticket promedio</span><span class="metric-value">$7.176</span><span class="metric-badge badge-red" style="margin-left:8px">-28%</span></div>';
-  h+='<div style="margin:12px 0;padding:14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px">';
-  h+='<h4 style="font-size:12px;font-weight:900;color:#EF4444;margin-bottom:8px">Comparación al mismo punto (día 41)</h4>';
-  h+='<div class="metric-row"><span class="metric-label">S3 al día 41</span><span class="metric-value" style="color:#10B981">~5.920 órdenes x $9.964 = ~$59M revenue</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">S5 al día 41</span><span class="metric-value" style="color:#EF4444">4.947 órdenes x $7.176 = $35.5M revenue</span></div>';
-  h+='<div class="metric-row"><span class="metric-label" style="color:#EF4444;font-weight:800">Diferencia</span><span class="metric-value" style="color:#EF4444;font-size:16px">-$23.5M MENOS al mismo punto</span></div>';
+  /* Stickers baratos impact — VERIFIED FINANCIAL ANALYSIS */
+  h+='<div class="analysis-card"><h3>Stickers: análisis financiero verificado</h3>';
+  h+='<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:10px">Pack breakdown S5 — datos verificados de WooCommerce</p>';
+  h+='<table><thead><tr><th>Pack</th><th class="r">Precio</th><th class="r">Órdenes</th><th class="r">% Órdenes</th><th class="r">Revenue</th><th class="r">% Revenue</th></tr></thead><tbody>';
+  h+='<tr><td class="b">x1</td><td class="r">$2.753</td><td class="r">934</td><td class="r">19%</td><td class="r">$2.571.150</td><td class="r"><span class="dn">7%</span></td></tr>';
+  h+='<tr><td class="b">x2</td><td class="r">$4.863</td><td class="r">1.887</td><td class="r">38%</td><td class="r">$9.176.750</td><td class="r">26%</td></tr>';
+  h+='<tr class="row-green"><td class="b">x8</td><td class="r">$9.583</td><td class="r">1.634</td><td class="r">33%</td><td class="r">$15.657.950</td><td class="r"><span class="up" style="font-weight:700">44%</span></td></tr>';
+  h+='<tr><td class="b">x20</td><td class="r">$16.454</td><td class="r">492</td><td class="r">10%</td><td class="r">$8.095.500</td><td class="r">23%</td></tr>';
+  h+='</tbody></table>';
+
+  h+='<div style="margin:10px 0;padding:12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);border-radius:10px">';
+  h+='<h4 style="font-size:11px;font-weight:900;color:#FFD700;margin-bottom:8px">Matemática clave</h4>';
+  h+='<div class="metric-row"><span class="metric-label">Sin pack x1</span><span class="metric-value" style="font-size:11px">Ticket sube de $7.176 a $8.206 (+14%) pero se pierden $2.6M</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Si 50% x1 hubieran comprado x2</span><span class="metric-value" style="font-size:11px">Solo $300K menos (casi neutro)</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Compradores nuevos (no en S3/S4)</span><span class="metric-value" style="font-size:11px">Ticket $6.912 vs recurrentes $7.692</span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Revenue de compradores NUEVOS</span><span class="metric-value" style="font-size:11px"><span class="up" style="font-weight:700">63% del revenue S5</span></span></div>';
+  h+='<div class="metric-row"><span class="metric-label">Implicancia</span><span class="metric-value" style="font-size:11px">El pack x1 trae gente nueva que NO habría comprado → revenue incremental</span></div>';
   h+='</div>';
-  h+='<div class="metric-row"><span class="metric-label">Ticket cayó</span><span class="metric-value">-28%</span></div>';
-  h+='<div class="metric-row"><span class="metric-label">Órdenes no compensan</span><span class="metric-value" style="font-size:10px">Más volumen pero no el suficiente para cerrar la brecha de $23.5M</span></div>';
-  h+='<div class="verdict-box" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06)"><h4 style="color:#EF4444">VEREDICTO: los stickers baratos generan $19-24M MENOS de revenue proyectado</h4>';
-  h+='<p>Al mismo punto del sorteo (día 41), S5 tiene <strong style="color:#EF4444">$23.5M MENOS</strong> de revenue que S3. El ticket cayó 28% pero las órdenes no crecieron lo suficiente para compensar. Los stickers de $2.500 generan percepción de volumen pero destruyen revenue. Recomendación: volver a ticket alto o limitar las opciones baratas.</p></div>';
+
+  h+='<div class="verdict-box" style="border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.08)"><h4 style="color:#FFD700">VEREDICTO: mantener pack barato como entrada, no como protagonista</h4>';
+  h+='<p>El pack x1 aporta solo <strong style="color:#EF4444">7% del revenue</strong> pero trae <strong style="color:#10B981">19% de las órdenes</strong>. Es revenue incremental si trae compradores nuevos (la data sugiere que sí). PERO el ticket global cayó <strong style="color:#EF4444">28% vs S3</strong>. Recomendación: mantener el pack barato pero <strong style="color:#FFD700">NO como protagonista de las campañas</strong> — usarlo como entrada y empujar packs más grandes.</p></div>';
   h+='</div>';
 
   /* Direct traffic + other signals */
@@ -1006,9 +1013,9 @@ function buildInfluenceAnalysis(s5,s4,s3){
   h+='<div class="verdict-box" style="margin-top:12px;border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.08)"><h4 style="font-size:14px">Resumen ejecutivo: donde enfocar esfuerzos</h4>';
   h+='<p style="font-size:12px;line-height:2">';
   h+='<strong style="color:#10B981">1. Lives (ALTO IMPACTO):</strong> +104% en órdenes diarias post-lives. Señal más fuerte en los datos. Mínimo 2x/semana.<br>';
-  h+='<strong style="color:#F59E0B">2. Instagram (MEDIO, NO CAUSAL):</strong> +58% en días con post, pero correlación no es causalidad. Posts coinciden con días de alta actividad. Amplifica, no genera.<br>';
+  h+='<strong style="color:#F59E0B">2. Instagram (MEDIO, INCOMPLETO):</strong> +58% en días con post, pero solo 9 posts verificados en feed (stories/lives no capturables). Frecuencia bajó de 25/mes a 7/mes. Amplifica, no genera.<br>';
   h+='<strong style="color:#F59E0B">3. Timer/urgencia (MEDIO):</strong> El timer + suba de precio genera picos. Usar estratégicamente.<br>';
-  h+='<strong style="color:#EF4444">4. Stickers baratos (NEGATIVO):</strong> -$23.5M menos revenue al día 41 vs S3. Ticket -28%, órdenes no compensan. Destruye revenue.<br>';
+  h+='<strong style="color:#F59E0B">4. Pack x1 (MATIZADO):</strong> Solo 7% del revenue pero 19% de las órdenes. Revenue incremental si trae nuevos (63% del revenue S5 es de compradores nuevos). Mantener como entrada, NO como protagonista de campañas.<br>';
   h+='<strong style="color:#10B981">5. Brand awareness (LARGO PLAZO):</strong> Tráfico directo creciendo. Cada sorteo construye base.</p></div>';
 
   h+='</div>'; /* close section */
@@ -1017,8 +1024,8 @@ function buildInfluenceAnalysis(s5,s4,s3){
 
 /* ── Instagram Correlation Section — VERIFIED APIFY DATA ── */
 function buildInstagramCorrelation(s5){
-  var h='<div class="s"><div class="st">Correlación Instagram — 9 posts verificados (Apify)</div>';
-  h+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">TODOS los posts de Instagram durante S5, verificados con data de Apify. Solo 9 posts en 41 días (1 cada 4.6 días). Incluye órdenes del mismo día y día siguiente para evaluar causalidad.</p>';
+  var h='<div class="s"><div class="st">Correlación Instagram — 9 posts verificados en feed (Apify)</div>';
+  h+='<p style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">9 posts verificados en feed durante S5 (Apify, 133 posts totales scrapeados). Stories y lives no quedan en feed y no se pueden capturar. La cuenta publicó 25 posts/mes en febrero vs 7/mes en junio — la frecuencia bajó significativamente durante S5. Para correlación completa necesitamos que PI confirme lista de lives y stories de junio.</p>';
 
   /* ALL 9 verified IG posts from Apify */
   var igPosts=[
@@ -1056,9 +1063,9 @@ function buildInstagramCorrelation(s5){
 
   h+='<div style="display:flex;gap:12px;margin-top:10px">';
   h+='<div class="insight" style="flex:1"><h4>Prom. órdenes/día con post IG: 169</h4>';
-  h+='<p>Días con post IG promedian 169 órdenes vs 107 sin post (+58%). Pero los posts se hacen en días de alta actividad (lives, eventos), así que la correlación no implica causalidad.</p></div>';
+  h+='<p>Días con post IG promedian 169 órdenes vs 107 sin post (+58%). Pero los posts se hacen en días de alta actividad (lives, eventos), así que la correlación no implica causalidad. Solo se capturan posts de feed — stories y lives no quedan registrados.</p></div>';
   h+='<div class="alert" style="flex:1"><h4>Solo 1 reel con posible efecto causal</h4>';
-  h+='<p>De los 9 posts, solo el reel M&P del 17 jun (4.631 views) muestra un aumento al día siguiente (+43%) que no coincide con otro evento. El reel "viral" de 6.696v fue el mismo día del pico, no el día antes. El récord de 431 órdenes (2 jul) fue por el live, no por el reel.</p></div>';
+  h+='<p>De los 9 posts, solo el reel M&P del 17 jun (4.631 views) muestra un aumento al día siguiente (+43%) que no coincide con otro evento. El reel "viral" de 6.696v fue el mismo día del pico, no el día antes. Para correlación completa necesitamos que PI confirme lista de lives y stories de junio.</p></div>';
   h+='</div>';
 
   h+='</div>';
