@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe BI — Premios Increibles</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.6;font-size:13px}
+.c{max-width:1100px;margin:0 auto;padding:0 24px}
+.hd{padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.hd h1{font-size:24px;font-weight:900;letter-spacing:-0.5px}
+.hd a{font-size:11px;color:#FFD700;text-decoration:none;font-weight:700}
+.hd a:hover{text-decoration:underline}
+.hd .sub{font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px}
+.section{padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.section-num{font-size:10px;font-weight:900;color:#E53935;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.section-title{font-size:18px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:4px;height:20px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px;flex-shrink:0}
+.section-explain{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.8;margin-bottom:18px;max-width:800px}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:11px;margin-bottom:14px}
+thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:8px 10px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px}
+thead th.r{text-align:right}
+tbody td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.7)}
+tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody td.b{font-weight:700;color:#fff}
+tbody tr:hover td{background:rgba(229,57,53,0.04)}
+tbody tr.total td{background:rgba(255,215,0,0.06);font-weight:800;color:#FFD700;border-top:2px solid rgba(255,215,0,0.2)}
+tbody tr.highlight td{background:rgba(229,57,53,0.08)}
+.up{color:#10B981}.dn{color:#EF4444}.nt{color:#F59E0B}.gd{color:#FFD700}
+.verdict{background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:16px;margin-top:14px}
+.verdict h4{font-size:13px;font-weight:900;color:#FFD700;margin-bottom:6px}
+.verdict p{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.8}
+.alert{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;margin-top:14px}
+.alert h4{font-size:13px;font-weight:900;color:#EF4444;margin-bottom:6px}
+.alert p{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.8}
+.opp{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:16px;margin-top:14px}
+.opp h4{font-size:13px;font-weight:900;color:#10B981;margin-bottom:6px}
+.opp p{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.8}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.card{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px}
+.card h3{font-size:12px;font-weight:800;color:#FFD700;margin-bottom:10px}
+.kpi-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.kpi{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 18px;text-align:center;flex:1;min-width:140px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E53935,#FFD700)}
+.kpi-val{font-size:22px;font-weight:900;color:#FFD700}
+.kpi-label{font-size:8px;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.timeline{position:relative;margin:14px 0}
+.tl-row{display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.tl-date{min-width:70px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.4)}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-content{flex:1}
+.tl-event{font-size:11px;font-weight:700;color:#fff}
+.tl-metric{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px}
+.tl-impact{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;margin-top:4px}
+.badge-up{background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.3)}
+.badge-dn{background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3)}
+.badge-nt{background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3)}
+.foot{padding:16px 0;text-align:center;font-size:9px;color:rgba(255,255,255,0.12)}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr}.kpi-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="c">
+
+<div class="hd">
+  <div>
+    <h1>Informe de Business Intelligence</h1>
+    <p class="sub">Premios Increibles &mdash; Sorteos S3, S4 y S5 &mdash; Datos al 4 julio 2026</p>
+  </div>
+  <a href="/">&larr; Dashboard principal</a>
+</div>
+
+<!-- ===================== CONTEXTO ===================== -->
+<div class="section">
+  <div class="section-num">Contexto</div>
+  <div class="section-title">Que estamos midiendo y por que</div>
+  <p class="section-explain">
+    Este informe cruza ventas WooCommerce, hitos comerciales, actividad Instagram y estructura de precios para responder preguntas clave del negocio: si conviene sorteos cada 30 o 45 dias, como impacta el sticker barato, cuando se concentran las ventas, y como va S5 comparado con los sorteos anteriores al mismo punto de su ciclo de vida.<br><br>
+    <strong>Importante:</strong> S5 lleva 42 de 56 dias (termina 19 julio). Todas las comparaciones estan normalizadas al dia 42 para no comparar un sorteo terminado contra uno en curso.
+  </p>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val">3</div><div class="kpi-label">Sorteos analizados</div></div>
+    <div class="kpi"><div class="kpi-val">$221.7M</div><div class="kpi-label">Revenue total acumulado</div></div>
+    <div class="kpi"><div class="kpi-val">25,949</div><div class="kpi-label">Ordenes totales</div></div>
+    <div class="kpi"><div class="kpi-val">16,846</div><div class="kpi-label">Compradores unicos</div></div>
+  </div>
+
+  <table>
+    <thead><tr><th>Sorteo</th><th>Periodo</th><th class="r">Duracion</th><th class="r">Revenue</th><th class="r">Ordenes</th><th class="r">Compradores</th><th class="r">Ticket prom</th><th class="r">Estado</th></tr></thead>
+    <tbody>
+      <tr><td class="b">S3 — Abril 2026</td><td>16 feb &ndash; 13 abr</td><td class="r">57 dias</td><td class="r b">$111.4M</td><td class="r">11,177</td><td class="r">9,202</td><td class="r">$9,964</td><td class="r"><span class="up">Finalizado</span></td></tr>
+      <tr><td class="b">S4 — Mayo 2026</td><td>12 abr &ndash; 27 may</td><td class="r">46 dias</td><td class="r b">$72.7M</td><td class="r">9,503</td><td class="r">6,030</td><td class="r">$7,650</td><td class="r"><span class="up">Finalizado</span></td></tr>
+      <tr><td class="b">S5 — Julio 2026</td><td>24 may &ndash; 19 jul</td><td class="r">56 dias</td><td class="r b">$37.6M</td><td class="r">5,269</td><td class="r">3,709</td><td class="r">$7,143</td><td class="r"><span class="nt">En curso (dia 42/56)</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===================== 1. COMPARACION NORMALIZADA ===================== -->
+<div class="section">
+  <div class="section-num">Punto 1</div>
+  <div class="section-title">Comparacion normalizada al dia 42</div>
+  <p class="section-explain">
+    Para saber si S5 va bien o mal, no podemos comparar sus $37.6M contra los $111M finales de S3 porque S3 tuvo 15 dias mas. Lo justo es mirar como iba cada sorteo al mismo punto de su vida. Al dia 42, S3 todavia no habia explotado (le faltaban 15 dias de rush final), y S4 estaba a punto de cerrar (le faltaban solo 4 dias).
+  </p>
+
+  <table>
+    <thead><tr><th>Metrica</th><th class="r">S3 (dia 42 de 57)</th><th class="r">S4 (dia 42 de 46)</th><th class="r">S5 (dia 42 de 56)</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Revenue acumulado</td><td class="r">$41.5M</td><td class="r">$60.9M</td><td class="r">$37.6M</td></tr>
+      <tr><td class="b">Ordenes</td><td class="r">4,232</td><td class="r">7,943</td><td class="r">5,269</td></tr>
+      <tr><td class="b">Stickers vendidos</td><td class="r">41,192</td><td class="r">61,867</td><td class="r">28,671</td></tr>
+      <tr><td class="b">Revenue diario promedio</td><td class="r">$988K</td><td class="r">$1.45M</td><td class="r">$896K</td></tr>
+      <tr><td class="b">Ticket promedio</td><td class="r">$9,801</td><td class="r">$7,674</td><td class="r">$7,143</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p>S5 tiene mas ordenes que S3 al dia 42 (5,269 vs 4,232) pero menos revenue porque el ticket es 27% mas bajo. S5 va 9% por debajo de S3 en revenue, pero S3 y S5 tienen la misma duracion (56-57 dias), lo que significa que S5 todavia tiene 15 dias de aceleracion por delante &mdash; la misma ventana que en S3 genero el 63% del revenue total.</p>
+  </div>
+</div>
+
+<!-- ===================== 2. CURVA DE ACELERACION ===================== -->
+<div class="section">
+  <div class="section-num">Punto 2</div>
+  <div class="section-title">Curva de aceleracion: cuando se vende</div>
+  <p class="section-explain">
+    Todos los sorteos tienen el mismo patron: las primeras semanas son lentas (la gente sabe del sorteo pero no compra), y las ventas explotan en las ultimas 2-3 semanas por efecto FOMO. La pregunta clave es si S5 esta siguiendo la misma curva que S3 y S4 a esta altura.
+  </p>
+
+  <table>
+    <thead><tr><th>Semana</th><th class="r">S3 prom/dia</th><th class="r">S4 prom/dia</th><th class="r">S5 prom/dia</th><th class="r">S5 vs S3</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Semana 1 (dias 1-7)</td><td class="r">$328K</td><td class="r">$794K</td><td class="r">$498K</td><td class="r"><span class="up">+52%</span></td></tr>
+      <tr><td class="b">Semana 2 (dias 8-14)</td><td class="r">$761K</td><td class="r">$918K</td><td class="r">$657K</td><td class="r"><span class="dn">-14%</span></td></tr>
+      <tr><td class="b">Semana 3 (dias 15-21)</td><td class="r">$436K</td><td class="r">$1.20M</td><td class="r">$615K</td><td class="r"><span class="up">+41%</span></td></tr>
+      <tr><td class="b">Semana 4 (dias 22-28)</td><td class="r">$747K</td><td class="r">$1.20M</td><td class="r">$893K</td><td class="r"><span class="up">+20%</span></td></tr>
+      <tr><td class="b">Semana 5 (dias 29-35)</td><td class="r">$1.53M</td><td class="r">$1.45M</td><td class="r">$909K</td><td class="r"><span class="dn">-41%</span></td></tr>
+      <tr class="highlight"><td class="b">Semana 6 (dias 36-42)</td><td class="r">$2.12M</td><td class="r">$3.15M</td><td class="r">$1.80M</td><td class="r"><span class="dn">-15%</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="g2">
+    <div class="card">
+      <h3>Aceleracion semana 5 a 6</h3>
+      <table>
+        <thead><tr><th>Sorteo</th><th class="r">Crecimiento</th></tr></thead>
+        <tbody>
+          <tr><td class="b">S3</td><td class="r"><span class="up">+39%</span></td></tr>
+          <tr><td class="b">S4</td><td class="r"><span class="up">+117%</span></td></tr>
+          <tr><td class="b">S5</td><td class="r"><span class="up">+99%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Revenue acumulado como % del dia 42</h3>
+      <table>
+        <thead><tr><th>Dia</th><th class="r">S3</th><th class="r">S4</th><th class="r">S5</th></tr></thead>
+        <tbody>
+          <tr><td>Dia 14</td><td class="r">18%</td><td class="r">20%</td><td class="r">22%</td></tr>
+          <tr><td>Dia 28</td><td class="r">38%</td><td class="r">47%</td><td class="r">50%</td></tr>
+          <tr><td>Dia 35</td><td class="r">64%</td><td class="r">64%</td><td class="r">66%</td></tr>
+          <tr><td>Dia 42</td><td class="r">100%</td><td class="r">100%</td><td class="r">100%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p>La curva de S5 sigue casi exactamente la forma de S4: ambos con ~50% del revenue al dia 28 y ~66% al dia 35. S5 esta acelerando al +99% semanal, entre S3 (+39%) y S4 (+117%). La aceleracion ya empezo y es consistente con sorteos anteriores.</p>
+  </div>
+</div>
+
+<!-- ===================== 3. HITOS vs VENTAS ===================== -->
+<div class="section">
+  <div class="section-num">Punto 3</div>
+  <div class="section-title">Hitos comerciales y su impacto en ventas</div>
+  <p class="section-explain">
+    Cada accion comercial (lanzar sticker barato, iniciar lives, subir precio, publicar reel) deberia tener un efecto medible en las ventas. Aca cruzamos la fecha exacta de cada hito con el revenue diario, comparando el promedio de 7 dias antes vs 7 dias despues del evento.
+  </p>
+
+  <div class="timeline">
+    <div class="tl-row">
+      <div class="tl-date">24 mayo</div>
+      <div class="tl-dot" style="background:#E53935"></div>
+      <div class="tl-content">
+        <div class="tl-event">Inicio S5 (preventa)</div>
+        <div class="tl-metric">39 ordenes, $287K &mdash; Dia 1, base cero</div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">10 junio</div>
+      <div class="tl-dot" style="background:#FFD700"></div>
+      <div class="tl-content">
+        <div class="tl-event">Lanzamiento sticker $2.500</div>
+        <div class="tl-metric">Ordenes: 82/dia &rarr; 123/dia | Revenue: $633K &rarr; $825K</div>
+        <span class="tl-impact badge-up">+50% ordenes &nbsp;|&nbsp; +30% revenue</span>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">15 junio</div>
+      <div class="tl-dot" style="background:#10B981"></div>
+      <div class="tl-content">
+        <div class="tl-event">Inicio lives / Zoom</div>
+        <div class="tl-metric">Ordenes: 94/dia &rarr; 126/dia | Revenue: $646K &rarr; $880K</div>
+        <span class="tl-impact badge-up">+33% ordenes &nbsp;|&nbsp; +36% revenue</span>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">16 junio</div>
+      <div class="tl-dot" style="background:#6366F1"></div>
+      <div class="tl-content">
+        <div class="tl-event">Timer countdown en la web</div>
+        <div class="tl-metric">Se agrega urgencia visual. Efecto dificil de aislar del inicio de lives.</div>
+        <span class="tl-impact badge-nt">Efecto combinado con lives</span>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">17-18 junio</div>
+      <div class="tl-dot" style="background:#E53935"></div>
+      <div class="tl-content">
+        <div class="tl-event">Reels M&P (contenido pagado)</div>
+        <div class="tl-metric">El reel del 17 tuvo 17,452 views pero no genero pico el mismo dia. Efecto retardado: dia siguiente +25%.</div>
+        <span class="tl-impact badge-nt">Efecto 24-48h diferido</span>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">20 junio</div>
+      <div class="tl-dot" style="background:#F59E0B"></div>
+      <div class="tl-content">
+        <div class="tl-event">Subida de precio a $3.000</div>
+        <div class="tl-metric">Ordenes: 127/dia &rarr; 125/dia | Revenue: $850K &rarr; $909K</div>
+        <span class="tl-impact badge-up">Demanda intacta (-2% ordenes, +7% revenue)</span>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-date">29 jun &ndash; 2 jul</div>
+      <div class="tl-dot" style="background:#E53935"></div>
+      <div class="tl-content">
+        <div class="tl-event">Rafaga de reels + aceleracion natural</div>
+        <div class="tl-metric">4 reels en 4 dias. Revenue salta de $1.2M a $3.07M (pico S5 el 2 jul).</div>
+        <span class="tl-impact badge-up">+101% revenue en 4 dias</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p><strong>Sticker $2.500</strong> fue el hito de mayor impacto medible: trajo +50% de ordenes. <strong>Lives</strong> fue el segundo mas fuerte (+33% ordenes). <strong>La subida de precio a $3.000 NO destruyo demanda</strong>: la gente que compra, compra igual. Los reels tienen efecto real pero se nota al dia siguiente, no el mismo dia.</p>
+  </div>
+</div>
+
+<!-- ===================== 4. DOMINGOS: CAMBIO CRITICO ===================== -->
+<div class="section">
+  <div class="section-num">Punto 4</div>
+  <div class="section-title">Domingos: el cambio critico de S5</div>
+  <p class="section-explain">
+    En S3 y S4, el domingo era el dia mas fuerte de la semana con diferencia: coincidia con el live semanal y generaba 3-4x mas revenue que un lunes. En S5, algo cambio. Este es probablemente el hallazgo mas importante del informe.
+  </p>
+
+  <table>
+    <thead><tr><th>Metrica</th><th class="r">S3</th><th class="r">S4</th><th class="r">S5</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Revenue promedio DOMINGOS</td><td class="r gd">$3.34M</td><td class="r gd">$3.57M</td><td class="r dn">$538K</td></tr>
+      <tr><td class="b">Revenue promedio LUNES</td><td class="r">$1.16M</td><td class="r">$912K</td><td class="r">$874K</td></tr>
+      <tr><td class="b">Domingo vs resto de semana</td><td class="r up">2.9x mas</td><td class="r up">3.9x mas</td><td class="r dn">44% menos</td></tr>
+    </tbody>
+  </table>
+
+  <div class="g2">
+    <div class="card">
+      <h3>S4: TODOS los spikes eran domingos</h3>
+      <table>
+        <thead><tr><th>Fecha</th><th class="r">Revenue</th><th class="r">vs promedio 7d</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Dom 26 abr</td><td class="r">$2.68M</td><td class="r up">2.9x</td></tr>
+          <tr><td class="b">Dom 3 may</td><td class="r">$3.08M</td><td class="r up">2.6x</td></tr>
+          <tr><td class="b">Dom 10 may</td><td class="r">$2.94M</td><td class="r up">2.5x</td></tr>
+          <tr><td class="b">Dom 17 may</td><td class="r">$3.80M</td><td class="r up">2.6x</td></tr>
+          <tr class="highlight"><td class="b">Dom 24 may (sorteo)</td><td class="r">$11.70M</td><td class="r up">3.7x</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>S5: Domingos son el dia mas bajo</h3>
+      <table>
+        <thead><tr><th>Fecha</th><th class="r">Revenue</th><th class="r">vs promedio semana</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Dom 24 may</td><td class="r">$287K</td><td class="r dn">-68%</td></tr>
+          <tr><td class="b">Dom 31 may</td><td class="r">$265K</td><td class="r dn">-70%</td></tr>
+          <tr><td class="b">Dom 7 jun</td><td class="r">$383K</td><td class="r dn">-57%</td></tr>
+          <tr><td class="b">Dom 14 jun</td><td class="r">$603K</td><td class="r dn">-33%</td></tr>
+          <tr><td class="b">Dom 21 jun</td><td class="r">$491K</td><td class="r dn">-45%</td></tr>
+          <tr><td class="b">Dom 28 jun</td><td class="r">$1.20M</td><td class="r up">+34%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert">
+    <h4>Alerta: multiplicador de 3-4x sin capturar</h4>
+    <p>En S4, cada domingo de live generaba entre $2.7M y $3.8M. En S5, los domingos promedian $538K. Si S5 restaurara el patron de lives dominicales al nivel de S4, cada domingo de aca al 19 de julio podria generar $3-4M adicionales en vez de $500K. Eso son dos domingos (6 y 13 julio) con potencial de agregar $5-7M al total del sorteo.</p>
+  </div>
+</div>
+
+<!-- ===================== 5. FINES DE SEMANA ===================== -->
+<div class="section">
+  <div class="section-num">Punto 5</div>
+  <div class="section-title">Patron de fines de semana y dias de la semana</div>
+  <p class="section-explain">
+    Cruzando los 3 sorteos, el fin de semana genera consistentemente mas ventas que la semana. Pero el patron cambio en S5 por el tema de los domingos. Aca se muestra el promedio historico combinado.
+  </p>
+
+  <table>
+    <thead><tr><th>Dia</th><th class="r">Revenue prom (historico 3 sorteos)</th><th class="r">Ranking</th></tr></thead>
+    <tbody>
+      <tr class="highlight"><td class="b">Domingo</td><td class="r gd">$2,614,149</td><td class="r">1ro (inflado por lives S3/S4)</td></tr>
+      <tr><td class="b">Sabado</td><td class="r">$1,812,067</td><td class="r">2do</td></tr>
+      <tr><td class="b">Viernes</td><td class="r">$1,486,548</td><td class="r">3ro</td></tr>
+      <tr><td class="b">Jueves</td><td class="r">$1,352,396</td><td class="r">4to</td></tr>
+      <tr><td class="b">Martes</td><td class="r">$1,290,166</td><td class="r">5to</td></tr>
+      <tr><td class="b">Miercoles</td><td class="r">$1,262,748</td><td class="r">6to</td></tr>
+      <tr><td class="b">Lunes</td><td class="r dn">$1,050,874</td><td class="r">7mo (peor)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p>Fin de semana (sab+dom) genera 74% mas que dias de semana en promedio historico. Pero en S5 sin lives dominicales, el sabado paso a ser el mejor dia del finde. <strong>Lunes es consistentemente el peor dia en los 3 sorteos.</strong> Las promos y contenido deberian concentrarse de jueves a domingo.</p>
+  </div>
+</div>
+
+<!-- ===================== 6. EFECTO DIA DE PAGO ===================== -->
+<div class="section">
+  <div class="section-num">Punto 6</div>
+  <div class="section-title">Efecto dia de pago / fin de mes</div>
+  <p class="section-explain">
+    En Chile, los sueldos se pagan tipicamente entre el 1 y el 5 de cada mes (quincenal el 15). La hipotesis era que las ventas podrian subir en esas fechas. Los datos lo desmienten.
+  </p>
+
+  <table>
+    <thead><tr><th>Periodo del mes</th><th class="r">Revenue prom/dia</th><th class="r">vs promedio general</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Dias 1-5 (pago quincena)</td><td class="r">$1.63M</td><td class="r nt">+10%</td></tr>
+      <tr><td class="b">Dias 6-10</td><td class="r">$1.84M</td><td class="r up">+24%</td></tr>
+      <tr><td class="b">Dias 11-14</td><td class="r gd">$2.05M</td><td class="r up">+38% (sesgado por cierres de sorteo)</td></tr>
+      <tr><td class="b">Dias 15-17 (pago mensual)</td><td class="r dn">$1.22M</td><td class="r dn">-18%</td></tr>
+      <tr><td class="b">Dias 18-22</td><td class="r">$1.23M</td><td class="r dn">-17%</td></tr>
+      <tr><td class="b">Dias 23-27</td><td class="r">$1.55M</td><td class="r nt">+4%</td></tr>
+      <tr><td class="b">Dias 28-31 (fin mes)</td><td class="r">$1.34M</td><td class="r dn">-10%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p><strong>No existe efecto dia de pago.</strong> Los dias 15-17 (cuando la gente cobra) son paradojicamente los de menor venta. El unico driver real de ventas es la proximidad al cierre del sorteo, no el calendario salarial. Las promos deben girar 100% en torno a la fecha de cierre.</p>
+  </div>
+</div>
+
+<!-- ===================== 7. INSTAGRAM ===================== -->
+<div class="section">
+  <div class="section-num">Punto 7</div>
+  <div class="section-title">Instagram: frecuencia de posteo vs ventas</div>
+  <p class="section-explain">
+    Premios Increibles publica casi exclusivamente Reels (131 de 133 posts historicos). La frecuencia de posteo bajo de 4.3 posts/semana en S3 a 1.5 en S5. Aca medimos si eso impacta las ventas.
+  </p>
+
+  <table>
+    <thead><tr><th>Metrica</th><th class="r">S3</th><th class="r">S4</th><th class="r">S5</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Posts por semana</td><td class="r">4.3</td><td class="r">2.7</td><td class="r dn">1.5</td></tr>
+      <tr><td class="b">Revenue promedio/dia</td><td class="r">$1.95M</td><td class="r">$1.58M</td><td class="r">$896K</td></tr>
+      <tr><td class="b">Avg views/reel</td><td class="r">2,967</td><td class="r">4,326</td><td class="r">2,188</td></tr>
+    </tbody>
+  </table>
+
+  <div class="g2">
+    <div class="card">
+      <h3>Dias CON post vs SIN post IG (S5)</h3>
+      <table>
+        <thead><tr><th></th><th class="r">Con post (9 dias)</th><th class="r">Sin post (33 dias)</th><th class="r">Diferencia</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Ordenes/dia</td><td class="r">169</td><td class="r">114</td><td class="r up">+49%</td></tr>
+          <tr><td class="b">Revenue/dia</td><td class="r">$1.21M</td><td class="r">$810K</td><td class="r up">+50%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Efecto retardado (dia DESPUES del post)</h3>
+      <table>
+        <thead><tr><th></th><th class="r">Dia post de post</th><th class="r">Dia despues sin post</th><th class="r">Diferencia</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Ordenes/dia</td><td class="r">153</td><td class="r">121</td><td class="r up">+27%</td></tr>
+          <tr><td class="b">Revenue/dia</td><td class="r">$1.07M</td><td class="r">$865K</td><td class="r up">+24%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="opp">
+    <h4>Oportunidad: subir frecuencia de posteo</h4>
+    <p>Los dias con post IG generan +50% de revenue. El efecto persiste al dia siguiente (+24%). Si S5 subiera de 1.5 a 4+ posts/semana como S3, y asumiendo que solo la mitad de la correlacion es causal, el impacto estimado seria un +15-25% adicional en revenue diario. En los 15 dias restantes, eso podria significar $3-5M adicionales.</p>
+  </div>
+</div>
+
+<!-- ===================== 8. STICKERS Y PACKS ===================== -->
+<div class="section">
+  <div class="section-num">Punto 8</div>
+  <div class="section-title">Stickers, packs y efecto del precio bajo</div>
+  <p class="section-explain">
+    El sticker de $2.500 (pack x1) fue una novedad de S5. La preocupacion es si canibaliza los packs grandes. Aca desglosamos como cambio la estructura de packs entre sorteos y que efecto tiene en el ticket y el revenue.
+  </p>
+
+  <table>
+    <thead><tr><th>Metrica</th><th class="r">S3</th><th class="r">S4</th><th class="r">S5</th><th class="r">Tendencia</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Precio promedio por sticker</td><td class="r">$984</td><td class="r">$1,014</td><td class="r">$1,313</td><td class="r up">+33%</td></tr>
+      <tr><td class="b">Stickers por orden</td><td class="r">10.1</td><td class="r">7.5</td><td class="r dn">5.4</td><td class="r dn">-47%</td></tr>
+      <tr><td class="b">Ticket promedio</td><td class="r">$9,964</td><td class="r">$7,650</td><td class="r">$7,143</td><td class="r dn">-28%</td></tr>
+      <tr><td class="b">Pack mas vendido</td><td class="r">x10 (72%)</td><td class="r">x2 (49%)</td><td class="r">x2 (39%)</td><td class="r">&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Desglose por pack S5 (actual)</h3>
+    <table>
+      <thead><tr><th>Pack</th><th class="r">Ordenes</th><th class="r">% Ordenes</th><th class="r">Revenue</th><th class="r">% Revenue</th><th class="r">Precio/sticker</th></tr></thead>
+      <tbody>
+        <tr><td class="b">x1 ($2.500-2.800)</td><td class="r">1,006</td><td class="r">19%</td><td class="r">$2.8M</td><td class="r">7%</td><td class="r">$2,768</td></tr>
+        <tr><td class="b">x2</td><td class="r">2,033</td><td class="r">39%</td><td class="r">$9.9M</td><td class="r">26%</td><td class="r">$2,435</td></tr>
+        <tr><td class="b">x8</td><td class="r">1,722</td><td class="r">33%</td><td class="r">$16.5M</td><td class="r gd">44%</td><td class="r">$1,200</td></tr>
+        <tr><td class="b">x20</td><td class="r">508</td><td class="r">10%</td><td class="r">$8.4M</td><td class="r">22%</td><td class="r">$857</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p>El sticker barato (x1) aporta el 19% de las ordenes pero solo 7% del revenue. <strong>No canibaliza los packs grandes:</strong> el pack x8 genera 44% del revenue y el x20 genera 22%. El precio por sticker en realidad SUBIO 33% entre S3 y S5. La caida de revenue no es por precio bajo sino por menos compradores unicos (9,202 en S3 vs 3,709 en S5). El pack x1 funciona como puerta de entrada para nuevos compradores.</p>
+  </div>
+</div>
+
+<!-- ===================== 9. CANALES ===================== -->
+<div class="section">
+  <div class="section-num">Punto 9</div>
+  <div class="section-title">Canales de venta y su evolucion</div>
+  <p class="section-explain">
+    De donde vienen los compradores: Instagram, Facebook Ads, busqueda directa (incluye WhatsApp) o Google. La evolucion entre sorteos muestra un cambio estructural importante.
+  </p>
+
+  <table>
+    <thead><tr><th>Canal</th><th class="r">S3 (% ordenes)</th><th class="r">S4 (% ordenes)</th><th class="r">S5 (% ordenes)</th><th class="r">Cambio S3&rarr;S5</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Directo / WhatsApp</td><td class="r">18%</td><td class="r">35%</td><td class="r gd">37%</td><td class="r up">+19pp</td></tr>
+      <tr><td class="b">Instagram</td><td class="r">37%</td><td class="r">32%</td><td class="r">29%</td><td class="r dn">-8pp</td></tr>
+      <tr><td class="b">Facebook</td><td class="r">31%</td><td class="r">17%</td><td class="r">19%</td><td class="r dn">-12pp</td></tr>
+      <tr><td class="b">Google</td><td class="r">12%</td><td class="r">15%</td><td class="r">14%</td><td class="r up">+2pp</td></tr>
+    </tbody>
+  </table>
+
+  <div class="g2">
+    <div class="card">
+      <h3>Cupones WhatsApp en S5</h3>
+      <table>
+        <thead><tr><th>Metrica</th><th class="r">Valor</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Ordenes con cupon</td><td class="r">1,688 (32% del total)</td></tr>
+          <tr><td class="b">Revenue con cupon</td><td class="r">$12.8M (34%)</td></tr>
+          <tr><td class="b">Cupones "w*" (WhatsApp)</td><td class="r">893 ordenes</td></tr>
+          <tr><td class="b">Descuento promedio</td><td class="r">11.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Ticket promedio por canal (S5)</h3>
+      <table>
+        <thead><tr><th>Canal</th><th class="r">Ticket</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Google</td><td class="r gd">$7,716 (mas alto)</td></tr>
+          <tr><td class="b">Directo/WA</td><td class="r">$7,294</td></tr>
+          <tr><td class="b">Instagram</td><td class="r">$7,056</td></tr>
+          <tr><td class="b">Facebook</td><td class="r dn">$6,561 (mas bajo)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="opp">
+    <h4>Insight: WhatsApp es el canal de mayor crecimiento</h4>
+    <p>El trafico directo (que incluye WhatsApp) se duplico de 18% a 37% en 3 sorteos. Los cupones WA representan el 32% de las ordenes en S5. La comunidad de 8,800 suscriptores es un activo que se esta monetizando cada vez mejor. El canal de WhatsApp deberia ser prioridad 1 para los ultimos 15 dias.</p>
+  </div>
+</div>
+
+<!-- ===================== 10. PROYECCION ===================== -->
+<div class="section">
+  <div class="section-num">Punto 10</div>
+  <div class="section-title">Proyeccion S5: que esperar del 5 al 19 de julio</div>
+  <p class="section-explain">
+    S5 termina el 19 de julio. Quedan 15 dias. Historicamente, los ultimos 15 dias de un sorteo concentran entre el 60% y 66% del revenue total. Proyectamos 3 escenarios basados en los patrones de S3 y S4.
+  </p>
+
+  <div class="g2">
+    <div class="card">
+      <h3>Que paso en los ultimos 15 dias de S3 y S4</h3>
+      <table>
+        <thead><tr><th>Sorteo</th><th class="r">Rev ultimos 15d</th><th class="r">% del total</th><th class="r">Rev dia final</th></tr></thead>
+        <tbody>
+          <tr><td class="b">S3</td><td class="r">$73.1M</td><td class="r">65.7%</td><td class="r gd">$13.5M</td></tr>
+          <tr><td class="b">S4</td><td class="r">$43.9M</td><td class="r">60.4%</td><td class="r gd">$11.7M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Referencia: S3 al dia 42 vs final</h3>
+      <table>
+        <thead><tr><th>Metrica</th><th class="r">Dia 42</th><th class="r">Final (dia 57)</th></tr></thead>
+        <tbody>
+          <tr><td class="b">Revenue</td><td class="r">$41.5M</td><td class="r">$111.4M</td></tr>
+          <tr><td class="b">% completado</td><td class="r" colspan="2">37.2% al dia 42 &rarr; el 62.8% se genero en los ultimos 15 dias</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <table style="margin-top:14px">
+    <thead><tr><th>Escenario</th><th class="r">Revenue restante (15d)</th><th class="r">Revenue total S5</th><th class="r">Supuesto</th></tr></thead>
+    <tbody>
+      <tr><td class="b dn">Pesimista</td><td class="r">$12.4M</td><td class="r">$50M</td><td class="r">Sin aceleracion, se mantiene plano</td></tr>
+      <tr><td class="b nt">Conservador</td><td class="r">$27M</td><td class="r">$65M</td><td class="r">Aceleracion leve, sin lives fuertes</td></tr>
+      <tr class="highlight"><td class="b gd">Realista</td><td class="r gd">$37-47M</td><td class="r gd">$75-85M</td><td class="r">Patron promedio S3/S4, aceleracion normal</td></tr>
+      <tr><td class="b up">Optimista</td><td class="r">$52-62M</td><td class="r">$90-100M</td><td class="r">Replica patron S3 + lives dominicales restaurados</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h4>Lectura</h4>
+    <p>S5 tiene la misma duracion que S3 (56 dias). Al dia 42, S3 solo habia generado el 37% de su total final &mdash; el otro 63% vino en los ultimos 15 dias. Si S5 replica ese patron, el total seria ~$101M. Pero S5 tiene menos compradores y ticket mas bajo, por lo que la estimacion realista es <strong>$75-85M</strong>. El dia del sorteo (19 julio) historicamente concentra $11-13M en un solo dia. <strong>Los domingos 6 y 13 de julio son criticos:</strong> si se hacen lives fuertes como S4, cada uno puede aportar $3-4M.</p>
+  </div>
+</div>
+
+<!-- ===================== 11. CICLO OPTIMO ===================== -->
+<div class="section">
+  <div class="section-num">Punto 11</div>
+  <div class="section-title">Ciclo optimo: 30, 45 o 60 dias</div>
+  <p class="section-explain">
+    Para decidir la duracion ideal del proximo sorteo, analizamos donde se concentra el revenue en cada ciclo. La hipotesis es que los primeros dias generan poco revenue pero construyen awareness para la explosion final.
+  </p>
+
+  <table>
+    <thead><tr><th>Periodo</th><th class="r">S3 (% del total)</th><th class="r">S4 (% del total)</th></tr></thead>
+    <tbody>
+      <tr><td class="b">Primeros 15 dias</td><td class="r">12%</td><td class="r">22%</td></tr>
+      <tr><td class="b">Dias 16-30</td><td class="r">14%</td><td class="r">23%</td></tr>
+      <tr><td class="b">Dias 31-45</td><td class="r">37%</td><td class="r">55% (incluye cierre)</td></tr>
+      <tr><td class="b">Dias 46-57 (solo S3)</td><td class="r">37% (incluye cierre)</td><td class="r">&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <table style="margin-top:14px">
+    <thead><tr><th>Ciclo</th><th class="r">Revenue estimado</th><th class="r">Eficiencia (rev/dia)</th><th class="r">Riesgo</th></tr></thead>
+    <tbody>
+      <tr><td class="b dn">30 dias</td><td class="r">-$14-15M vs actual</td><td class="r">Alta</td><td class="r">Pierde fase de siembra de compradores</td></tr>
+      <tr class="highlight"><td class="b gd">45 dias (recomendado)</td><td class="r">Referencia S4: $72.7M</td><td class="r gd">$1.58M/dia</td><td class="r">Equilibrio optimo</td></tr>
+      <tr><td class="b">56-57 dias</td><td class="r">Referencia S3: $111.4M</td><td class="r">$1.95M/dia</td><td class="r">Cola larga de semanas improductivas</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <h4>Recomendacion</h4>
+    <p><strong>45 dias es el ciclo optimo.</strong> S4 (46 dias) logro $72.7M con la mejor eficiencia. Mas corto (30 dias) pierde la fase de awareness donde se construye la base de compradores que luego explotan al final. Mas largo (57 dias como S3) genera mas revenue total pero tiene 2-3 semanas iniciales de muy baja productividad.</p>
+  </div>
+</div>
+
+<!-- ===================== 12. ACCIONES ===================== -->
+<div class="section" style="border-bottom:none">
+  <div class="section-num">Punto 12</div>
+  <div class="section-title">Acciones para los 15 dias restantes de S5</div>
+  <p class="section-explain">
+    Basado en toda la data anterior, estas son las palancas concretas que pueden mover el resultado de S5 entre el escenario conservador ($65M) y el optimista ($90-100M).
+  </p>
+
+  <table>
+    <thead><tr><th>#</th><th>Accion</th><th class="r">Impacto estimado</th><th>Evidencia</th></tr></thead>
+    <tbody>
+      <tr class="highlight"><td class="b">1</td><td class="b">Restaurar lives dominicales fuertes (6 y 13 julio)</td><td class="r gd">+$5-7M</td><td>En S4, cada domingo de live generaba $3-4M. En S5, los domingos promedian $538K. Gap de 6x.</td></tr>
+      <tr><td class="b">2</td><td class="b">Subir frecuencia IG a 4+ posts por semana</td><td class="r up">+$3-5M</td><td>Dias con post = +50% revenue. S5 tiene 1.5 posts/sem vs 4.3 de S3.</td></tr>
+      <tr><td class="b">3</td><td class="b">Push WhatsApp canal (cupones exclusivos)</td><td class="r up">+$2-3M</td><td>Cupones WA ya generan 32% de ordenes. 8,800 suscriptores. Canal de mayor crecimiento.</td></tr>
+      <tr><td class="b">4</td><td class="b">Promo packs grandes (x8, x20) en recta final</td><td class="r up">+$1-2M</td><td>Pack x20 = precio/sticker mas bajo ($857) pero solo 10% de ordenes. Empujar sube ticket.</td></tr>
+      <tr><td class="b">5</td><td class="b">Reactivar dormidos (13,155 compradores que no volvieron)</td><td class="r up">+$1-2M</td><td>22% de S3 volvio a S4. Hay 13K dormidos. Incluso 5% = 650 ordenes x $7K = $4.5M.</td></tr>
+      <tr class="total"><td></td><td class="b">Potencial total acumulado</td><td class="r gd">+$12-19M</td><td>Diferencia entre escenario conservador ($65M) y optimista ($90M+)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="opp">
+    <h4>Prioridad maxima: Lives del domingo 6 y 13 de julio</h4>
+    <p>La data es contundente: en S4, los lives dominicales generaban 3-4x mas revenue que cualquier otro dia. En S5, ese multiplicador desaparecio. Recuperarlo en los 2 domingos restantes es la palanca mas grande y mas facil de ejecutar. Un live fuerte con sorteo de stickers gratis, countdown, y push por WhatsApp el sabado previo puede hacer la diferencia entre $65M y $85M+.</p>
+  </div>
+</div>
+
+<div class="foot">Informe BI &mdash; Premios Increibles &mdash; Muller &amp; Perez &mdash; Generado 4 julio 2026 &mdash; Datos WooCommerce + Apify + Reportei</div>
+
+</div>
+</body>
+</html>
