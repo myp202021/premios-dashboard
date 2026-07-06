@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-06T19:58:54.466Z",
-  "total_orders": 5969,
+  "updated": "2026-07-06T21:36:21.351Z",
+  "total_orders": 6018,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -47,18 +47,18 @@
     },
     "B": {
       "name": "Canal WhatsApp (cupón w*)",
-      "total_buyers": 194,
+      "total_buyers": 207,
       "returners_any": 35,
       "returners_flash": 0,
       "returners_wa": 33,
-      "return_rate_any": 18,
+      "return_rate_any": 17,
       "return_rate_flash": 0,
-      "return_rate_wa": 17,
+      "return_rate_wa": 16,
       "avg_days_to_return": 2,
-      "first_purchase_rev": 1526400,
+      "first_purchase_rev": 1629000,
       "return_rev": 550450,
-      "total_rev": 2076850,
-      "avg_first_ticket": 7868,
+      "total_rev": 2179450,
+      "avg_first_ticket": 7870,
       "avg_return_ticket": 15727
     },
     "AB": {
@@ -79,19 +79,19 @@
     },
     "C": {
       "name": "Línea base (≥$5.000, sin cupón)",
-      "total_buyers": 2950,
-      "returners_any": 379,
+      "total_buyers": 2969,
+      "returners_any": 389,
       "returners_flash": 33,
-      "returners_wa": 240,
+      "returners_wa": 248,
       "return_rate_any": 13,
       "return_rate_flash": 1,
       "return_rate_wa": 8,
       "avg_days_to_return": 6,
-      "first_purchase_rev": 23795500,
-      "return_rev": 4387400,
-      "total_rev": 28182900,
-      "avg_first_ticket": 8066,
-      "avg_return_ticket": 11576
+      "first_purchase_rev": 23945500,
+      "return_rev": 4441400,
+      "total_rev": 28386900,
+      "avg_first_ticket": 8065,
+      "avg_return_ticket": 11417
     },
     "other": {
       "name": "Otros (con cupón no-WA en primera compra)",
@@ -104,10 +104,10 @@
       "return_rate_wa": 20,
       "avg_days_to_return": 6,
       "first_purchase_rev": 3725400,
-      "return_rev": 7471250,
-      "total_rev": 11196650,
+      "return_rev": 7500950,
+      "total_rev": 11226350,
       "avg_first_ticket": 4686,
-      "avg_return_ticket": 31392
+      "avg_return_ticket": 31517
     }
   }
 }
