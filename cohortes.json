@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-08T17:57:20.566Z",
-  "total_orders": 6612,
+  "updated": "2026-07-08T19:32:00.430Z",
+  "total_orders": 6632,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -47,7 +47,7 @@
     },
     "B": {
       "name": "Canal WhatsApp (cupón w*)",
-      "total_buyers": 255,
+      "total_buyers": 256,
       "returners_any": 45,
       "returners_flash": 0,
       "returners_wa": 43,
@@ -55,10 +55,10 @@
       "return_rate_flash": 0,
       "return_rate_wa": 17,
       "avg_days_to_return": 2,
-      "first_purchase_rev": 1946700,
+      "first_purchase_rev": 1964700,
       "return_rev": 735350,
-      "total_rev": 2682050,
-      "avg_first_ticket": 7634,
+      "total_rev": 2700050,
+      "avg_first_ticket": 7675,
       "avg_return_ticket": 16341
     },
     "AB": {
@@ -79,7 +79,7 @@
     },
     "C": {
       "name": "Línea base (≥$5.000, sin cupón)",
-      "total_buyers": 3287,
+      "total_buyers": 3300,
       "returners_any": 427,
       "returners_flash": 33,
       "returners_wa": 272,
@@ -87,27 +87,27 @@
       "return_rate_flash": 1,
       "return_rate_wa": 8,
       "avg_days_to_return": 6,
-      "first_purchase_rev": 26420500,
+      "first_purchase_rev": 26525500,
       "return_rev": 4941400,
-      "total_rev": 31361900,
+      "total_rev": 31466900,
       "avg_first_ticket": 8038,
       "avg_return_ticket": 11572
     },
     "other": {
       "name": "Otros (con cupón no-WA en primera compra)",
-      "total_buyers": 888,
-      "returners_any": 246,
+      "total_buyers": 893,
+      "returners_any": 247,
       "returners_flash": 128,
       "returners_wa": 161,
       "return_rate_any": 28,
       "return_rate_flash": 14,
       "return_rate_wa": 18,
       "avg_days_to_return": 6,
-      "first_purchase_rev": 4004400,
-      "return_rev": 7816950,
-      "total_rev": 11821350,
-      "avg_first_ticket": 4509,
-      "avg_return_ticket": 31776
+      "first_purchase_rev": 4019400,
+      "return_rev": 7819950,
+      "total_rev": 11839350,
+      "avg_first_ticket": 4501,
+      "avg_return_ticket": 31660
     }
   }
 }
