@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-10T07:48:56.554Z",
-  "total_orders": 7220,
+  "updated": "2026-07-10T11:06:07.781Z",
+  "total_orders": 7223,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -47,7 +47,7 @@
     },
     "B": {
       "name": "Canal WhatsApp (cupón w*)",
-      "total_buyers": 295,
+      "total_buyers": 296,
       "returners_any": 62,
       "returners_flash": 0,
       "returners_wa": 59,
@@ -55,10 +55,10 @@
       "return_rate_flash": 0,
       "return_rate_wa": 20,
       "avg_days_to_return": 3,
-      "first_purchase_rev": 2231100,
+      "first_purchase_rev": 2240100,
       "return_rev": 967550,
-      "total_rev": 3198650,
-      "avg_first_ticket": 7563,
+      "total_rev": 3207650,
+      "avg_first_ticket": 7568,
       "avg_return_ticket": 15606
     },
     "AB": {
@@ -79,7 +79,7 @@
     },
     "C": {
       "name": "Línea base (≥$5.000, sin cupón)",
-      "total_buyers": 3568,
+      "total_buyers": 3569,
       "returners_any": 492,
       "returners_flash": 33,
       "returners_wa": 315,
@@ -87,15 +87,15 @@
       "return_rate_flash": 1,
       "return_rate_wa": 9,
       "avg_days_to_return": 6,
-      "first_purchase_rev": 28730500,
+      "first_purchase_rev": 28740500,
       "return_rev": 5809700,
-      "total_rev": 34540200,
-      "avg_first_ticket": 8052,
+      "total_rev": 34550200,
+      "avg_first_ticket": 8053,
       "avg_return_ticket": 11808
     },
     "other": {
       "name": "Otros (con cupón no-WA en primera compra)",
-      "total_buyers": 957,
+      "total_buyers": 958,
       "returners_any": 262,
       "returners_flash": 128,
       "returners_wa": 172,
@@ -103,10 +103,10 @@
       "return_rate_flash": 13,
       "return_rate_wa": 18,
       "avg_days_to_return": 6,
-      "first_purchase_rev": 4211400,
+      "first_purchase_rev": 4214400,
       "return_rev": 8109050,
-      "total_rev": 12320450,
-      "avg_first_ticket": 4401,
+      "total_rev": 12323450,
+      "avg_first_ticket": 4399,
       "avg_return_ticket": 30951
     }
   }
