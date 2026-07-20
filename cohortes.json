@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-20T20:11:15.186Z",
-  "total_orders": 14353,
+  "updated": "2026-07-20T21:45:59.870Z",
+  "total_orders": 14354,
   "coupon_map": {
     "whatsapp": [
       "w10",
@@ -88,10 +88,10 @@
       "return_rate_wa": 5,
       "avg_days_to_return": 8,
       "first_purchase_rev": 64473500,
-      "return_rev": 17594900,
-      "total_rev": 82068400,
+      "return_rev": 17599400,
+      "total_rev": 82072900,
       "avg_first_ticket": 7945,
-      "avg_return_ticket": 14602
+      "avg_return_ticket": 14605
     },
     "other": {
       "name": "Otros (con cupón no-WA en primera compra)",
