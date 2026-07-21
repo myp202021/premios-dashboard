@@ -2,6 +2,7 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "framework": null,
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/analisis-bi", "destination": "/analisis-bi.html" },
     { "source": "/plan", "destination": "/plan.html" },
