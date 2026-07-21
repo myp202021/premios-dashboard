@@ -5,6 +5,7 @@
   "rewrites": [
     { "source": "/analisis-bi", "destination": "/analisis-bi.html" },
     { "source": "/plan", "destination": "/plan.html" },
-    { "source": "/comercial", "destination": "/comercial.html" }
+    { "source": "/comercial", "destination": "/comercial.html" },
+    { "source": "/comparacion", "destination": "/comparacion.html" }
   ]
 }

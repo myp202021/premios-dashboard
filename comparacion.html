@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S5 vs S6 — Premios Increíbles</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:#0A0A0F;color:#fff;line-height:1.5;font-size:13px}
+.c{max-width:1200px;margin:0 auto;padding:0 24px}
+.hd{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.hd h1{font-size:22px;font-weight:900}.hd .sub{font-size:11px;color:rgba(255,255,255,0.4)}
+.strategy{display:inline-block;padding:4px 12px;border-radius:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);font-size:10px;font-weight:700;color:#10B981;margin-left:8px}
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.k{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;text-align:center;position:relative;overflow:hidden}
+.k::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.k.s5::before{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
+.k.s6::before{background:linear-gradient(90deg,#E53935,#FFD700)}
+.k.delta::before{background:linear-gradient(90deg,#10B981,#34D399)}
+.kv{font-size:22px;font-weight:900;margin-bottom:2px}
+.kv.s5c{color:#8B5CF6}
+.kv.s6c{color:#FFD700}
+.kl{font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.ksub{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px}
+.s{padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.st{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.st::before{content:'';width:3px;height:14px;background:linear-gradient(135deg,#E53935,#FFD700);border-radius:2px}
+.cd{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:12px}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);font-size:11px}
+thead th{background:#1C1C24;color:rgba(255,255,255,0.5);padding:8px 10px;text-align:left;font-weight:700;font-size:9px;text-transform:uppercase;position:sticky;top:0;z-index:1}
+thead th.r{text-align:right}
+thead th.sep{border-left:2px solid rgba(255,215,0,0.3)}
+tbody td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.7)}
+tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody td.b{font-weight:700;color:#fff}
+tbody td.sep{border-left:2px solid rgba(255,215,0,0.15)}
+tbody tr:hover td{background:rgba(229,57,53,0.04)}
+.up{color:#10B981}.dn{color:#EF4444}.nt{color:#F59E0B}
+.chart-wrap{background:#141418;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;overflow-x:auto}
+.legend{display:flex;gap:16px;margin-bottom:12px;font-size:10px}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.insight{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:12px;margin-top:12px}
+.insight h4{font-size:11px;font-weight:800;color:#10B981;margin-bottom:4px}
+.insight p{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.7}
+.foot{padding:14px 0;text-align:center;font-size:9px;color:rgba(255,255,255,0.15)}
+.back{color:rgba(255,255,255,0.3);text-decoration:none;font-size:11px;font-weight:600}
+.back:hover{color:#FFD700}
+@media(max-width:768px){.kg{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="c">
+
+<div class="hd">
+  <div>
+    <a href="/" class="back">&larr; Dashboard principal</a>
+    <h1>S5 vs S6 <span class="strategy">Estrategia: bajar inversión + cosechar</span></h1>
+    <p class="sub" id="subtitle">Cargando...</p>
+  </div>
+</div>
+
+<!-- KPIs resumen -->
+<div class="kg" id="kpis"></div>
+
+<!-- Gráfico de curvas -->
+<div class="s">
+  <div class="st">Curva de Venta Acumulada</div>
+  <div class="chart-wrap" id="chart-cumrev"></div>
+</div>
+
+<!-- Gráfico inversión diaria -->
+<div class="s">
+  <div class="st">Inversión Diaria</div>
+  <div class="chart-wrap" id="chart-spend"></div>
+</div>
+
+<!-- Tabla día a día -->
+<div class="s">
+  <div class="st">Comparación Día a Día</div>
+  <div class="cd" style="max-height:600px;overflow-y:auto" id="table-wrap"></div>
+</div>
+
+<!-- Insight -->
+<div class="s" id="insight-section"></div>
+
+<div class="foot">Premios Increíbles — M&P Performance · Actualizado <span id="updated"></span></div>
+
+</div>
+
+<script>
+const fmt = n => '$' + Math.round(n).toLocaleString('es-CL');
+const fmtK = n => n >= 1000000 ? '$' + (n/1000000).toFixed(1) + 'M' : '$' + Math.round(n/1000).toLocaleString('es-CL') + 'K';
+const pct = n => (n > 0 ? '+' : '') + n + '%';
+const cls = n => n > 0 ? 'up' : n < 0 ? 'dn' : 'nt';
+
+async function load() {
+  const res = await fetch('comparacion-s5-s6.json?v=' + Date.now());
+  const data = await res.json();
+  render(data);
+}
+
+function render(data) {
+  const { summary: s, comparison: rows } = data;
+  const compared = rows.filter(r => r.s5 && r.s6);
+
+  // Subtitle
+  document.getElementById('subtitle').textContent =
+    `${s.days_compared} días comparados · S5 inició ${s.s5_start} · S6 inició ${s.s6_start} · Actualizado ${data.updated.substring(0, 16).replace('T', ' ')}`;
+  document.getElementById('updated').textContent = data.updated.substring(0, 16).replace('T', ' ');
+
+  // KPIs
+  const kpis = document.getElementById('kpis');
+  const cards = [
+    { label: 'Venta S6', value: fmtK(s.s6.revenue), sub: `S5: ${fmtK(s.s5.revenue)}`, delta: s.delta.revenue_pct, type: 's6' },
+    { label: 'Órdenes S6', value: s.s6.orders, sub: `S5: ${s.s5.orders}`, delta: s.delta.orders_pct, type: 's6' },
+    { label: 'Ticket S6', value: fmt(s.s6.avg_ticket), sub: `S5: ${fmt(s.s5.avg_ticket)}`, delta: s.delta.ticket_pct, type: 's6' },
+    { label: 'Inversión S6', value: fmtK(s.s6.spend), sub: `S5: ${fmtK(s.s5.spend)}`, delta: s.delta.spend_pct, type: 'delta' },
+    { label: 'ROAS S6', value: s.s6.roas + 'x', sub: `S5: ${s.s5.roas}x`, delta: s.s5.roas > 0 ? Math.round((s.s6.roas - s.s5.roas) / s.s5.roas * 100) : 0, type: 's6' },
+    { label: 'Días', value: s.days_compared + ' / ' + s.s5_total_days, sub: 'comparados / total S5', delta: null, type: 'delta' },
+  ];
+  kpis.innerHTML = cards.map(c => `
+    <div class="k ${c.type}">
+      <div class="kv ${c.type === 's6' ? 's6c' : ''}">${c.value}</div>
+      <div class="kl">${c.label}</div>
+      <div class="ksub">${c.sub}${c.delta !== null ? ` · <span class="${cls(c.delta)}">${pct(c.delta)}</span>` : ''}</div>
+    </div>
+  `).join('');
+
+  // Chart: curva acumulada
+  renderCumChart(compared, 'chart-cumrev');
+
+  // Chart: inversión diaria
+  renderSpendChart(compared, 'chart-spend');
+
+  // Table
+  renderTable(compared, 'table-wrap');
+
+  // Insight
+  renderInsight(s, compared, 'insight-section');
+}
+
+function renderCumChart(rows, containerId) {
+  const el = document.getElementById(containerId);
+  const W = 900, H = 280, pad = { t: 20, r: 20, b: 40, l: 70 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+  const maxRev = Math.max(
+    ...rows.map(r => r.s5?.cum_revenue || 0),
+    ...rows.map(r => r.s6?.cum_revenue || 0)
+  ) * 1.1;
+
+  const x = i => pad.l + (i / Math.max(rows.length - 1, 1)) * cw;
+  const y = v => pad.t + ch - (v / maxRev) * ch;
+
+  // S5 path
+  let s5Path = rows.map((r, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(r.s5?.cum_revenue || 0).toFixed(1)}`).join('');
+  // S6 path
+  let s6Path = rows.map((r, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(r.s6?.cum_revenue || 0).toFixed(1)}`).join('');
+
+  // Y axis labels
+  const yTicks = 5;
+  let yLabels = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const val = (maxRev / yTicks) * i;
+    const yp = y(val);
+    yLabels += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${yp}" y2="${yp}" stroke="rgba(255,255,255,0.04)" />`;
+    yLabels += `<text x="${pad.l - 8}" y="${yp + 3}" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9">${fmtK(val)}</text>`;
+  }
+
+  // X axis labels
+  let xLabels = '';
+  const step = Math.max(1, Math.floor(rows.length / 8));
+  for (let i = 0; i < rows.length; i += step) {
+    xLabels += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9">D${rows[i].day}</text>`;
+  }
+
+  el.innerHTML = `
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div> S5 acumulado</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFD700"></div> S6 acumulado</div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">
+      ${yLabels}${xLabels}
+      <path d="${s5Path}" fill="none" stroke="#8B5CF6" stroke-width="2.5" opacity="0.7"/>
+      <path d="${s6Path}" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+      ${rows.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.s6?.cum_revenue || 0)}" r="3" fill="#FFD700"/>`).join('')}
+      ${rows.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.s5?.cum_revenue || 0)}" r="3" fill="#8B5CF6" opacity="0.7"/>`).join('')}
+    </svg>
+  `;
+}
+
+function renderSpendChart(rows, containerId) {
+  const el = document.getElementById(containerId);
+  const W = 900, H = 200, pad = { t: 20, r: 20, b: 40, l: 70 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+  const maxSpend = Math.max(
+    ...rows.map(r => r.s5?.spend || 0),
+    ...rows.map(r => r.s6?.spend || 0)
+  ) * 1.2;
+
+  const barW = cw / rows.length / 2.5;
+  const x = i => pad.l + (i / rows.length) * cw + cw / rows.length / 2;
+  const y = v => pad.t + ch - (v / Math.max(maxSpend, 1)) * ch;
+  const h = v => (v / Math.max(maxSpend, 1)) * ch;
+
+  let bars = '';
+  for (let i = 0; i < rows.length; i++) {
+    const s5s = rows[i].s5?.spend || 0;
+    const s6s = rows[i].s6?.spend || 0;
+    bars += `<rect x="${x(i) - barW}" y="${y(s5s)}" width="${barW - 1}" height="${h(s5s)}" fill="#8B5CF6" opacity="0.5" rx="2"/>`;
+    bars += `<rect x="${x(i)}" y="${y(s6s)}" width="${barW - 1}" height="${h(s6s)}" fill="#FFD700" opacity="0.8" rx="2"/>`;
+  }
+
+  // X axis
+  let xLabels = '';
+  const step = Math.max(1, Math.floor(rows.length / 8));
+  for (let i = 0; i < rows.length; i += step) {
+    xLabels += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9">D${rows[i].day}</text>`;
+  }
+
+  // Y axis
+  let yLabels = '';
+  for (let i = 0; i <= 4; i++) {
+    const val = (maxSpend / 4) * i;
+    const yp = y(val);
+    yLabels += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${yp}" y2="${yp}" stroke="rgba(255,255,255,0.04)"/>`;
+    yLabels += `<text x="${pad.l - 8}" y="${yp + 3}" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9">${fmtK(val)}</text>`;
+  }
+
+  el.innerHTML = `
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div> S5 inversión/día</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFD700"></div> S6 inversión/día</div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">
+      ${yLabels}${xLabels}${bars}
+    </svg>
+  `;
+}
+
+function renderTable(rows, containerId) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>Día</th>
+      <th class="r">S5 Venta</th><th class="r">S5 Ord</th><th class="r">S5 Ticket</th><th class="r">S5 Inv</th>
+      <th class="r sep">S6 Venta</th><th class="r">S6 Ord</th><th class="r">S6 Ticket</th><th class="r">S6 Inv</th>
+      <th class="r sep">Δ Venta</th><th class="r">Δ Inv</th>
+    </tr></thead><tbody>`;
+
+  for (const r of rows) {
+    const s5 = r.s5 || {}, s6 = r.s6 || {};
+    const dRev = r.delta?.revenue_pct || 0;
+    const dSpend = r.delta?.spend_pct || 0;
+    html += `<tr>
+      <td class="b">D${r.day} <span style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow || ''}</span></td>
+      <td class="r">${fmt(s5.revenue || 0)}</td>
+      <td class="r">${s5.orders || 0}</td>
+      <td class="r">${fmt(s5.avg_ticket || 0)}</td>
+      <td class="r">${fmt(s5.spend || 0)}</td>
+      <td class="r b sep">${fmt(s6.revenue || 0)}</td>
+      <td class="r b">${s6.orders || 0}</td>
+      <td class="r b">${fmt(s6.avg_ticket || 0)}</td>
+      <td class="r b">${fmt(s6.spend || 0)}</td>
+      <td class="r sep ${cls(dRev)}">${pct(dRev)}</td>
+      <td class="r ${cls(-dSpend)}">${pct(dSpend)}</td>
+    </tr>`;
+  }
+
+  // Totals row
+  const totS5 = rows.reduce((a, r) => ({ rev: a.rev + (r.s5?.revenue || 0), ord: a.ord + (r.s5?.orders || 0), sp: a.sp + (r.s5?.spend || 0) }), { rev: 0, ord: 0, sp: 0 });
+  const totS6 = rows.reduce((a, r) => ({ rev: a.rev + (r.s6?.revenue || 0), ord: a.ord + (r.s6?.orders || 0), sp: a.sp + (r.s6?.spend || 0) }), { rev: 0, ord: 0, sp: 0 });
+
+  html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
+    <td class="b">TOTAL</td>
+    <td class="r">${fmtK(totS5.rev)}</td>
+    <td class="r">${totS5.ord}</td>
+    <td class="r">${totS5.ord > 0 ? fmt(Math.round(totS5.rev / totS5.ord)) : '-'}</td>
+    <td class="r">${fmtK(totS5.sp)}</td>
+    <td class="r b sep">${fmtK(totS6.rev)}</td>
+    <td class="r b">${totS6.ord}</td>
+    <td class="r b">${totS6.ord > 0 ? fmt(Math.round(totS6.rev / totS6.ord)) : '-'}</td>
+    <td class="r b">${fmtK(totS6.sp)}</td>
+    <td class="r sep ${cls(totS5.rev > 0 ? Math.round((totS6.rev - totS5.rev) / totS5.rev * 100) : 0)}">${totS5.rev > 0 ? pct(Math.round((totS6.rev - totS5.rev) / totS5.rev * 100)) : '-'}</td>
+    <td class="r ${cls(-(totS5.sp > 0 ? Math.round((totS6.sp - totS5.sp) / totS5.sp * 100) : 0))}">${totS5.sp > 0 ? pct(Math.round((totS6.sp - totS5.sp) / totS5.sp * 100)) : '-'}</td>
+  </tr>`;
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderInsight(s, rows, containerId) {
+  const el = document.getElementById(containerId);
+  const spendDown = s.delta.spend_pct < 0;
+  const revUp = s.delta.revenue_pct > 0;
+  const roasUp = s.s6.roas > s.s5.roas;
+
+  let msg = '';
+  if (spendDown && revUp) {
+    msg = `La estrategia está funcionando: inversión ${pct(s.delta.spend_pct)} pero venta ${pct(s.delta.revenue_pct)}. ROAS S6 ${s.s6.roas}x vs S5 ${s.s5.roas}x. Se está cosechando la audiencia construida en S5.`;
+  } else if (spendDown && !revUp) {
+    msg = `Inversión bajó ${pct(s.delta.spend_pct)} y la venta también ${pct(s.delta.revenue_pct)}. Es normal en los primeros días — S5 también arrancó lento. Monitorear si la brecha se cierra en la semana 2.`;
+  } else if (!spendDown && revUp) {
+    msg = `Inversión subió ${pct(s.delta.spend_pct)} pero venta subió más ${pct(s.delta.revenue_pct)}. ROAS mejoró. Evaluar si se puede bajar gasto sin perder revenue.`;
+  } else {
+    msg = `Ambas métricas en ajuste. Comparar tras la primera semana completa para sacar conclusiones.`;
+  }
+
+  el.innerHTML = `
+    <div class="insight">
+      <h4>Lectura automática (${s.days_compared} días)</h4>
+      <p>${msg}</p>
+      <p style="margin-top:6px">Nota: S5 hizo el 86% de su revenue en la segunda mitad. Los primeros días siempre son los más bajos — la comparación real se verá a partir del día 14+.</p>
+    </div>
+  `;
+}
+
+load();
+setInterval(load, 600000);
+</script>
+</body>
+</html>
