@@ -64,22 +64,16 @@ tbody tr:hover td{background:rgba(229,57,53,0.04)}
 <!-- KPIs resumen -->
 <div class="kg" id="kpis"></div>
 
-<!-- Gráfico de curvas -->
+<!-- Tabla S5 vs S6 día a día -->
 <div class="s">
-  <div class="st">Curva de Venta Acumulada</div>
-  <div class="chart-wrap" id="chart-cumrev"></div>
+  <div class="st">Comparación Diaria S5 vs S6</div>
+  <div class="cd" style="overflow-x:auto" id="table-wrap"></div>
 </div>
 
-<!-- Gráfico inversión diaria -->
+<!-- Tabla S6 vs Presupuesto y Meta -->
 <div class="s">
-  <div class="st">Inversión Diaria</div>
-  <div class="chart-wrap" id="chart-spend"></div>
-</div>
-
-<!-- Tabla día a día -->
-<div class="s">
-  <div class="st">Comparación Día a Día</div>
-  <div class="cd" style="max-height:600px;overflow-y:auto" id="table-wrap"></div>
+  <div class="st">S6 — Inversión vs Ppto · Venta vs Meta ($120M)</div>
+  <div class="cd" style="overflow-x:auto" id="table-ppto"></div>
 </div>
 
 <!-- Insight -->
@@ -95,6 +89,17 @@ const fmtK = n => n >= 1000000 ? '$' + (n/1000000).toFixed(1) + 'M' : '$' + Math
 const pct = n => (n > 0 ? '+' : '') + n + '%';
 const cls = n => n > 0 ? 'up' : n < 0 ? 'dn' : 'nt';
 
+// Presupuesto diario S6 (49 días)
+const PPTO_DAILY = [230000,341314,423788,362392,381716,404828,502781,359962,465270,573928,487709,510627,538414,664973,473534,608913,747385,632066,658707,691451,850299,602983,772243,944159,795462,825957,863940,1058761,748308,955260,1164250,977897,1012375,1055880,1290359,909510,1157965,1407658,1179372,1217964,1267271,1545092,1086588,1380356,1674383,1399886,1442721,1498114,1822962];
+const TOTAL_PPTO = PPTO_DAILY.reduce((a,b)=>a+b,0);
+
+// Meta venta $120M distribuida con peso creciente al final
+const TOTAL_META = 120000000;
+const metaWeights = PPTO_DAILY.map((_,i) => Math.pow(1 + i/PPTO_DAILY.length, 1.5));
+const totalW = metaWeights.reduce((a,b)=>a+b,0);
+const META_DAILY = metaWeights.map(w => Math.round(TOTAL_META * w / totalW));
+META_DAILY[META_DAILY.length-1] += TOTAL_META - META_DAILY.reduce((a,b)=>a+b,0);
+
 async function load() {
   const res = await fetch('comparacion-s5-s6.json?v=' + Date.now());
   const data = await res.json();
@@ -105,9 +110,8 @@ function render(data) {
   const { summary: s, comparison: rows } = data;
   const compared = rows.filter(r => r.s5 && r.s6);
 
-  // Subtitle
   document.getElementById('subtitle').textContent =
-    `${s.days_compared} días comparados · S5 inició ${s.s5_start} · S6 inició ${s.s6_start} · Actualizado ${data.updated.substring(0, 16).replace('T', ' ')}`;
+    `${s.days_compared} días comparados · S5: ${s.s5_start} · S6: ${s.s6_start} · Act. ${data.updated.substring(0, 16).replace('T', ' ')}`;
   document.getElementById('updated').textContent = data.updated.substring(0, 16).replace('T', ' ');
 
   // KPIs
@@ -128,164 +132,159 @@ function render(data) {
     </div>
   `).join('');
 
-  // Chart: curva acumulada
-  renderCumChart(compared, 'chart-cumrev');
-
-  // Chart: inversión diaria
-  renderSpendChart(compared, 'chart-spend');
-
-  // Table
+  // Tabla 1: S5 vs S6 con CPA y % CPA/venta
   renderTable(compared, 'table-wrap');
+
+  // Tabla 2: S6 vs Ppto y Meta
+  renderPptoTable(rows, 'table-ppto');
 
   // Insight
   renderInsight(s, compared, 'insight-section');
-}
-
-function renderCumChart(rows, containerId) {
-  const el = document.getElementById(containerId);
-  const W = 900, H = 280, pad = { t: 20, r: 20, b: 40, l: 70 };
-  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-
-  const maxRev = Math.max(
-    ...rows.map(r => r.s5?.cum_revenue || 0),
-    ...rows.map(r => r.s6?.cum_revenue || 0)
-  ) * 1.1;
-
-  const x = i => pad.l + (i / Math.max(rows.length - 1, 1)) * cw;
-  const y = v => pad.t + ch - (v / maxRev) * ch;
-
-  // S5 path
-  let s5Path = rows.map((r, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(r.s5?.cum_revenue || 0).toFixed(1)}`).join('');
-  // S6 path
-  let s6Path = rows.map((r, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(r.s6?.cum_revenue || 0).toFixed(1)}`).join('');
-
-  // Y axis labels
-  const yTicks = 5;
-  let yLabels = '';
-  for (let i = 0; i <= yTicks; i++) {
-    const val = (maxRev / yTicks) * i;
-    const yp = y(val);
-    yLabels += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${yp}" y2="${yp}" stroke="rgba(255,255,255,0.04)" />`;
-    yLabels += `<text x="${pad.l - 8}" y="${yp + 3}" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9">${fmtK(val)}</text>`;
-  }
-
-  // X axis labels
-  let xLabels = '';
-  const step = Math.max(1, Math.floor(rows.length / 8));
-  for (let i = 0; i < rows.length; i += step) {
-    xLabels += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9">D${rows[i].day}</text>`;
-  }
-
-  el.innerHTML = `
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div> S5 acumulado</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#FFD700"></div> S6 acumulado</div>
-    </div>
-    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">
-      ${yLabels}${xLabels}
-      <path d="${s5Path}" fill="none" stroke="#8B5CF6" stroke-width="2.5" opacity="0.7"/>
-      <path d="${s6Path}" fill="none" stroke="#FFD700" stroke-width="2.5"/>
-      ${rows.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.s6?.cum_revenue || 0)}" r="3" fill="#FFD700"/>`).join('')}
-      ${rows.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.s5?.cum_revenue || 0)}" r="3" fill="#8B5CF6" opacity="0.7"/>`).join('')}
-    </svg>
-  `;
-}
-
-function renderSpendChart(rows, containerId) {
-  const el = document.getElementById(containerId);
-  const W = 900, H = 200, pad = { t: 20, r: 20, b: 40, l: 70 };
-  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-
-  const maxSpend = Math.max(
-    ...rows.map(r => r.s5?.spend || 0),
-    ...rows.map(r => r.s6?.spend || 0)
-  ) * 1.2;
-
-  const barW = cw / rows.length / 2.5;
-  const x = i => pad.l + (i / rows.length) * cw + cw / rows.length / 2;
-  const y = v => pad.t + ch - (v / Math.max(maxSpend, 1)) * ch;
-  const h = v => (v / Math.max(maxSpend, 1)) * ch;
-
-  let bars = '';
-  for (let i = 0; i < rows.length; i++) {
-    const s5s = rows[i].s5?.spend || 0;
-    const s6s = rows[i].s6?.spend || 0;
-    bars += `<rect x="${x(i) - barW}" y="${y(s5s)}" width="${barW - 1}" height="${h(s5s)}" fill="#8B5CF6" opacity="0.5" rx="2"/>`;
-    bars += `<rect x="${x(i)}" y="${y(s6s)}" width="${barW - 1}" height="${h(s6s)}" fill="#FFD700" opacity="0.8" rx="2"/>`;
-  }
-
-  // X axis
-  let xLabels = '';
-  const step = Math.max(1, Math.floor(rows.length / 8));
-  for (let i = 0; i < rows.length; i += step) {
-    xLabels += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9">D${rows[i].day}</text>`;
-  }
-
-  // Y axis
-  let yLabels = '';
-  for (let i = 0; i <= 4; i++) {
-    const val = (maxSpend / 4) * i;
-    const yp = y(val);
-    yLabels += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${yp}" y2="${yp}" stroke="rgba(255,255,255,0.04)"/>`;
-    yLabels += `<text x="${pad.l - 8}" y="${yp + 3}" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="9">${fmtK(val)}</text>`;
-  }
-
-  el.innerHTML = `
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div> S5 inversión/día</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#FFD700"></div> S6 inversión/día</div>
-    </div>
-    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">
-      ${yLabels}${xLabels}${bars}
-    </svg>
-  `;
 }
 
 function renderTable(rows, containerId) {
   const el = document.getElementById(containerId);
   let html = `<table>
     <thead><tr>
-      <th>Día</th>
-      <th class="r">S5 Venta</th><th class="r">S5 Ord</th><th class="r">S5 Ticket</th><th class="r">S5 Inv</th>
-      <th class="r sep">S6 Venta</th><th class="r">S6 Ord</th><th class="r">S6 Ticket</th><th class="r">S6 Inv</th>
+      <th>Día</th><th></th>
+      <th class="r">S5 Inv</th><th class="r">S5 Venta</th><th class="r">S5 CPA</th><th class="r">S5 %CPA/Vta</th>
+      <th class="r sep">S6 Inv</th><th class="r">S6 Venta</th><th class="r">S6 CPA</th><th class="r">S6 %CPA/Vta</th>
       <th class="r sep">Δ Venta</th><th class="r">Δ Inv</th>
     </tr></thead><tbody>`;
 
+  let cumS5 = {sp:0,rev:0,ord:0}, cumS6 = {sp:0,rev:0,ord:0};
+
   for (const r of rows) {
     const s5 = r.s5 || {}, s6 = r.s6 || {};
+    const s5cpa = (s5.orders||0) > 0 ? (s5.spend||0) / s5.orders : 0;
+    const s6cpa = (s6.orders||0) > 0 ? (s6.spend||0) / s6.orders : 0;
+    const s5pct = (s5.revenue||0) > 0 ? ((s5.spend||0) / s5.revenue * 100) : 0;
+    const s6pct = (s6.revenue||0) > 0 ? ((s6.spend||0) / s6.revenue * 100) : 0;
     const dRev = r.delta?.revenue_pct || 0;
     const dSpend = r.delta?.spend_pct || 0;
+
+    cumS5.sp += s5.spend||0; cumS5.rev += s5.revenue||0; cumS5.ord += s5.orders||0;
+    cumS6.sp += s6.spend||0; cumS6.rev += s6.revenue||0; cumS6.ord += s6.orders||0;
+
     html += `<tr>
-      <td class="b">D${r.day} <span style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow || ''}</span></td>
-      <td class="r">${fmt(s5.revenue || 0)}</td>
-      <td class="r">${s5.orders || 0}</td>
-      <td class="r">${fmt(s5.avg_ticket || 0)}</td>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow || s5.dow || ''}</td>
       <td class="r">${fmt(s5.spend || 0)}</td>
-      <td class="r b sep">${fmt(s6.revenue || 0)}</td>
-      <td class="r b">${s6.orders || 0}</td>
-      <td class="r b">${fmt(s6.avg_ticket || 0)}</td>
-      <td class="r b">${fmt(s6.spend || 0)}</td>
+      <td class="r">${fmt(s5.revenue || 0)}</td>
+      <td class="r">${s5cpa > 0 ? fmt(s5cpa) : '—'}</td>
+      <td class="r ${s5pct > 100 ? 'dn' : s5pct > 50 ? 'nt' : 'up'}">${s5pct > 0 ? s5pct.toFixed(0)+'%' : '—'}</td>
+      <td class="r b sep">${fmt(s6.spend || 0)}</td>
+      <td class="r b">${fmt(s6.revenue || 0)}</td>
+      <td class="r b">${s6cpa > 0 ? fmt(s6cpa) : '—'}</td>
+      <td class="r b ${s6pct > 100 ? 'dn' : s6pct > 50 ? 'nt' : 'up'}">${s6pct > 0 ? s6pct.toFixed(0)+'%' : '—'}</td>
       <td class="r sep ${cls(dRev)}">${pct(dRev)}</td>
       <td class="r ${cls(-dSpend)}">${pct(dSpend)}</td>
     </tr>`;
   }
 
-  // Totals row
-  const totS5 = rows.reduce((a, r) => ({ rev: a.rev + (r.s5?.revenue || 0), ord: a.ord + (r.s5?.orders || 0), sp: a.sp + (r.s5?.spend || 0) }), { rev: 0, ord: 0, sp: 0 });
-  const totS6 = rows.reduce((a, r) => ({ rev: a.rev + (r.s6?.revenue || 0), ord: a.ord + (r.s6?.orders || 0), sp: a.sp + (r.s6?.spend || 0) }), { rev: 0, ord: 0, sp: 0 });
+  // Totals
+  const s5cpaTot = cumS5.ord > 0 ? cumS5.sp / cumS5.ord : 0;
+  const s6cpaTot = cumS6.ord > 0 ? cumS6.sp / cumS6.ord : 0;
+  const s5pctTot = cumS5.rev > 0 ? (cumS5.sp / cumS5.rev * 100) : 0;
+  const s6pctTot = cumS6.rev > 0 ? (cumS6.sp / cumS6.rev * 100) : 0;
+  html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
+    <td class="b" colspan="2">TOTAL</td>
+    <td class="r">${fmtK(cumS5.sp)}</td><td class="r">${fmtK(cumS5.rev)}</td>
+    <td class="r">${fmt(s5cpaTot)}</td><td class="r">${s5pctTot.toFixed(0)}%</td>
+    <td class="r b sep">${fmtK(cumS6.sp)}</td><td class="r b">${fmtK(cumS6.rev)}</td>
+    <td class="r b">${fmt(s6cpaTot)}</td><td class="r b">${s6pctTot.toFixed(0)}%</td>
+    <td class="r sep ${cls(cumS5.rev > 0 ? Math.round((cumS6.rev-cumS5.rev)/cumS5.rev*100) : 0)}">${cumS5.rev > 0 ? pct(Math.round((cumS6.rev-cumS5.rev)/cumS5.rev*100)) : '—'}</td>
+    <td class="r ${cls(-(cumS5.sp > 0 ? Math.round((cumS6.sp-cumS5.sp)/cumS5.sp*100) : 0))}">${cumS5.sp > 0 ? pct(Math.round((cumS6.sp-cumS5.sp)/cumS5.sp*100)) : '—'}</td>
+  </tr>`;
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderPptoTable(rows, containerId) {
+  const el = document.getElementById(containerId);
+  // Solo S6 rows
+  const s6rows = rows.filter(r => r.s6);
+
+  let html = `<table>
+    <thead><tr>
+      <th>Día</th><th></th><th>Fecha</th>
+      <th class="r">Inv Real</th><th class="r">Ppto Inv</th><th class="r">Δ Inv</th>
+      <th class="r sep">Venta Real</th><th class="r">Meta Venta</th><th class="r">Δ Meta</th>
+      <th class="r sep">CPA</th><th class="r">%Inv/Vta</th>
+      <th class="r sep">Inv Acum</th><th class="r">Ppto Acum</th><th class="r">Vta Acum</th><th class="r">Meta Acum</th>
+    </tr></thead><tbody>`;
+
+  let cumInv = 0, cumPpto = 0, cumVta = 0, cumMeta = 0;
+
+  for (let i = 0; i < s6rows.length; i++) {
+    const r = s6rows[i];
+    const s6 = r.s6;
+    const dayIdx = r.day - 1;
+    const ppto = PPTO_DAILY[dayIdx] || 0;
+    const meta = META_DAILY[dayIdx] || 0;
+    const inv = s6.spend || 0;
+    const vta = s6.revenue || 0;
+    const cpa = (s6.orders||0) > 0 ? inv / s6.orders : 0;
+    const invVtaPct = vta > 0 ? (inv / vta * 100) : 0;
+
+    cumInv += inv; cumPpto += ppto; cumVta += vta; cumMeta += meta;
+
+    const dInv = ppto > 0 ? Math.round((inv - ppto) / ppto * 100) : 0;
+    const dMeta = meta > 0 ? Math.round((vta - meta) / meta * 100) : 0;
+
+    html += `<tr>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow || ''}</td>
+      <td style="font-size:9px;color:rgba(255,255,255,0.4)">${s6.date || ''}</td>
+      <td class="r b">${fmt(inv)}</td>
+      <td class="r" style="color:rgba(255,255,255,0.4)">${fmt(ppto)}</td>
+      <td class="r ${cls(-dInv)}">${pct(dInv)}</td>
+      <td class="r b sep">${fmt(vta)}</td>
+      <td class="r" style="color:rgba(255,255,255,0.4)">${fmt(meta)}</td>
+      <td class="r ${cls(dMeta)}">${pct(dMeta)}</td>
+      <td class="r sep ${cpa > 0 ? '' : ''}">${cpa > 0 ? fmt(cpa) : '—'}</td>
+      <td class="r ${invVtaPct > 100 ? 'dn' : invVtaPct > 50 ? 'nt' : 'up'}">${invVtaPct > 0 ? invVtaPct.toFixed(0)+'%' : '—'}</td>
+      <td class="r sep" style="font-size:10px">${fmtK(cumInv)}</td>
+      <td class="r" style="font-size:10px;color:rgba(255,255,255,0.4)">${fmtK(cumPpto)}</td>
+      <td class="r b" style="font-size:10px">${fmtK(cumVta)}</td>
+      <td class="r" style="font-size:10px;color:rgba(255,255,255,0.4)">${fmtK(cumMeta)}</td>
+    </tr>`;
+  }
+
+  // Totals
+  const cpaTot = cumVta > 0 ? cumInv / (s6rows.reduce((a,r) => a + (r.s6?.orders||0), 0) || 1) : 0;
+  const pctTot = cumVta > 0 ? (cumInv / cumVta * 100) : 0;
+  const dInvTot = cumPpto > 0 ? Math.round((cumInv - cumPpto) / cumPpto * 100) : 0;
+  const dMetaTot = cumMeta > 0 ? Math.round((cumVta - cumMeta) / cumMeta * 100) : 0;
 
   html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
-    <td class="b">TOTAL</td>
-    <td class="r">${fmtK(totS5.rev)}</td>
-    <td class="r">${totS5.ord}</td>
-    <td class="r">${totS5.ord > 0 ? fmt(Math.round(totS5.rev / totS5.ord)) : '-'}</td>
-    <td class="r">${fmtK(totS5.sp)}</td>
-    <td class="r b sep">${fmtK(totS6.rev)}</td>
-    <td class="r b">${totS6.ord}</td>
-    <td class="r b">${totS6.ord > 0 ? fmt(Math.round(totS6.rev / totS6.ord)) : '-'}</td>
-    <td class="r b">${fmtK(totS6.sp)}</td>
-    <td class="r sep ${cls(totS5.rev > 0 ? Math.round((totS6.rev - totS5.rev) / totS5.rev * 100) : 0)}">${totS5.rev > 0 ? pct(Math.round((totS6.rev - totS5.rev) / totS5.rev * 100)) : '-'}</td>
-    <td class="r ${cls(-(totS5.sp > 0 ? Math.round((totS6.sp - totS5.sp) / totS5.sp * 100) : 0))}">${totS5.sp > 0 ? pct(Math.round((totS6.sp - totS5.sp) / totS5.sp * 100)) : '-'}</td>
+    <td class="b" colspan="3">TOTAL</td>
+    <td class="r b">${fmtK(cumInv)}</td>
+    <td class="r">${fmtK(cumPpto)}</td>
+    <td class="r ${cls(-dInvTot)}">${pct(dInvTot)}</td>
+    <td class="r b sep">${fmtK(cumVta)}</td>
+    <td class="r">${fmtK(cumMeta)}</td>
+    <td class="r ${cls(dMetaTot)}">${pct(dMetaTot)}</td>
+    <td class="r sep b">${fmt(cpaTot)}</td>
+    <td class="r ${pctTot > 100 ? 'dn' : pctTot > 50 ? 'nt' : 'up'}">${pctTot.toFixed(0)}%</td>
+    <td class="r sep b">${fmtK(cumInv)}</td>
+    <td class="r">${fmtK(TOTAL_PPTO)}</td>
+    <td class="r b">${fmtK(cumVta)}</td>
+    <td class="r">${fmtK(TOTAL_META)}</td>
+  </tr>`;
+
+  // Remaining row
+  const remInv = TOTAL_PPTO - cumInv;
+  const remMeta = TOTAL_META - cumVta;
+  const remDays = PPTO_DAILY.length - s6rows.length;
+  html += `<tr style="background:rgba(139,92,246,0.06)">
+    <td colspan="3" style="font-size:10px;font-weight:700;color:#8B5CF6">FALTA (${remDays} días)</td>
+    <td class="r" colspan="2" style="color:#8B5CF6;font-weight:700">${fmtK(Math.max(remInv,0))}</td>
+    <td></td>
+    <td class="r sep" colspan="2" style="color:#FFD700;font-weight:700">${fmtK(Math.max(remMeta,0))}</td>
+    <td></td>
+    <td colspan="2"></td>
+    <td colspan="4" style="font-size:9px;color:rgba(255,255,255,0.3);text-align:right">${remDays > 0 ? 'Promedio diario necesario: Inv ' + fmtK(Math.max(remInv,0)/Math.max(remDays,1)) + ' · Vta ' + fmtK(Math.max(remMeta,0)/Math.max(remDays,1)) : 'Sorteo terminado'}</td>
   </tr>`;
 
   html += '</tbody></table>';
@@ -296,24 +295,28 @@ function renderInsight(s, rows, containerId) {
   const el = document.getElementById(containerId);
   const spendDown = s.delta.spend_pct < 0;
   const revUp = s.delta.revenue_pct > 0;
-  const roasUp = s.s6.roas > s.s5.roas;
+
+  // S6 vs Meta progress
+  const s6Days = rows.filter(r => r.s6).length;
+  const cumMetaSoFar = META_DAILY.slice(0, s6Days).reduce((a,b)=>a+b,0);
+  const metaPct = cumMetaSoFar > 0 ? Math.round(s.s6.revenue / cumMetaSoFar * 100) : 0;
 
   let msg = '';
   if (spendDown && revUp) {
-    msg = `La estrategia está funcionando: inversión ${pct(s.delta.spend_pct)} pero venta ${pct(s.delta.revenue_pct)}. ROAS S6 ${s.s6.roas}x vs S5 ${s.s5.roas}x. Se está cosechando la audiencia construida en S5.`;
+    msg = `Estrategia funcionando: inversión ${pct(s.delta.spend_pct)} pero venta ${pct(s.delta.revenue_pct)}. ROAS S6 ${s.s6.roas}x vs S5 ${s.s5.roas}x.`;
   } else if (spendDown && !revUp) {
-    msg = `Inversión bajó ${pct(s.delta.spend_pct)} y la venta también ${pct(s.delta.revenue_pct)}. Es normal en los primeros días — S5 también arrancó lento. Monitorear si la brecha se cierra en la semana 2.`;
+    msg = `Inversión bajó ${pct(s.delta.spend_pct)} y venta ${pct(s.delta.revenue_pct)}. Monitorear semana 2.`;
   } else if (!spendDown && revUp) {
-    msg = `Inversión subió ${pct(s.delta.spend_pct)} pero venta subió más ${pct(s.delta.revenue_pct)}. ROAS mejoró. Evaluar si se puede bajar gasto sin perder revenue.`;
+    msg = `Inversión subió ${pct(s.delta.spend_pct)} pero venta subió más ${pct(s.delta.revenue_pct)}.`;
   } else {
-    msg = `Ambas métricas en ajuste. Comparar tras la primera semana completa para sacar conclusiones.`;
+    msg = `Ambas métricas en ajuste. Comparar tras semana 2.`;
   }
 
   el.innerHTML = `
     <div class="insight">
       <h4>Lectura automática (${s.days_compared} días)</h4>
       <p>${msg}</p>
-      <p style="margin-top:6px">Nota: S5 hizo el 86% de su revenue en la segunda mitad. Los primeros días siempre son los más bajos — la comparación real se verá a partir del día 14+.</p>
+      <p style="margin-top:6px">Meta de venta: al día ${s6Days} deberían ir ${fmtK(cumMetaSoFar)} y van ${fmtK(s.s6.revenue)} (<span class="${cls(metaPct-100)}">${metaPct}% de la meta</span>).</p>
     </div>
   `;
 }
