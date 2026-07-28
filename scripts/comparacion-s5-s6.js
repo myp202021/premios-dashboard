@@ -15,7 +15,7 @@ const REPORTEI_TOKEN = process.env.REPORTEI_TOKEN || 'tQ6y526WgRvG75NzB1CiT5RoUx
 const FB_INT_ID = 3606802;
 
 const S5 = { id: 93696, name: 'Sorteo 5', start: '2026-05-24', end: '2026-07-19' };
-const S6 = { id: 119945, name: 'Sorteo 6', start: '2026-07-19', end: null };
+const S6 = { id: 119945, name: 'Sorteo 6', start: '2026-07-20', end: null };
 
 async function wcFetch(url) {
   const sep = url.includes('?') ? '&' : '?';
