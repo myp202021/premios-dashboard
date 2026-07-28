@@ -111,6 +111,10 @@ const s5SliceSum = s5Slice.reduce((a,b) => a+b, 0);
 const META_DAILY = s5Slice.map(p => Math.round(TOTAL_META * p / s5SliceSum));
 META_DAILY[META_DAILY.length-1] += TOTAL_META - META_DAILY.reduce((a,b)=>a+b,0);
 
+// Calendario lives S6: miércoles y sábados
+const LIVES_RRSS = ['2026-07-22','2026-07-25','2026-07-29','2026-08-01','2026-08-05','2026-08-08','2026-08-12','2026-08-15','2026-08-19','2026-08-22','2026-08-26','2026-08-29','2026-09-02','2026-09-05'];
+function isLive(date) { return LIVES_RRSS.includes(date); }
+
 async function load() {
   const res = await fetch('comparacion-s5-s6.json?v=' + Date.now());
   const data = await res.json();
@@ -160,34 +164,41 @@ function renderVentaTable(rows, containerId) {
   const el = document.getElementById(containerId);
   let html = `<table>
     <thead><tr>
-      <th>Día</th><th></th>
-      <th class="r">S5 Venta</th><th class="r">S5 Órdenes</th><th class="r">S5 Ticket</th>
-      <th class="r sep">S6 Venta</th><th class="r">S6 Órdenes</th><th class="r">S6 Ticket</th>
-      <th class="r sep">Δ%</th><th class="r">S6 vs S5</th>
+      <th>Día</th><th></th><th></th>
+      <th class="r">S5 Venta</th><th class="r">S5 Ord</th>
+      <th class="r sep">S6 Venta</th><th class="r">S6 Ord</th><th class="r">S6 Inv</th>
+      <th class="r sep">Δ% Venta</th><th class="r">S6 vs S5</th><th class="r sep">Venta > Inv?</th>
     </tr></thead><tbody>`;
 
-  let cumS5 = {rev:0,ord:0}, cumS6 = {rev:0,ord:0};
+  let cumS5 = {rev:0,ord:0}, cumS6 = {rev:0,ord:0,sp:0};
   for (const r of rows) {
     const s5 = r.s5||{}, s6 = r.s6||{};
     const d = s5.revenue > 0 ? Math.round((s6.revenue - s5.revenue) / s5.revenue * 100) : 0;
     const diff = (s6.revenue||0) - (s5.revenue||0);
+    const live = isLive(s6.date||'');
+    const ventaVsInv = (s6.revenue||0) - (s6.spend||0);
     cumS5.rev += s5.revenue||0; cumS5.ord += s5.orders||0;
-    cumS6.rev += s6.revenue||0; cumS6.ord += s6.orders||0;
-    html += `<tr>
-      <td class="b">D${r.day}</td><td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow||''}</td>
-      <td class="r">${fmt(s5.revenue||0)}</td><td class="r">${s5.orders||0}</td><td class="r">${fmt(s5.avg_ticket||0)}</td>
-      <td class="r b sep">${fmt(s6.revenue||0)}</td><td class="r b">${s6.orders||0}</td><td class="r b">${fmt(s6.avg_ticket||0)}</td>
+    cumS6.rev += s6.revenue||0; cumS6.ord += s6.orders||0; cumS6.sp += s6.spend||0;
+    html += `<tr${ventaVsInv < 0 ? ' style="background:rgba(239,68,68,0.08)"' : ''}>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow||''}</td>
+      <td style="font-size:9px">${live ? '<span style="color:#FFD700;font-weight:800">📺 LIVE</span>' : ''}</td>
+      <td class="r">${fmt(s5.revenue||0)}</td><td class="r">${s5.orders||0}</td>
+      <td class="r b sep">${fmt(s6.revenue||0)}</td><td class="r b">${s6.orders||0}</td><td class="r" style="color:rgba(255,255,255,0.4)">${fmt(s6.spend||0)}</td>
       <td class="r sep ${cls(d)}">${pct(d)}</td>
       <td class="r ${cls(diff)}" style="font-weight:700">${diff >= 0 ? '+' : ''}${fmtK(diff)}</td>
+      <td class="r sep ${ventaVsInv >= 0 ? 'up' : 'dn'}" style="font-weight:700">${ventaVsInv >= 0 ? 'SÍ +'+fmtK(ventaVsInv) : 'NO '+fmtK(ventaVsInv)}</td>
     </tr>`;
   }
   const dTot = cumS5.rev > 0 ? Math.round((cumS6.rev-cumS5.rev)/cumS5.rev*100) : 0;
+  const totVtaVsInv = cumS6.rev - cumS6.sp;
   html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
-    <td class="b" colspan="2">TOTAL</td>
-    <td class="r">${fmtK(cumS5.rev)}</td><td class="r">${cumS5.ord}</td><td class="r">${cumS5.ord>0?fmt(Math.round(cumS5.rev/cumS5.ord)):'—'}</td>
-    <td class="r b sep">${fmtK(cumS6.rev)}</td><td class="r b">${cumS6.ord}</td><td class="r b">${cumS6.ord>0?fmt(Math.round(cumS6.rev/cumS6.ord)):'—'}</td>
+    <td class="b" colspan="3">TOTAL</td>
+    <td class="r">${fmtK(cumS5.rev)}</td><td class="r">${cumS5.ord}</td>
+    <td class="r b sep">${fmtK(cumS6.rev)}</td><td class="r b">${cumS6.ord}</td><td class="r" style="color:rgba(255,255,255,0.4)">${fmtK(cumS6.sp)}</td>
     <td class="r sep ${cls(dTot)}">${pct(dTot)}</td>
     <td class="r ${cls(cumS6.rev-cumS5.rev)}" style="font-weight:700">${fmtK(cumS6.rev-cumS5.rev)}</td>
+    <td class="r sep ${totVtaVsInv >= 0 ? 'up' : 'dn'}" style="font-weight:700">${totVtaVsInv >= 0 ? 'SÍ +'+fmtK(totVtaVsInv) : 'NO '+fmtK(totVtaVsInv)}</td>
   </tr></tbody></table>`;
   el.innerHTML = html;
 }
