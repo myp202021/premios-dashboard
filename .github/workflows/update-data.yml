@@ -2,7 +2,7 @@ name: Actualizar Dashboard Premios Increíbles
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 8 * * *'
   workflow_dispatch:
 
 permissions:
