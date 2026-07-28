@@ -99,11 +99,16 @@ const cls = n => n > 0 ? 'up' : n < 0 ? 'dn' : 'nt';
 const PPTO_DAILY = [230000,341314,423788,362392,381716,404828,502781,359962,465270,573928,487709,510627,538414,664973,473534,608913,747385,632066,658707,691451,850299,602983,772243,944159,795462,825957,863940,1058761,748308,955260,1164250,977897,1012375,1055880,1290359,909510,1157965,1407658,1179372,1217964,1267271,1545092,1086588,1380356,1674383,1399886,1442721,1498114,1822962];
 const TOTAL_PPTO = PPTO_DAILY.reduce((a,b)=>a+b,0);
 
-// Meta venta $120M distribuida con peso creciente al final
+// Meta venta $120M distribuida según curva real de S5
+// S5 vendió $108.3M en 57 días. Cada día tiene un % del total. Ese % aplicado a $120M = meta diaria.
+// Si S6 tiene menos de 57 días en el ppto, se redistribuye proporcionalmente.
 const TOTAL_META = 120000000;
-const metaWeights = PPTO_DAILY.map((_,i) => Math.pow(1 + i/PPTO_DAILY.length, 1.5));
-const totalW = metaWeights.reduce((a,b)=>a+b,0);
-const META_DAILY = metaWeights.map(w => Math.round(TOTAL_META * w / totalW));
+// % de venta por día en S5 (57 días) — calculado de data real WooCommerce
+const S5_PCT = [0.26,0.33,0.84,0.45,0.16,0.55,0.62,0.24,0.64,0.67,0.56,0.55,0.54,0.87,0.48,0.68,0.60,0.53,0.47,0.39,0.79,0.37,0.86,0.70,0.60,0.82,0.58,1.07,0.45,0.88,1.47,0.80,1.06,1.11,1.28,0.72,1.36,0.89,1.07,1.30,0.87,2.26,1.41,1.21,1.14,1.60,1.41,2.02,1.46,2.64,2.94,5.08,4.93,6.60,6.58,8.83,10.92];
+// Para 49 días de ppto, tomar los primeros 49 y reescalar a 100%
+const s5Slice = S5_PCT.slice(0, PPTO_DAILY.length);
+const s5SliceSum = s5Slice.reduce((a,b) => a+b, 0);
+const META_DAILY = s5Slice.map(p => Math.round(TOTAL_META * p / s5SliceSum));
 META_DAILY[META_DAILY.length-1] += TOTAL_META - META_DAILY.reduce((a,b)=>a+b,0);
 
 async function load() {
