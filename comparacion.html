@@ -76,6 +76,18 @@ tbody tr:hover td{background:rgba(229,57,53,0.04)}
   <div class="cd" style="overflow-x:auto" id="table-inversion"></div>
 </div>
 
+<!-- Tabla Nuevos vs Recompra -->
+<div class="s">
+  <div class="st">Nuevos vs Recompra — S6 (compra nueva vs cliente que ya compró en S5 o S6)</div>
+  <div class="cd" style="overflow-x:auto" id="table-newrepeat"></div>
+</div>
+
+<!-- Tabla Cosecha -->
+<div class="s">
+  <div class="st">Cosecha — Clientes nuevos de S5 que vuelven en S6</div>
+  <div class="cd" style="overflow-x:auto" id="table-cosecha"></div>
+</div>
+
 <!-- Tabla CPA diario -->
 <div class="s">
   <div class="st">CPA diario — S6 vs S5</div>
@@ -179,6 +191,8 @@ function render(data) {
   renderMetaTable(rows, 'table-meta');
 
   // Insight
+  renderNewRepeatTable(rows, 'table-newrepeat');
+  renderCosechaTable(rows, data.summary, 'table-cosecha');
   renderCpaTable(compared, 'table-cpa');
   renderInsight(s, compared, 'insight-section');
 }
@@ -480,6 +494,120 @@ function renderPptoTable(rows, containerId) {
   </tr>`;
 
   html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderNewRepeatTable(rows, containerId) {
+  const el = document.getElementById(containerId);
+  const s6rows = rows.filter(r => r.s6);
+  // Check if data has new/repeat fields
+  if (!s6rows.length || s6rows[0].s6.new_orders === undefined) {
+    el.innerHTML = '<p style="color:rgba(255,255,255,0.3);font-size:11px;padding:12px">Ejecuta el script comparacion-s5-s6.js para generar datos de nuevos vs recompra.</p>';
+    return;
+  }
+  let html = `<table>
+    <thead><tr>
+      <th>Día</th><th></th><th>Fecha</th>
+      <th class="r">Venta Total</th>
+      <th class="r sep" style="color:#10B981">Nuevos $</th><th class="r" style="color:#10B981">Nuevos Ord</th><th class="r" style="color:#10B981">% Nuevos</th>
+      <th class="r sep" style="color:#F59E0B">Recompra $</th><th class="r" style="color:#F59E0B">Recompra Ord</th><th class="r" style="color:#F59E0B">% Recompra</th>
+      <th class="r sep">Ticket Nuevo</th><th class="r">Ticket Recompra</th>
+    </tr></thead><tbody>`;
+
+  let cumNew = {ord:0,rev:0}, cumRep = {ord:0,rev:0};
+  for (const r of s6rows) {
+    const s6 = r.s6;
+    const nw = s6.new_orders||0, nr = s6.new_revenue||0;
+    const rp = s6.repeat_orders||0, rr = s6.repeat_revenue||0;
+    const total = nr + rr;
+    const pctNew = total>0 ? Math.round(nr/total*100) : 0;
+    const pctRep = total>0 ? Math.round(rr/total*100) : 0;
+    const tickNew = nw>0 ? Math.round(nr/nw) : 0;
+    const tickRep = rp>0 ? Math.round(rr/rp) : 0;
+    cumNew.ord+=nw; cumNew.rev+=nr; cumRep.ord+=rp; cumRep.rev+=rr;
+    html += `<tr>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow||''}</td>
+      <td style="font-size:9px;color:rgba(255,255,255,0.4)">${s6.date||''}</td>
+      <td class="r b">${fmt(total)}</td>
+      <td class="r sep" style="color:#10B981;font-weight:700">${fmt(nr)}</td>
+      <td class="r" style="color:#10B981">${nw}</td>
+      <td class="r" style="color:#10B981;font-weight:700">${pctNew}%</td>
+      <td class="r sep" style="color:#F59E0B;font-weight:700">${fmt(rr)}</td>
+      <td class="r" style="color:#F59E0B">${rp}</td>
+      <td class="r" style="color:#F59E0B;font-weight:700">${pctRep}%</td>
+      <td class="r sep">${tickNew>0?fmt(tickNew):'—'}</td>
+      <td class="r">${tickRep>0?fmt(tickRep):'—'}</td>
+    </tr>`;
+  }
+  const cumTotal = cumNew.rev + cumRep.rev;
+  const pctNewTot = cumTotal>0?Math.round(cumNew.rev/cumTotal*100):0;
+  const pctRepTot = cumTotal>0?Math.round(cumRep.rev/cumTotal*100):0;
+  html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
+    <td class="b" colspan="3">TOTAL</td>
+    <td class="r b">${fmtK(cumTotal)}</td>
+    <td class="r sep" style="color:#10B981">${fmtK(cumNew.rev)}</td>
+    <td class="r" style="color:#10B981">${cumNew.ord}</td>
+    <td class="r" style="color:#10B981;font-size:14px">${pctNewTot}%</td>
+    <td class="r sep" style="color:#F59E0B">${fmtK(cumRep.rev)}</td>
+    <td class="r" style="color:#F59E0B">${cumRep.ord}</td>
+    <td class="r" style="color:#F59E0B;font-size:14px">${pctRepTot}%</td>
+    <td class="r sep">${cumNew.ord>0?fmt(cumNew.rev/cumNew.ord):'—'}</td>
+    <td class="r">${cumRep.ord>0?fmt(cumRep.rev/cumRep.ord):'—'}</td>
+  </tr></tbody></table>`;
+  el.innerHTML = html;
+}
+
+function renderCosechaTable(rows, summary, containerId) {
+  const el = document.getElementById(containerId);
+  const s6rows = rows.filter(r => r.s6);
+  const cos = summary.cosecha;
+  if (!cos || !cos.nuevos_s5_total) {
+    el.innerHTML = '<p style="color:rgba(255,255,255,0.3);font-size:11px;padding:12px">Ejecuta el script con data de S3/S4 para ver cosecha.</p>';
+    return;
+  }
+
+  // KPI cards de cosecha
+  let html = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    <div class="k s6"><div class="kv s6c">${cos.nuevos_s5_total.toLocaleString()}</div><div class="kl">Clientes nuevos S5</div><div class="ksub">No estaban en S3 ni S4</div></div>
+    <div class="k s6"><div class="kv s6c">${cos.volvieron_s6}</div><div class="kl">Volvieron en S6</div><div class="ksub">Tasa cosecha: <span class="${cos.tasa_cosecha>10?'up':'nt'}">${cos.tasa_cosecha}%</span></div></div>
+    <div class="k s6"><div class="kv s6c">${cos.harvest_orders}</div><div class="kl">Órdenes cosecha</div><div class="ksub">Compras de los que volvieron</div></div>
+    <div class="k s6"><div class="kv s6c">${fmtK(cos.harvest_revenue)}</div><div class="kl">Venta cosecha</div><div class="ksub">Revenue de nuevos S5 en S6</div></div>
+  </div>`;
+
+  // Tabla diaria
+  html += `<table>
+    <thead><tr>
+      <th>Día</th><th></th><th>Fecha</th>
+      <th class="r">Venta Total S6</th>
+      <th class="r sep" style="color:#8B5CF6">Cosecha $</th><th class="r" style="color:#8B5CF6">Cosecha Ord</th>
+      <th class="r sep">% de venta que es cosecha</th>
+    </tr></thead><tbody>`;
+
+  let cumHarv = {ord:0,rev:0}, cumTotal = 0;
+  for (const r of s6rows) {
+    const s6 = r.s6;
+    const ho = s6.harvest_orders||0, hr = s6.harvest_revenue||0;
+    const pct = s6.revenue>0 ? Math.round(hr/s6.revenue*100) : 0;
+    cumHarv.ord+=ho; cumHarv.rev+=hr; cumTotal+=s6.revenue;
+    html += `<tr>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow||''}</td>
+      <td style="font-size:9px;color:rgba(255,255,255,0.4)">${s6.date||''}</td>
+      <td class="r b">${fmt(s6.revenue)}</td>
+      <td class="r sep" style="color:#8B5CF6;font-weight:700">${fmt(hr)}</td>
+      <td class="r" style="color:#8B5CF6">${ho}</td>
+      <td class="r sep ${pct>15?'up':pct>5?'nt':'dn'}" style="font-weight:700">${pct}%</td>
+    </tr>`;
+  }
+  const pctTot = cumTotal>0?Math.round(cumHarv.rev/cumTotal*100):0;
+  html += `<tr style="background:rgba(139,92,246,0.06);font-weight:800">
+    <td class="b" colspan="3">TOTAL</td>
+    <td class="r b">${fmtK(cumTotal)}</td>
+    <td class="r sep" style="color:#8B5CF6">${fmtK(cumHarv.rev)}</td>
+    <td class="r" style="color:#8B5CF6">${cumHarv.ord}</td>
+    <td class="r sep" style="color:#8B5CF6;font-size:14px">${pctTot}% de la venta</td>
+  </tr></tbody></table>`;
   el.innerHTML = html;
 }
 

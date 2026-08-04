@@ -14,6 +14,8 @@ const WC_CS = process.env.WC_CONSUMER_SECRET || 'cs_a064f21d2cbc373798abafccdb1c
 const REPORTEI_TOKEN = process.env.REPORTEI_TOKEN || 'tQ6y526WgRvG75NzB1CiT5RoUx9dctNmBzex5NH3';
 const FB_INT_ID = 3606802;
 
+const S3 = { id: 56683, name: 'Sorteo 3' };
+const S4 = { id: 78432, name: 'Sorteo 4' };
 const S5 = { id: 93696, name: 'Sorteo 5', start: '2026-05-24', end: '2026-07-19' };
 const S6 = { id: 119945, name: 'Sorteo 6', start: '2026-07-20', end: null };
 
@@ -97,6 +99,43 @@ function getDow(dateStr) {
   }
   const ordersS6 = await getAllOrders(S6.id, 'S6');
 
+  // 1.5. Load S3 y S4 from cache for cosecha analysis
+  let ordersS3 = [], ordersS4 = [];
+  const cacheS3 = 'cache-56683.json', cacheS4 = 'cache-78432.json';
+  if (fs.existsSync(cacheS3)) {
+    console.log('  S3: desde cache');
+    ordersS3 = JSON.parse(fs.readFileSync(cacheS3, 'utf8'));
+  }
+  if (fs.existsSync(cacheS4)) {
+    console.log('  S4: desde cache');
+    ordersS4 = JSON.parse(fs.readFileSync(cacheS4, 'utf8'));
+  }
+  const allS3Emails = new Set(ordersS3.map(o => o.email).filter(Boolean));
+  const allS4Emails = new Set(ordersS4.map(o => o.email).filter(Boolean));
+
+  // Clientes NUEVOS de S5 = compraron en S5 pero NO en S3 ni S4
+  const s5OnlyEmails = new Set();
+  for (const o of ordersS5) {
+    if (o.email && !allS3Emails.has(o.email) && !allS4Emails.has(o.email)) {
+      s5OnlyEmails.add(o.email);
+    }
+  }
+  console.log(`  Clientes nuevos S5 (no estaban en S3/S4): ${s5OnlyEmails.size}`);
+
+  // De esos nuevos de S5, ¿cuántos compraron en S6? (cosecha)
+  function calcCosecha(orders, days, targetEmails) {
+    const daily = {};
+    for (const d of days) daily[d] = { harvest_orders: 0, harvest_revenue: 0, harvest_emails: new Set() };
+    for (const o of orders) {
+      if (daily[o.date] && targetEmails.has(o.email)) {
+        daily[o.date].harvest_orders++;
+        daily[o.date].harvest_revenue += o.total;
+        daily[o.date].harvest_emails.add(o.email);
+      }
+    }
+    return daily;
+  }
+
   // 2. Build daily data from orders
   const s5Days = dateRange(S5.start, S5.end);
   const today = new Date().toISOString().substring(0, 10);
@@ -148,6 +187,39 @@ function getDow(dateStr) {
     console.log(`    ${d}: $${Math.round(s6Spend[d]).toLocaleString()}`);
   }
 
+  // 3.5. Calcular nuevos vs recompra por día
+  // Un email es "recompra" si ya compró antes en el mismo sorteo O en sorteos anteriores
+  const allS5Emails = new Set(ordersS5.map(o => o.email).filter(Boolean));
+
+  function calcNewVsRepeat(orders, days, previousEmails) {
+    const seenInSorteo = new Set();
+    const daily = {};
+    for (const d of days) daily[d] = { new_orders: 0, new_revenue: 0, repeat_orders: 0, repeat_revenue: 0 };
+    // Procesar en orden cronológico
+    const sorted = [...orders].sort((a, b) => a.date.localeCompare(b.date));
+    for (const o of sorted) {
+      if (!daily[o.date]) continue;
+      const isRepeat = previousEmails.has(o.email) || seenInSorteo.has(o.email);
+      if (isRepeat) {
+        daily[o.date].repeat_orders++;
+        daily[o.date].repeat_revenue += o.total;
+      } else {
+        daily[o.date].new_orders++;
+        daily[o.date].new_revenue += o.total;
+      }
+      if (o.email) seenInSorteo.add(o.email);
+    }
+    return daily;
+  }
+
+  // S5: recompra = compró en S3 o S4 o ya en S5
+  const s5PreviousEmails = new Set([...allS3Emails, ...allS4Emails]);
+  const s5NewRepeat = calcNewVsRepeat(ordersS5, s5Days, s5PreviousEmails);
+  // S6: recompra = ya compró en S5 O ya compró antes en S6
+  const s6NewRepeat = calcNewVsRepeat(ordersS6, s6Days, allS5Emails);
+  // Cosecha: nuevos S5 que vuelven en S6
+  const s6Cosecha = calcCosecha(ordersS6, s6Days, s5OnlyEmails);
+
   // 4. Build comparison array (day 1, day 2, etc.)
   const maxDays = Math.max(s5Days.length, s6Days.length);
   const comparison = [];
@@ -167,6 +239,7 @@ function getDow(dateStr) {
       s5CumRev += dd.revenue;
       s5CumOrd += dd.orders;
       s5CumSpend += spend;
+      const nr5 = s5NewRepeat[d] || { new_orders:0, new_revenue:0, repeat_orders:0, repeat_revenue:0 };
       row.s5 = {
         date: d,
         dow: getDow(d),
@@ -178,6 +251,8 @@ function getDow(dateStr) {
         cum_revenue: s5CumRev,
         cum_orders: s5CumOrd,
         cum_spend: Math.round(s5CumSpend),
+        new_orders: nr5.new_orders, new_revenue: nr5.new_revenue,
+        repeat_orders: nr5.repeat_orders, repeat_revenue: nr5.repeat_revenue,
       };
     }
 
@@ -189,6 +264,8 @@ function getDow(dateStr) {
       s6CumRev += dd.revenue;
       s6CumOrd += dd.orders;
       s6CumSpend += spend;
+      const nr6 = s6NewRepeat[d] || { new_orders:0, new_revenue:0, repeat_orders:0, repeat_revenue:0 };
+      const cos = s6Cosecha[d] || { harvest_orders:0, harvest_revenue:0, harvest_emails: new Set() };
       row.s6 = {
         date: d,
         dow: getDow(d),
@@ -200,6 +277,9 @@ function getDow(dateStr) {
         cum_revenue: s6CumRev,
         cum_orders: s6CumOrd,
         cum_spend: Math.round(s6CumSpend),
+        new_orders: nr6.new_orders, new_revenue: nr6.new_revenue,
+        repeat_orders: nr6.repeat_orders, repeat_revenue: nr6.repeat_revenue,
+        harvest_orders: cos.harvest_orders, harvest_revenue: cos.harvest_revenue,
       };
     }
 
@@ -252,6 +332,17 @@ function getDow(dateStr) {
     ticket_pct: summary.s5.avg_ticket > 0 ? Math.round((summary.s6.avg_ticket - summary.s5.avg_ticket) / summary.s5.avg_ticket * 100) : 0,
     spend_pct: summary.s5.spend > 0 ? Math.round((summary.s6.spend - summary.s5.spend) / summary.s5.spend * 100) : 0,
   };
+
+  // Cosecha totals
+  summary.cosecha = {
+    nuevos_s5_total: s5OnlyEmails.size,
+    volvieron_s6: new Set(ordersS6.filter(o => s5OnlyEmails.has(o.email)).map(o => o.email)).size,
+    harvest_orders: comparison.reduce((s,r) => s + (r.s6?.harvest_orders||0), 0),
+    harvest_revenue: comparison.reduce((s,r) => s + (r.s6?.harvest_revenue||0), 0),
+  };
+  summary.cosecha.tasa_cosecha = summary.cosecha.nuevos_s5_total > 0
+    ? +(summary.cosecha.volvieron_s6 / summary.cosecha.nuevos_s5_total * 100).toFixed(1) : 0;
+  console.log(`   Cosecha: ${summary.cosecha.volvieron_s6}/${summary.cosecha.nuevos_s5_total} nuevos S5 volvieron (${summary.cosecha.tasa_cosecha}%)`);
 
   const output = {
     updated: new Date().toISOString(),
