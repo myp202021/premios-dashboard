@@ -76,6 +76,12 @@ tbody tr:hover td{background:rgba(229,57,53,0.04)}
   <div class="cd" style="overflow-x:auto" id="table-inversion"></div>
 </div>
 
+<!-- Tabla CPA diario -->
+<div class="s">
+  <div class="st">CPA diario — S6 vs S5</div>
+  <div class="cd" style="overflow-x:auto" id="table-cpa"></div>
+</div>
+
 <!-- Tabla VENTA vs META -->
 <div class="s">
   <div class="st">Venta vs Meta ($120M) — avance diario</div>
@@ -99,16 +105,32 @@ const cls = n => n > 0 ? 'up' : n < 0 ? 'dn' : 'nt';
 const PPTO_DAILY = [230000,341314,423788,362392,381716,404828,502781,359962,465270,573928,487709,510627,538414,664973,473534,608913,747385,632066,658707,691451,850299,602983,772243,944159,795462,825957,863940,1058761,748308,955260,1164250,977897,1012375,1055880,1290359,909510,1157965,1407658,1179372,1217964,1267271,1545092,1086588,1380356,1674383,1399886,1442721,1498114,1822962];
 const TOTAL_PPTO = PPTO_DAILY.reduce((a,b)=>a+b,0);
 
-// Meta venta $120M distribuida según curva real de S5
-// S5 vendió $108.3M en 57 días. Cada día tiene un % del total. Ese % aplicado a $120M = meta diaria.
-// Si S6 tiene menos de 57 días en el ppto, se redistribuye proporcionalmente.
+// Meta venta $120M distribuida según curva COMPLETA de S5
+// S5 vendió en 57 días con su patrón real. Se comprime a 49 días interpolando.
+// Así el día 49 de S6 = día 57 de S5 (la explosión final).
 const TOTAL_META = 120000000;
 // % de venta por día en S5 (57 días) — calculado de data real WooCommerce
 const S5_PCT = [0.26,0.33,0.84,0.45,0.16,0.55,0.62,0.24,0.64,0.67,0.56,0.55,0.54,0.87,0.48,0.68,0.60,0.53,0.47,0.39,0.79,0.37,0.86,0.70,0.60,0.82,0.58,1.07,0.45,0.88,1.47,0.80,1.06,1.11,1.28,0.72,1.36,0.89,1.07,1.30,0.87,2.26,1.41,1.21,1.14,1.60,1.41,2.02,1.46,2.64,2.94,5.08,4.93,6.60,6.58,8.83,10.92];
-// Para 49 días de ppto, tomar los primeros 49 y reescalar a 100%
-const s5Slice = S5_PCT.slice(0, PPTO_DAILY.length);
-const s5SliceSum = s5Slice.reduce((a,b) => a+b, 0);
-const META_DAILY = s5Slice.map(p => Math.round(TOTAL_META * p / s5SliceSum));
+const S5_TOTAL = S5_PCT.reduce((a,b) => a+b, 0);
+// Comprimir 57 días de S5 en 49 días de S6 por interpolación
+const S6_DAYS = PPTO_DAILY.length;
+const S5_DAYS = S5_PCT.length;
+const META_DAILY = [];
+for (let i = 0; i < S6_DAYS; i++) {
+  // Posición equivalente en S5 (0-56)
+  const s5pos = i * (S5_DAYS - 1) / (S6_DAYS - 1);
+  const lo = Math.floor(s5pos);
+  const hi = Math.min(lo + 1, S5_DAYS - 1);
+  const frac = s5pos - lo;
+  // Interpolar el % de S5
+  const pct = S5_PCT[lo] * (1 - frac) + S5_PCT[hi] * frac;
+  META_DAILY.push(pct);
+}
+// Normalizar a 100% y aplicar a $120M
+const metaSum = META_DAILY.reduce((a,b) => a+b, 0);
+for (let i = 0; i < META_DAILY.length; i++) {
+  META_DAILY[i] = Math.round(TOTAL_META * META_DAILY[i] / metaSum);
+}
 META_DAILY[META_DAILY.length-1] += TOTAL_META - META_DAILY.reduce((a,b)=>a+b,0);
 
 // Calendario lives S6: miércoles y sábados
@@ -157,6 +179,7 @@ function render(data) {
   renderMetaTable(rows, 'table-meta');
 
   // Insight
+  renderCpaTable(compared, 'table-cpa');
   renderInsight(s, compared, 'insight-section');
 }
 
@@ -457,6 +480,51 @@ function renderPptoTable(rows, containerId) {
   </tr>`;
 
   html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderCpaTable(rows, containerId) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>Día</th><th></th>
+      <th class="r">S5 Inv</th><th class="r">S5 Órd</th><th class="r">S5 CPA</th>
+      <th class="r sep">S6 Inv</th><th class="r">S6 Órd</th><th class="r">S6 CPA</th>
+      <th class="r sep">Δ CPA</th><th class="r">S6 mejor?</th>
+    </tr></thead><tbody>`;
+
+  let cumS5 = {sp:0,ord:0}, cumS6 = {sp:0,ord:0};
+  for (const r of rows) {
+    const s5 = r.s5||{}, s6 = r.s6||{};
+    const s5cpa = (s5.orders||0)>0 ? (s5.spend||0)/s5.orders : 0;
+    const s6cpa = (s6.orders||0)>0 ? (s6.spend||0)/s6.orders : 0;
+    const dCpa = s5cpa>0 ? Math.round((s6cpa-s5cpa)/s5cpa*100) : 0;
+    const mejor = s6cpa>0 && s6cpa<s5cpa;
+    cumS5.sp+=s5.spend||0; cumS5.ord+=s5.orders||0;
+    cumS6.sp+=s6.spend||0; cumS6.ord+=s6.orders||0;
+    html += `<tr>
+      <td class="b">D${r.day}</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:9px">${s6.dow||''}</td>
+      <td class="r" style="color:rgba(255,255,255,0.5)">${fmt(s5.spend||0)}</td>
+      <td class="r" style="color:rgba(255,255,255,0.5)">${s5.orders||0}</td>
+      <td class="r">${s5cpa>0?fmt(s5cpa):'—'}</td>
+      <td class="r b sep" style="color:rgba(255,255,255,0.5)">${fmt(s6.spend||0)}</td>
+      <td class="r b" style="color:rgba(255,255,255,0.5)">${s6.orders||0}</td>
+      <td class="r b">${s6cpa>0?fmt(s6cpa):'—'}</td>
+      <td class="r sep ${cls(-dCpa)}">${s5cpa>0&&s6cpa>0?pct(dCpa):'—'}</td>
+      <td class="r ${mejor?'up':'dn'}" style="font-weight:700">${s5cpa>0&&s6cpa>0?(mejor?'SÍ ↓':'NO ↑'):'—'}</td>
+    </tr>`;
+  }
+  const s5cpaTot = cumS5.ord>0?cumS5.sp/cumS5.ord:0;
+  const s6cpaTot = cumS6.ord>0?cumS6.sp/cumS6.ord:0;
+  const dTot = s5cpaTot>0?Math.round((s6cpaTot-s5cpaTot)/s5cpaTot*100):0;
+  html += `<tr style="background:rgba(255,215,0,0.06);font-weight:800">
+    <td class="b" colspan="2">PROMEDIO</td>
+    <td class="r">${fmtK(cumS5.sp)}</td><td class="r">${cumS5.ord}</td><td class="r">${fmt(s5cpaTot)}</td>
+    <td class="r b sep">${fmtK(cumS6.sp)}</td><td class="r b">${cumS6.ord}</td><td class="r b">${fmt(s6cpaTot)}</td>
+    <td class="r sep ${cls(-dTot)}">${pct(dTot)}</td>
+    <td class="r ${s6cpaTot<s5cpaTot?'up':'dn'}" style="font-weight:700;font-size:13px">${s6cpaTot<s5cpaTot?'SÍ ↓ CPA menor':'NO ↑ CPA mayor'}</td>
+  </tr></tbody></table>`;
   el.innerHTML = html;
 }
 
