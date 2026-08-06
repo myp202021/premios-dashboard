@@ -28,11 +28,11 @@ async function wcFetch(url) {
 
 async function getAllOrders(productId, label) {
   let page = 1, all = [];
-  const { total } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=completed,pending,processing&product=${productId}&per_page=1`);
-  console.log(`  ${label}: ${total} orders (completed+pending+processing)`);
+  const { total } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=completed&product=${productId}&per_page=1`);
+  console.log(`  ${label}: ${total} orders (completed only — ventas reales)`);
   while (all.length < total) {
     try {
-      const { data } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=completed,pending,processing&product=${productId}&per_page=100&page=${page}&orderby=date&order=asc`);
+      const { data } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=completed&product=${productId}&per_page=100&page=${page}&orderby=date&order=asc`);
       if (!Array.isArray(data) || data.length === 0) break;
       for (const o of data) {
         all.push({
