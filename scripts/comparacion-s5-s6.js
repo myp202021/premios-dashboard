@@ -52,15 +52,23 @@ async function getAllOrders(productId, label) {
 
 async function getDailySpend(date) {
   try {
-    await new Promise(r => setTimeout(r, 1500));
-    const res = await fetch('https://app.reportei.com/api/v2/metrics/get-data', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + REPORTEI_TOKEN, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        start: date, end: date, integration_id: FB_INT_ID,
-        metrics: [{ id: 'q1', reference_key: 'facebook_ads:spend', component: 'number_v1', metrics: ['spend'], type: ['spend'] }]
-      })
-    });
+    await new Promise(r => setTimeout(r, 800));
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    let res;
+    try {
+      res = await fetch('https://app.reportei.com/api/v2/metrics/get-data', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + REPORTEI_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start: date, end: date, integration_id: FB_INT_ID,
+          metrics: [{ id: 'q1', reference_key: 'facebook_ads:spend', component: 'number_v1', metrics: ['spend'], type: ['spend'] }]
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
     const d = await res.json();
     return parseFloat(d?.data?.q1?.values || 0);
   } catch { return 0; }
