@@ -105,7 +105,41 @@ function getDow(dateStr) {
     ordersS5 = await getAllOrders(S5.id, 'S5');
     fs.writeFileSync(cacheS5, JSON.stringify(ordersS5));
   }
-  const ordersS6 = await getAllOrders(S6.id, 'S6');
+  // S6: cache incremental — solo descarga órdenes nuevas desde última fecha cacheada
+  const cacheS6 = 'cache-119945.json';
+  let ordersS6;
+  if (fs.existsSync(cacheS6)) {
+    const cached = JSON.parse(fs.readFileSync(cacheS6, 'utf8'));
+    // Encontrar última fecha cacheada para descargar solo lo nuevo
+    const lastDate = cached.reduce((max, o) => o.date > max ? o.date : max, '2000-01-01');
+    console.log(`  S6: cache con ${cached.length} orders hasta ${lastDate}, buscando nuevas...`);
+    // Descargar solo órdenes desde lastDate (re-descarga ese día por si estaba incompleto)
+    let page = 1, newOrders = [];
+    while (true) {
+      try {
+        const { data } = await wcFetch(`https://premiosincreibles.cl/wp-json/wc/v3/orders?status=completed&product=${S6.id}&per_page=100&page=${page}&orderby=date&order=asc&after=${lastDate}T00:00:00`);
+        if (!Array.isArray(data) || data.length === 0) break;
+        for (const o of data) {
+          newOrders.push({
+            date: o.date_created.substring(0, 10),
+            total: parseInt(parseFloat(o.total)),
+            email: (o.billing?.email || '').toLowerCase().trim(),
+          });
+        }
+        page++;
+      } catch (e) {
+        console.log(`    error page ${page}: ${e.message} — retry`);
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+    // Merge: quitar del cache las del lastDate (podrían estar incompletas) y agregar las nuevas
+    const base = cached.filter(o => o.date < lastDate);
+    ordersS6 = [...base, ...newOrders];
+    console.log(`  S6: ${newOrders.length} nuevas, ${ordersS6.length} total`);
+  } else {
+    ordersS6 = await getAllOrders(S6.id, 'S6');
+  }
+  fs.writeFileSync(cacheS6, JSON.stringify(ordersS6));
 
   // 1.5. Load S3 y S4 from cache for cosecha analysis
   let ordersS3 = [], ordersS4 = [];
@@ -187,13 +221,24 @@ function getDow(dateStr) {
     console.log('  S5 spend: cacheado');
   }
 
-  // S6 spend: always fresh
-  const s6Spend = {};
-  console.log(`  S6 spend: ${s6Days.length} días...`);
-  for (const d of s6Days) {
+  // S6 spend: cache incremental — solo consulta últimos 3 días frescos
+  const spendCacheS6File = 'cache-spend-daily-s6.json';
+  let s6Spend = {};
+  if (fs.existsSync(spendCacheS6File)) {
+    s6Spend = JSON.parse(fs.readFileSync(spendCacheS6File, 'utf8'));
+    console.log(`  S6 spend: cache con ${Object.keys(s6Spend).length} días`);
+  }
+  // Solo consultar los últimos 3 días (pueden cambiar) + días sin datos
+  const freshDays = s6Days.filter(d => {
+    const daysAgo = Math.floor((Date.now() - new Date(d + 'T12:00:00').getTime()) / 86400000);
+    return daysAgo <= 2 || !s6Spend[d];
+  });
+  console.log(`  S6 spend: ${freshDays.length} días por consultar (de ${s6Days.length} total)...`);
+  for (const d of freshDays) {
     s6Spend[d] = await getDailySpend(d);
     console.log(`    ${d}: $${Math.round(s6Spend[d]).toLocaleString()}`);
   }
+  fs.writeFileSync(spendCacheS6File, JSON.stringify(s6Spend));
 
   // 3.5. Calcular nuevos vs recompra por día
   // Un email es "recompra" si ya compró antes en el mismo sorteo O en sorteos anteriores
